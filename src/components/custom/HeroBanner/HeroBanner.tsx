@@ -3,7 +3,7 @@
 import { HTMLAttributes, useEffect, useState } from "react";
 
 import WaveReveal from "@/components/animata/text/wave-reveal";
-import { cn } from "@/lib/utils";
+import { cn } from "@/components/lib/utils";
 import AlgoliaWhiteButton from "@/components/animata/text/button/algolia-white-button";
 
 interface ImageProps extends HTMLAttributes<HTMLDivElement> {

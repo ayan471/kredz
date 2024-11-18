@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { Button } from '@/components/ui/button'
-import { cn } from "@/lib/utils"
+import { cn } from "@/components/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
