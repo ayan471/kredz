@@ -2,7 +2,7 @@
 
 import {useForm} from 'react-hook-form'
 import { DevTool } from '@hookform/devtools'
-
+import Link from 'next/link'
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -96,18 +96,32 @@ const SubscriptionPlanForm = () => {
 
         </div>
 
+        {/*****************/}
+        {/* Input Group 3 */}
+        {/*****************/}
 
+        <p className="font-bold">Purchase Plan <span className="text-red-600">*</span></p>
 
+        <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
+        
+            <p>Payment Gateway Link:
+            <Link 
+            className="hover:text-blue-700 text-blue-600"
+            href="https://kredz-git-main-geranos.vercel.app/subscription-plan"
+            >
+             https://kredz-git-main-geranos.vercel.app/subscription-plan
+            </Link>
+            </p>
 
+            <Button type="submit" className="text-md max-w-min">Open Link</Button>
 
-
-
+        </div>
 
 
 
 
         <div className="finalConcentCstm items-top flex space-x-2">
-              <Checkbox id="terms1"  />
+              <Checkbox id="terms1" checked/>
               <div className="grid gap-1.5 leading-none">
                 <label
                   htmlFor="terms1"
