@@ -42,6 +42,7 @@ const MobileNavigation = () => {
             <li>Membership Cards</li>
             <li>Credit Building Subscription</li>
             <li>Channel Partners</li>
+            <li>Channel Partners</li>
           </ul>
         </AccordionContent>
       </AccordionItem>
