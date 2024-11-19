@@ -42,6 +42,10 @@ const SubscriptionPlanForm = () => {
         description: "We've received your message. We'll reply via email in the next 24 hours.",
       })
 
+      window.location.replace("/subscription-plan/success"); 
+
+
+
   }
 
 
@@ -106,19 +110,24 @@ const SubscriptionPlanForm = () => {
         
             <p>Payment Gateway Link:
             <Link 
-            className="hover:text-blue-700 text-blue-600"
+            className="hover:text-blue-700 hover:underline text-blue-600"
             href="https://kredz-git-main-geranos.vercel.app/subscription-plan"
             >
              https://kredz-git-main-geranos.vercel.app/subscription-plan
             </Link>
             </p>
 
-            <Button type="submit" className="text-md max-w-min">Open Link</Button>
+            <Link href="https://kredz-git-main-geranos.vercel.app/subscription-plan">
+                <Button className="text-md max-w-min">Open Link</Button>
+            </Link>
+
+            <p>* Once the payment is done you can submit the form</p>
 
         </div>
 
-
-
+        {/*****************/}
+        {/* Check Concent */}
+        {/*****************/}
 
         <div className="finalConcentCstm items-top flex space-x-2">
               <Checkbox id="terms1" checked/>
@@ -137,18 +146,13 @@ const SubscriptionPlanForm = () => {
               </div>
             </div>
 
+        {/*****************/}
+        {/* Submit Button */}
+        {/*****************/}
 
-
-
-
-
-
-            <Button type="submit" className="mt-8 text-md">Buy Subscription Plan</Button>
+        <Button type="submit" className="mt-8 text-md">Buy Subscription Plan</Button>
 
       </form>
-
-
-
 
 
       <DevTool control={control}/>
