@@ -39,6 +39,12 @@ const locations: { title: string; href: string; description: string }[] = [
     href: "",
     description:
       "",
+  },
+  {
+    title: "Subscription Plan",
+    href: "/subscription-plan",
+    description:
+      "",
   }
 ]
 
