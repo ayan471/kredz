@@ -15,9 +15,9 @@ const LeftMenuItems = () => {
     <Link href="/blog" className="flex">
         <li className="flex">Blog</li>
     </Link>  
-    <Link href="/new-lead" className="flex">
-        <li className="flex">New Lead</li>
-    </Link>  
+    <Link href="/faqs" className="flex">
+        <li className="flex">FAQs</li>
+    </Link>
     <Link href="/contact" className="flex">
         <li className="flex">Contact</li>
     </Link>
