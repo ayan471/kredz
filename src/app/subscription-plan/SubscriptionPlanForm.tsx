@@ -15,22 +15,10 @@ import { useToast } from "@/components/ui/use-toast"
 
 type FormValues = {
     userName: string
-
-
-
-
-  MethodOfComnctn: string
-  PreferdAcmdn: string
-  destinationIndia: string
-  destinationOther: string
-  eMail: string
-  fromDate: string
-  msgForUs: string
-  phone: string
-  preferredGetaways: string
-  preferredGetawaysOther: string
-  toDate: string
-  typeOfTravel: string
+    phone: string
+    eMail: string
+    panNumber: string
+    aadharNumber:  string
 }
 
 const SubscriptionPlanForm = () => {
@@ -73,17 +61,17 @@ const SubscriptionPlanForm = () => {
 
           <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="userName">Username</Label>
-          <Input type="text" id="userName" placeholder="Rajen Roy" {...register("userName")}  />
+          <Input type="text" id="userName" value="Rajen Roy" {...register("userName")}  />
           </div>
 
           <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="phone">Phone</Label>
-          <Input type="tel"  id="phone" placeholder="+91 8699 81 2196" {...register("phone")}  />
+          <Input type="tel"  id="phone" value="+91 8699 81 2196" {...register("phone")}  />
           </div>
 
           <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="eMail">Email ID</Label>
-          <Input type="email" id="eMail" placeholder="rajen.roy@gmail.com" {...register("eMail")}  />
+          <Input type="email" id="eMail" value="rajen.roy@gmail.com" {...register("eMail")}  />
           </div>
 
         </div>
@@ -92,13 +80,21 @@ const SubscriptionPlanForm = () => {
         {/* Input Group 2 */}
         {/*****************/}
 
-
-
-
         <p className="font-bold">For Verification <span className="text-red-600">*</span></p>
 
+        <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
 
+          <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="panNumber">PAN Number</Label>
+          <Input type="text"  id="panNumber" placeholder="" {...register("panNumber")}  />
+          </div>
 
+          <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="aadharNumber">Aadhar Number</Label>
+          <Input type="text" id="aadharNumber" placeholder="" {...register("aadharNumber")}  />
+          </div>
+
+        </div>
 
 
 
@@ -111,7 +107,7 @@ const SubscriptionPlanForm = () => {
 
 
         <div className="finalConcentCstm items-top flex space-x-2">
-              <Checkbox id="terms1" checked />
+              <Checkbox id="terms1"  />
               <div className="grid gap-1.5 leading-none">
                 <label
                   htmlFor="terms1"
