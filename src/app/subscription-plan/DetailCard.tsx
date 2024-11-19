@@ -19,7 +19,7 @@ const DetailCard = () => {
 
       <li>
       <p className="font-semibold  text-slate-800 mb-4">Step 2 - We will approve subscription</p>
-      <p className="text-sm text-slate-600 mb-2">Choose from a dropdown list of getaway types. We have a lot to offer.</p>
+      <p className="text-sm text-slate-600 mb-2">Choose from a dropdown list of services we have a lot to offer.</p>
       </li>
 
 
