@@ -1,10 +1,9 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
+import * as React from "react";
+import Link from "next/link";
 
-import { cn } from "@/components/lib/utils"
-
+import { cn } from "@/components/lib/utils";
 
 import {
   NavigationMenu,
@@ -14,43 +13,32 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
 
 const locations: { title: string; href: string; description: string }[] = [
- 
   {
     title: "Loan Application",
     href: "/loan-application",
     description: "",
   },
   {
-    title: "Membership Cards",
-    href: "",
-    description:
-      "",
-  },
-  {
-    title: "Credit Building Subscription",
+    title: "Credit Builder Plans",
     href: "",
     description: "",
   },
   {
-    title: "Channel Partners",
+    title: "Channel Partner",
     href: "",
-    description:
-      "",
+    description: "",
   },
   {
-    title: "Subscription Plan",
-    href: "/subscription-plan",
-    description:
-      "",
-  }
-]
-
+    title: "Loan Consultancy",
+    href: "",
+    description: "",
+  },
+];
 
 const experiences: { title: string; href: string; description: string }[] = [
- 
   {
     title: "Tour Packages",
     href: "",
@@ -64,83 +52,51 @@ const experiences: { title: string; href: string; description: string }[] = [
   {
     title: "Experiences",
     href: "",
-    description:"",
-  },  
-]
-
-
+    description: "",
+  },
+];
 
 export default function NavigationMenuDemo() {
   return (
-
     <>
+      <NavigationMenu>
+        <NavigationMenuList className="flex gap-0 xl:gap-8 flex-row">
+          <NavigationMenuItem>
+            <Link href="/about-us" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <p className="uppercase tracking-wider">About</p>
+              </NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem>
 
-    <NavigationMenu>
-      <NavigationMenuList className="flex gap-0 xl:gap-8 flex-row">
-       
+          <NavigationMenuItem>
+            <NavigationMenuTrigger className="uppercase tracking-wider">
+              Services
+            </NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ul className=" grid w-[400px] gap-3 p-4 md:w-[330px] md:grid-cols-1 lg:w-[330px] ">
+                {locations.map((location) => (
+                  <Link href={location.href}>
+                    <ListItem key={location.title} title={location.title}>
+                      {location.description}
+                    </ListItem>
+                  </Link>
+                ))}
+              </ul>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
 
-
-
-
-
-        <NavigationMenuItem>
-          <Link href="/about-us" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              <p className="uppercase tracking-wider">
-                About
-              </p>
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-
-
-
-
-        <NavigationMenuItem>
-          <NavigationMenuTrigger className="uppercase tracking-wider">Services</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className=" grid w-[400px] gap-3 p-4 md:w-[330px] md:grid-cols-1 lg:w-[330px] ">
-              {locations.map((location) => (
-                <Link href={location.href}>
-                <ListItem
-                  key={location.title}
-                  title={location.title}
-             
-                >
-                  {location.description}
-                </ListItem>
-                </Link>
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-
-
-        <NavigationMenuItem>
-          <Link href="/contact" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              <p className="uppercase tracking-wider">
-                Contact
-              </p>
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-
-
-
-
-
-
-
-
-      </NavigationMenuList>
-    </NavigationMenu>
-
-
-
-
+          <NavigationMenuItem>
+            <Link href="/contact" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <p className="uppercase tracking-wider">Contact</p>
+              </NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem>
+        </NavigationMenuList>
+      </NavigationMenu>
     </>
-  )
+  );
 }
 
 const ListItem = React.forwardRef<
@@ -165,6 +121,6 @@ const ListItem = React.forwardRef<
         </a>
       </NavigationMenuLink>
     </li>
-  )
-})
-ListItem.displayName = "ListItem"
+  );
+});
+ListItem.displayName = "ListItem";
