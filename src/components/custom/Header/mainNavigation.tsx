@@ -19,7 +19,7 @@ import {
 const locations: { title: string; href: string; description: string }[] = [
  
   {
-    title: "Loan Consulting",
+    title: "Loan Application",
     href: "/loan-application",
     description: "",
   },
