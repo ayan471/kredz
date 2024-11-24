@@ -31,7 +31,9 @@ const MobileNavigation = () => {
               <Link href="/loan-application">
                 <li>Loan Application</li>
               </Link>
-              <li>Credit Builder Plans</li>
+              <Link href="/credit-builder">
+                <li>Credit Builder Plans</li>
+              </Link>
               <li>
                 Channel Partner
                 <span className="text-xs border rounded-full px-2 py-1 ml-2">

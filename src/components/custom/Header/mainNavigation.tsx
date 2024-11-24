@@ -15,26 +15,35 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 
-const locations: { title: string; href: string; description: string }[] = [
+const locations: {
+  title: string;
+  href: string;
+  description: string;
+  comingSoon: string;
+}[] = [
   {
     title: "Loan Application",
     href: "/loan-application",
     description: "",
+    comingSoon: "no",
   },
   {
     title: "Credit Builder Plans",
-    href: "",
+    href: "/credit-builder",
     description: "",
+    comingSoon: "no",
   },
   {
     title: "Channel Partner",
     href: "",
     description: "",
+    comingSoon: "yes",
   },
   {
     title: "Loan Consultancy",
     href: "",
     description: "",
+    comingSoon: "yes",
   },
 ];
 
@@ -76,10 +85,15 @@ export default function NavigationMenuDemo() {
             <NavigationMenuContent>
               <ul className=" grid w-[400px] gap-3 p-4 md:w-[330px] md:grid-cols-1 lg:w-[330px] ">
                 {locations.map((location) => (
-                  <Link href={location.href}>
+                  <Link href={location.href} className="flex flex-row">
                     <ListItem key={location.title} title={location.title}>
                       {location.description}
                     </ListItem>
+                    {location.comingSoon == "yes" && (
+                      <span className="my-auto text-xs border rounded-full px-2 py-1">
+                        Coming Soon
+                      </span>
+                    )}
                   </Link>
                 ))}
               </ul>
