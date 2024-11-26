@@ -42,7 +42,8 @@ const LaStepThree = () => {
       toast({
         title: "Error",
         description:
-          result.error || "Failed to submit membership. Please try again.",
+          result.error ||
+          "Failed to submit  Loan membership. Please try again.",
         variant: "destructive",
       });
     }
