@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model CreditBuilderApplication {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String
+  fullName    String
+  phoneNo     String
+  aadharImg   String
+  aadharNo    String
+  panImg      String
+  panNo       String
+  creditScore String
+  currEmis    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CreditBuilderSubscription {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  fullName  String
+  phoneNo   String
+  plan      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

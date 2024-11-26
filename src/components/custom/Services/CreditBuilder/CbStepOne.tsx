@@ -1,60 +1,78 @@
 "use client";
 
 import React from "react";
-
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-
-import { useState } from "react";
-
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-
-import { cn } from "@/components/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+
+import { useUser } from "@clerk/nextjs";
+import { submitCreditBuilderApplication } from "@/actions/formActions";
 
 type FormValues = {
   fullName: string;
   phoneNo: string;
-  aadharImg: string;
+  aadharImg: FileList;
   aadharNo: string;
-  panImg: string;
+  panImg: FileList;
   panNo: string;
   creditScore: string;
   currEmis: string;
 };
 
-const CbStepOne = () => {
-  const { toast } = useToast();
+interface CbStepOneProps {
+  onComplete: () => void;
+}
 
+const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
+  const { toast } = useToast();
   const form = useForm<FormValues>();
   const { register, control, handleSubmit } = form;
-
-  /* Form Triggers on form Submit */
+  const { user } = useUser();
 
   const onSubmit = async (data: FormValues) => {
-    console.log("Form Submitted", data);
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to submit an application.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    toast({
-      title: "Message Sent!",
-      description:
-        "We've received your message. We'll reply via email in the next 24 hours.",
-    });
+    // Convert FileList to File objects
+    const aadharImgFile = data.aadharImg[0];
+    const panImgFile = data.panImg[0];
 
-    window.location.href = "/credit-builder/subscription";
+    // Create FormData object
+    const formData = new FormData();
+    formData.append("fullName", data.fullName);
+    formData.append("phoneNo", data.phoneNo);
+    formData.append("aadharImg", aadharImgFile);
+    formData.append("aadharNo", data.aadharNo);
+    formData.append("panImg", panImgFile);
+    formData.append("panNo", data.panNo);
+    formData.append("creditScore", data.creditScore);
+    formData.append("currEmis", data.currEmis);
+
+    const result = await submitCreditBuilderApplication(formData);
+    if (result.success) {
+      toast({
+        title: "Application Submitted!",
+        description: "We've received your credit builder application.",
+      });
+      onComplete(); // Call the onComplete function to move to the next step
+    } else {
+      toast({
+        title: "Submission Failed",
+        description:
+          "There was an error submitting your application. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

@@ -1,9 +1,18 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import InnerHeroOne from "@/components/custom/Global/InnerHeroOne";
 import DetailCard from "@/components/custom/Services/CreditBuilder/DetailCard";
 import CbStepOne from "@/components/custom/Services/CreditBuilder/CbStepOne";
+import CbStepTwo from "@/components/custom/Services/CreditBuilder/CbStepTwo";
 
 const CreditBuilder = () => {
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const handleStepOneComplete = () => {
+    setCurrentStep(2);
+  };
+
   return (
     <div>
       <InnerHeroOne
@@ -14,15 +23,19 @@ const CreditBuilder = () => {
       />
 
       <div className="flex flex-col justify-center xl:flex-row">
-        <div className="flex flex-1 mx-auto px-[20px]  justify-center w-full py-8 ">
+        <div className="flex flex-1 mx-auto px-[20px] justify-center w-full py-8 ">
           <DetailCard />
         </div>
 
-        <div className="flex  flex-1 mx-auto py-4 px-[20px] max-w-[620px] mt-8">
-          <CbStepOne />
+        <div className="flex flex-1 mx-auto py-4 px-[20px] max-w-[620px] mt-8">
+          {currentStep === 1 ? (
+            <CbStepOne onComplete={handleStepOneComplete} />
+          ) : (
+            <CbStepTwo />
+          )}
         </div>
 
-        <div className="flex flex-1 max-w-[620px] w-full  2xl:block"></div>
+        <div className="flex flex-1 max-w-[620px] w-full 2xl:block"></div>
       </div>
     </div>
   );

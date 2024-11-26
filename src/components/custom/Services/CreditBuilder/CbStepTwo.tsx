@@ -1,67 +1,56 @@
 "use client";
 
 import React from "react";
-
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-
-import { useState } from "react";
-
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-
-import { cn } from "@/components/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
+
+import { useUser } from "@clerk/nextjs";
+import { submitCreditBuilderSubscription } from "@/actions/formActions";
 
 type FormValues = {
   fullName: string;
   phoneNo: string;
-  amtRequired: string;
-  prpseOfLoan: string;
-  aadharImg: string;
-  aadharNo: string;
-  panImg: string;
-  panNo: string;
-  creditScore: string;
   empType: string;
-  EmpOthers: string;
-  monIncome: string;
-  currEmis: string;
-  selfieImg: string;
-  bankStatmntImg: string;
 };
 
-const LaStepOne = () => {
+const CbStepTwo: React.FC = () => {
   const { toast } = useToast();
-
+  const router = useRouter();
   const form = useForm<FormValues>();
   const { register, control, handleSubmit } = form;
-
-  /* Form Triggers on form Submit */
+  const { user } = useUser();
 
   const onSubmit = async (data: FormValues) => {
-    console.log("Form Submitted", data);
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to submit a subscription.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    toast({
-      title: "Message Sent!",
-      description:
-        "We've received your message. We'll reply via email in the next 24 hours.",
-    });
-
-    window.location.href = "/credit-builder/subscription/success";
+    const result = await submitCreditBuilderSubscription(data);
+    if (result.success) {
+      toast({
+        title: "Subscription Submitted!",
+        description: "We've received your credit builder subscription.",
+      });
+      router.push("/credit-builder/subscription/success");
+    } else {
+      toast({
+        title: "Submission Failed",
+        description:
+          "There was an error submitting your subscription. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -73,111 +62,106 @@ const LaStepOne = () => {
         </p>
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="fullName">Full Name</Label>
+            <Input type="text" id="fullName" {...register("fullName")} />
+          </div>
+
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="phoneNo">Phone No</Label>
+            <Input type="tel" id="phoneNo" {...register("phoneNo")} />
+          </div>
+
           <div className="grid w-full items-center gap-4">
             <Label htmlFor="fullName">Select A Plan</Label>
             <RadioGroup>
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="1 month: ₹189 + GST - Real Price: ₹300"
                   id="r1"
+                  {...register("empType")}
                 />
                 <Label htmlFor="r1">
                   1 month: ₹189 + GST - Real Price: ₹300
                 </Label>
               </div>
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="3 months : ₹299 + GST - Real Price: ₹900"
                   id="r2"
+                  {...register("empType")}
                 />
                 <Label htmlFor="r2">
                   3 months : ₹299 + GST - Real Price: ₹900
                 </Label>
               </div>
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="6 month: ₹526 + GST - Real Price: ₹1800"
                   id="r3"
+                  {...register("empType")}
                 />
                 <Label htmlFor="r3">
                   6 month: ₹526 + GST - Real Price: ₹1800
                 </Label>
               </div>
-
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="9 month: ₹779 + GST - Real Price: ₹2700"
                   id="r4"
+                  {...register("empType")}
                 />
                 <Label htmlFor="r4">
                   9 month: ₹779 + GST - Real Price: ₹2700
                 </Label>
               </div>
-
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="12 month: ₹1015 + GST - Real Price: ₹3600"
-                  id="r4"
+                  id="r5"
+                  {...register("empType")}
                 />
-                <Label htmlFor="r4">
+                <Label htmlFor="r5">
                   12 month: ₹1015 + GST - Real Price: ₹3600
                 </Label>
               </div>
-
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="15 month: ₹1265 + GST - Real Price: ₹4500"
-                  id="r5"
+                  id="r6"
+                  {...register("empType")}
                 />
-                <Label htmlFor="r5">
+                <Label htmlFor="r6">
                   15 month: ₹1265 + GST - Real Price: ₹4500
                 </Label>
               </div>
-
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="18 month: ₹1518 + GST - Real Price: ₹5400"
-                  id="r6"
+                  id="r7"
+                  {...register("empType")}
                 />
-                <Label htmlFor="r6">
+                <Label htmlFor="r7">
                   18 month: ₹1518 + GST - Real Price: ₹5400
                 </Label>
               </div>
-
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="21 month: ₹1768 + GST - Real Price: ₹6300"
-                  id="r7"
+                  id="r8"
+                  {...register("empType")}
                 />
-                <Label htmlFor="r7">
+                <Label htmlFor="r8">
                   21 month: ₹1768 + GST - Real Price: ₹6300
                 </Label>
               </div>
-
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="24 month: ₹2018 + GST - Real Price: ₹7200"
-                  id="r8"
+                  id="r9"
+                  {...register("empType")}
                 />
-                <Label htmlFor="r8">
+                <Label htmlFor="r9">
                   24 month: ₹2018 + GST - Real Price: ₹7200
                 </Label>
               </div>
@@ -195,4 +179,4 @@ const LaStepOne = () => {
   );
 };
 
-export default LaStepOne;
+export default CbStepTwo;
