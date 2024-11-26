@@ -1,30 +1,14 @@
 "use client";
 
 import React from "react";
-
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-
-import { useState } from "react";
-
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-
-import { cn } from "@/components/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+import { submitLoanMembership } from "@/actions/loanApplicationActions";
 
 type FormValues = {
   fullName: string;
@@ -32,27 +16,36 @@ type FormValues = {
   emailID: string;
   panNo: string;
   aadharNo: string;
-  emiTenure: string;
+  membershipPlan: string;
 };
 
 const LaStepThree = () => {
   const { toast } = useToast();
-
   const form = useForm<FormValues>();
   const { register, control, handleSubmit } = form;
 
-  /* Form Triggers on form Submit */
-
   const onSubmit = async (data: FormValues) => {
-    console.log("Form Submitted", data);
-
-    toast({
-      title: "Message Sent!",
-      description:
-        "We've received your message. We'll reply via email in the next 24 hours.",
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
     });
 
-    window.location.href = "/loan-application/success";
+    const result = await submitLoanMembership(formData);
+
+    if (result.success) {
+      toast({
+        title: "Membership Submitted!",
+        description: "Your loan membership has been processed.",
+      });
+      window.location.href = "/loan-application/success";
+    } else {
+      toast({
+        title: "Error",
+        description:
+          result.error || "Failed to submit membership. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -66,13 +59,7 @@ const LaStepThree = () => {
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="fullName">Full Name</Label>
-            <Input
-              type="text"
-              placeholder="Rajen Roy"
-              value="Rajen Roy"
-              id="fullName"
-              {...register("fullName")}
-            />
+            <Input type="text" id="fullName" {...register("fullName")} />
           </div>
 
           <div className="grid w-full items-center gap-1.5">
@@ -98,50 +85,43 @@ const LaStepThree = () => {
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-4">
-            <Label htmlFor="fullName">Available Membership Plan</Label>
+            <Label htmlFor="membershipPlan">Available Membership Plan</Label>
 
             <RadioGroup>
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("emiTenure")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="Bronze"
                   id="r1"
+                  {...register("membershipPlan")}
                   disabled
                 />
                 <Label htmlFor="r1">Bronze</Label>
               </div>
-
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("emiTenure")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="Silver"
                   id="r2"
+                  {...register("membershipPlan")}
                   disabled
                 />
                 <Label htmlFor="r2">Silver</Label>
               </div>
-
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("emiTenure")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="Gold"
                   id="r3"
+                  {...register("membershipPlan")}
                   disabled
                 />
                 <Label htmlFor="r3">Gold</Label>
               </div>
-
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("emiTenure")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="Platinum"
-                  id="r3"
+                  id="r4"
+                  {...register("membershipPlan")}
                 />
-                <Label htmlFor="r3">Platinum</Label>
+                <Label htmlFor="r4">Platinum</Label>
               </div>
             </RadioGroup>
           </div>

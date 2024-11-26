@@ -1,67 +1,65 @@
 "use client";
 
 import React from "react";
-
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-
-import { useState } from "react";
-
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-
-import { cn } from "@/components/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+import { submitLoanApplicationStep1 } from "@/actions/loanApplicationActions";
 
 type FormValues = {
   fullName: string;
   phoneNo: string;
   amtRequired: string;
   prpseOfLoan: string;
-  aadharImg: string;
+  aadharImg: FileList;
   aadharNo: string;
-  panImg: string;
+  panImg: FileList;
   panNo: string;
   creditScore: string;
   empType: string;
   EmpOthers: string;
   monIncome: string;
   currEmis: string;
-  selfieImg: string;
-  bankStatmntImg: string;
+  selfieImg: FileList;
+  bankStatmntImg: FileList;
 };
 
 const LaStepOne = () => {
   const { toast } = useToast();
-
   const form = useForm<FormValues>();
   const { register, control, handleSubmit } = form;
 
-  /* Form Triggers on form Submit */
-
   const onSubmit = async (data: FormValues) => {
-    console.log("Form Submitted", data);
-
-    toast({
-      title: "Message Sent!",
-      description:
-        "We've received your message. We'll reply via email in the next 24 hours.",
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value instanceof FileList) {
+        formData.append(key, value[0]);
+      } else {
+        formData.append(key, value);
+      }
     });
 
-    window.location.href = "/loan-application/eligible";
+    const result = await submitLoanApplicationStep1(formData);
+
+    if (result.success) {
+      toast({
+        title: "Application Submitted!",
+        description: "Your loan application has been received.",
+      });
+      window.location.href = "/loan-application/eligible";
+    } else {
+      toast({
+        title: "Error",
+        description:
+          result.error || "Failed to submit application. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -133,32 +131,29 @@ const LaStepOne = () => {
           </div>
 
           <div className="grid w-full items-center gap-4">
-            <Label htmlFor="fullName">Employment Type</Label>
+            <Label htmlFor="empType">Employment Type</Label>
             <RadioGroup>
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="Salaried"
                   id="r1"
+                  {...register("empType")}
                 />
                 <Label htmlFor="r1">Salaried</Label>
               </div>
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="Self Employed"
                   id="r2"
+                  {...register("empType")}
                 />
                 <Label htmlFor="r2">Self Employed</Label>
               </div>
-              <div className="travelTypeCstm flex items-center space-x-2">
-                <input
-                  {...register("empType")}
-                  type="radio"
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
                   value="Others"
                   id="r3"
+                  {...register("empType")}
                 />
                 <Label htmlFor="r3">Others(mention below)</Label>
               </div>

@@ -9,7 +9,7 @@ const LoanApplication = () => {
       <InnerHeroOne
         bgImgUrl="/global/banners/orange-gradient.jpg"
         title="Loan Application"
-        subtitle="Step 2"
+        subtitle="Step 3"
         ctaText="Apply"
       />
 

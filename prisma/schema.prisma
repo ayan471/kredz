@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -33,4 +30,58 @@ model CreditBuilderSubscription {
   plan      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model LoanApplication {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String
+  fullName       String
+  phoneNo        String
+  amtRequired    String
+  prpseOfLoan    String
+  aadharImg      String
+  aadharNo       String
+  panImg         String
+  panNo          String
+  creditScore    String
+  empType        String
+  EmpOthers      String?
+  monIncome      String
+  currEmis       String?
+  selfieImg      String
+  bankStatmntImg String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  eligibility    LoanEligibility?
+}
+
+model LoanEligibility {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String
+  application   LoanApplication @relation(fields: [applicationId], references: [id])
+  applicationId String          @unique @db.ObjectId
+  fullName      String
+  phoneNo       String
+  emailID       String
+  panNo         String
+  aadharNo      String
+  emiTenure     String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  membership    LoanMembership?
+}
+
+model LoanMembership {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String
+  eligibility    LoanEligibility @relation(fields: [eligibilityId], references: [id])
+  eligibilityId  String          @unique @db.ObjectId
+  fullName       String
+  phoneNo        String
+  emailID        String
+  panNo          String
+  aadharNo       String
+  membershipPlan String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
