@@ -21,11 +21,14 @@ export type LoanApplication = {
   userId: string;
   fullName: string;
   phoneNo: string;
+  panNo: string;
+  aadharNo: string;
   amtRequired: string;
   prpseOfLoan: string;
-  creditScore: string;
+  creditScore?: string;
   createdAt: Date;
-  status: LoanStatus;
+  updatedAt: Date;
+  status?: LoanStatus;
 };
 
 export const columns: ColumnDef<LoanApplication>[] = [
