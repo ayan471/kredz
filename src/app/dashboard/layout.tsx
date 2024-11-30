@@ -1,32 +1,20 @@
-import type { Metadata } from "next";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/appSidebar"
+import { Sidebar } from "./components/sidebar";
 
-
-export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Micro Credit Service",
-};
-
-export default function DashboardLayout() {
-    return (
-
-    <SidebarProvider>
-      <AppSidebar />
-
-
-
-      <section>
-
-
-      <SidebarTrigger />
-
-
-        {/* Include shared UI here e.g. a header or sidebar */}
-        <nav></nav>
-   
-  
-      </section>
-      </SidebarProvider>
-    )
-  }
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+      <Sidebar />
+      <div className="flex-1 overflow-hidden">
+        <main className="overflow-x-hidden overflow-y-auto bg-gray-100">
+          <div className="container mx-auto px-4 py-8 sm:px-6 md:px-8">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
