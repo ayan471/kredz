@@ -10,6 +10,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { submitLoanApplicationStep1 } from "@/actions/loanApplicationActions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type FormValues = {
   fullName: string;
@@ -32,7 +39,7 @@ type FormValues = {
 const LaStepOne = () => {
   const { toast } = useToast();
   const form = useForm<FormValues>();
-  const { register, control, handleSubmit } = form;
+  const { register, control, handleSubmit, setValue } = form;
 
   const onSubmit = async (data: FormValues) => {
     const formData = new FormData();
@@ -178,10 +185,18 @@ const LaStepOne = () => {
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="currEmis">Current EMIs</Label>
-            <Textarea id="currEmis" {...register("currEmis")} />
-            <p className="text-[12px]">
-              Separate by commas(in case of many EMIs)
-            </p>
+            <Select onValueChange={(value) => setValue("currEmis", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select number of EMIs" />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <SelectItem key={num} value={num.toString()}>
+                    {num}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
