@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import {
   getLoanApplicationData,
@@ -30,6 +29,7 @@ const LaStepThree = () => {
   const searchParams = useSearchParams();
   const form = useForm<FormValues>();
   const { register, control, handleSubmit, setValue } = form;
+  const [eligiblePlan, setEligiblePlan] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,6 +46,7 @@ const LaStepThree = () => {
           // Determine membership plan based on monthly income
           const monIncome = parseFloat(result.data.monIncome || "0");
           const membershipPlan = await determineMembershipPlan(monIncome);
+          setEligiblePlan(membershipPlan);
           setValue("membershipPlan", membershipPlan);
         }
       }
@@ -119,45 +120,13 @@ const LaStepThree = () => {
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-4">
-            <Label htmlFor="membershipPlan">Available Membership Plan</Label>
-
-            <RadioGroup>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="Bronze"
-                  id="r1"
-                  {...register("membershipPlan")}
-                  disabled
-                />
-                <Label htmlFor="r1">Bronze</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="Silver"
-                  id="r2"
-                  {...register("membershipPlan")}
-                  disabled
-                />
-                <Label htmlFor="r2">Silver</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="Gold"
-                  id="r3"
-                  {...register("membershipPlan")}
-                  disabled
-                />
-                <Label htmlFor="r3">Gold</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="Platinum"
-                  id="r4"
-                  {...register("membershipPlan")}
-                />
-                <Label htmlFor="r4">Platinum</Label>
-              </div>
-            </RadioGroup>
+            <Label htmlFor="membershipPlan">Eligible Membership Plan</Label>
+            <div className="text-lg font-semibold">{eligiblePlan}</div>
+            <Input
+              type="hidden"
+              id="membershipPlan"
+              {...register("membershipPlan")}
+            />
           </div>
         </div>
 

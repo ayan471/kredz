@@ -12,6 +12,9 @@ export async function saveLoanApplicationData(data: Record<string, string>) {
   }
 
   try {
+    const membershipPlan = await determineMembershipPlan(
+      parseFloat(data.monIncome)
+    );
     console.log("Saving loan application data:", data);
     const applicationData = await prisma.loanApplicationData.create({
       data: {
@@ -28,6 +31,7 @@ export async function saveLoanApplicationData(data: Record<string, string>) {
         monIncome: data.monIncome,
         currEmis: data.currEmis,
         step: 1,
+        membershipPlan,
       },
     });
     console.log("Loan application data saved:", applicationData);
@@ -155,6 +159,9 @@ export async function updateLoanApplicationData(
 }
 
 export async function determineMembershipPlan(salary: number): Promise<string> {
+  // Simulating an async operation
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
   if (salary <= 15000) return "Bronze";
   if (salary <= 25000) return "Silver";
   if (salary <= 35000) return "Gold";

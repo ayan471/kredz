@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
-import { submitLoanApplicationStep1 } from "@/actions/loanApplicationActions";
+import {
+  submitLoanApplicationStep1,
+  determineMembershipPlan,
+} from "@/actions/loanApplicationActions";
 import {
   Select,
   SelectContent,
@@ -40,7 +43,24 @@ const LaStepOne = () => {
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<FormValues>();
-  const { register, control, handleSubmit, setValue } = form;
+  const { register, control, handleSubmit, setValue, watch } = form;
+  const [membershipPlan, setMembershipPlan] = useState<string>("");
+
+  const monIncome = watch("monIncome");
+
+  useEffect(() => {
+    const updateMembershipPlan = async () => {
+      if (monIncome) {
+        const income = parseFloat(monIncome);
+        if (!isNaN(income)) {
+          const plan = await determineMembershipPlan(income);
+          setMembershipPlan(plan);
+        }
+      }
+    };
+
+    updateMembershipPlan();
+  }, [monIncome]);
 
   const onSubmit = async (data: FormValues) => {
     const formData = new FormData();
@@ -52,19 +72,26 @@ const LaStepOne = () => {
       }
     });
 
-    const result = await submitLoanApplicationStep1(formData);
+    formData.append("membershipPlan", membershipPlan);
 
-    if (result.success) {
-      toast({
-        title: "Application Submitted!",
-        description: "Your loan application has been received.",
-      });
-      router.push(`/loan-application/eligible?id=${result.id}`);
-    } else {
+    try {
+      const result = await submitLoanApplicationStep1(formData);
+
+      if (result.success) {
+        toast({
+          title: "Application Submitted!",
+          description: "Your loan application has been received.",
+        });
+        router.push(`/loan-application/eligible?id=${result.id}`);
+      } else {
+        throw new Error(result.error || "Failed to submit application");
+      }
+    } catch (error) {
+      console.error("Error submitting application:", error);
       toast({
         title: "Error",
         description:
-          result.error || "Failed to submit application. Please try again.",
+          error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
     }
@@ -97,7 +124,7 @@ const LaStepOne = () => {
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="prpseOfLoan">Purpose of Loan</Label>
-            <Input type="tel" id="prpseOfLoan" {...register("prpseOfLoan")} />
+            <Input type="text" id="prpseOfLoan" {...register("prpseOfLoan")} />
           </div>
         </div>
 
@@ -177,12 +204,18 @@ const LaStepOne = () => {
             <Label htmlFor="monIncome">Monthly Income(in ₹)</Label>
             <Input type="text" id="monIncome" {...register("monIncome")} />
           </div>
+
+          {membershipPlan && (
+            <div className="grid w-full items-center gap-1.5">
+              <Label>Eligible Membership Plan</Label>
+              <div className="font-semibold text-lg">{membershipPlan}</div>
+            </div>
+          )}
         </div>
 
         <p className="font-bold">
           Step 3: <span className="text-red-600">*</span>
         </p>
-
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="currEmis">Current EMIs</Label>
@@ -219,7 +252,6 @@ const LaStepOne = () => {
           Check Eligibility
         </Button>
       </form>
-
       <DevTool control={control} />
     </div>
   );
