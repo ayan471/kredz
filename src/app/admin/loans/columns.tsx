@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
+import { useRouter } from "next/navigation";
+import { updateLoanStatus } from "@/actions/loanApplicationActions";
+
 export type LoanStatus = "In Progress" | "Approved" | "Rejected";
 
 export type LoanApplication = {
@@ -25,10 +28,10 @@ export type LoanApplication = {
   aadharNo: string;
   amtRequired: string;
   prpseOfLoan: string;
-  creditScore?: string;
+  creditScore: string | null;
   createdAt: Date;
   updatedAt: Date;
-  status?: LoanStatus;
+  status: LoanStatus | null;
 };
 
 export const columns: ColumnDef<LoanApplication>[] = [
@@ -78,13 +81,26 @@ export const columns: ColumnDef<LoanApplication>[] = [
     accessorKey: "status",
     header: "Loan Status",
     cell: ({ row }) => {
-      const initialStatus = row.getValue("status") as LoanStatus;
-      const [status, setStatus] = useState<LoanStatus>(initialStatus);
+      const router = useRouter();
+      const loanApplication = row.original;
+      const [status, setStatus] = useState<LoanStatus>(
+        (loanApplication.status as LoanStatus) || "In Progress"
+      );
 
       const statusColors: Record<LoanStatus, string> = {
         "In Progress": "bg-yellow-200 text-yellow-800",
         Approved: "bg-green-200 text-green-800",
         Rejected: "bg-red-200 text-red-800",
+      };
+
+      const handleStatusChange = async (newStatus: LoanStatus) => {
+        const result = await updateLoanStatus(loanApplication.id, newStatus);
+        if (result.success) {
+          setStatus(newStatus);
+          router.refresh();
+        } else {
+          console.error("Failed to update status:", result.error);
+        }
       };
 
       return (
@@ -95,13 +111,13 @@ export const columns: ColumnDef<LoanApplication>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setStatus("In Progress")}>
+            <DropdownMenuItem onClick={() => handleStatusChange("In Progress")}>
               In Progress
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setStatus("Approved")}>
+            <DropdownMenuItem onClick={() => handleStatusChange("Approved")}>
               Approved
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setStatus("Rejected")}>
+            <DropdownMenuItem onClick={() => handleStatusChange("Rejected")}>
               Rejected
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -112,7 +128,17 @@ export const columns: ColumnDef<LoanApplication>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
+      const router = useRouter();
       const application = row.original;
+
+      const handleStatusChange = async (newStatus: LoanStatus) => {
+        const result = await updateLoanStatus(application.id, newStatus);
+        if (result.success) {
+          router.refresh();
+        } else {
+          console.error("Failed to update status:", result.error);
+        }
+      };
 
       return (
         <DropdownMenu>
@@ -131,8 +157,12 @@ export const columns: ColumnDef<LoanApplication>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem>Approve application</DropdownMenuItem>
-            <DropdownMenuItem>Reject application</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusChange("Approved")}>
+              Approve application
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusChange("Rejected")}>
+              Reject application
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

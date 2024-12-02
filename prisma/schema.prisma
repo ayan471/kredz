@@ -52,6 +52,7 @@ model LoanApplication {
   bankStatmntImg String
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  status         String?          @default("In Progress")
   eligibility    LoanEligibility?
 }
 

@@ -2,6 +2,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 
 const prisma = new PrismaClient();
 
@@ -220,5 +221,19 @@ export async function getLoanApplicationDashboardData(userId: string) {
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
     return { success: false, error: "Failed to fetch dashboard data" };
+  }
+}
+
+export async function updateLoanStatus(id: string, status: string) {
+  try {
+    await prisma.loanApplication.update({
+      where: { id },
+      data: { status },
+    });
+    revalidatePath("/admin/loans");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update loan status:", error);
+    return { success: false, error: "Failed to update loan status" };
   }
 }
