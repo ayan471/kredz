@@ -143,7 +143,7 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
                 <SelectValue placeholder="Select number of EMIs" />
               </SelectTrigger>
               <SelectContent>
-                {[1, 2, 3, 4, 5].map((num) => (
+                {[1, 2, 3, 4, "More than 4"].map((num) => (
                   <SelectItem key={num} value={num.toString()}>
                     {num}
                   </SelectItem>

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,26 +12,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-
-import { useRouter } from "next/navigation";
-import { updateLoanStatus } from "@/actions/loanApplicationActions";
-
-export type LoanStatus = "In Progress" | "Approved" | "Rejected";
 
 export type LoanApplication = {
   id: string;
   userId: string;
   fullName: string;
   phoneNo: string;
-  panNo: string;
-  aadharNo: string;
   amtRequired: string;
-  prpseOfLoan: string;
-  creditScore: string | null;
+  status: string;
   createdAt: Date;
-  updatedAt: Date;
-  status: LoanStatus | null;
 };
 
 export const columns: ColumnDef<LoanApplication>[] = [
@@ -52,93 +41,27 @@ export const columns: ColumnDef<LoanApplication>[] = [
   {
     accessorKey: "phoneNo",
     header: "Phone Number",
+    enableColumnFilter: true,
   },
   {
     accessorKey: "amtRequired",
     header: "Amount Required",
   },
   {
-    accessorKey: "prpseOfLoan",
-    header: "Purpose of Loan",
-  },
-  {
-    accessorKey: "creditScore",
-    header: "Credit Score",
+    accessorKey: "status",
+    header: "Status",
   },
   {
     accessorKey: "createdAt",
     header: "Application Date",
     cell: ({ row }) => {
-      const date = row.getValue("createdAt") as Date;
-      return date.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    },
-  },
-  {
-    accessorKey: "status",
-    header: "Loan Status",
-    cell: ({ row }) => {
-      const router = useRouter();
-      const loanApplication = row.original;
-      const [status, setStatus] = useState<LoanStatus>(
-        (loanApplication.status as LoanStatus) || "In Progress"
-      );
-
-      const statusColors: Record<LoanStatus, string> = {
-        "In Progress": "bg-yellow-200 text-yellow-800",
-        Approved: "bg-green-200 text-green-800",
-        Rejected: "bg-red-200 text-red-800",
-      };
-
-      const handleStatusChange = async (newStatus: LoanStatus) => {
-        const result = await updateLoanStatus(loanApplication.id, newStatus);
-        if (result.success) {
-          setStatus(newStatus);
-          router.refresh();
-        } else {
-          console.error("Failed to update status:", result.error);
-        }
-      };
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 px-2 py-1">
-              <Badge className={statusColors[status]}>{status}</Badge>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleStatusChange("In Progress")}>
-              In Progress
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange("Approved")}>
-              Approved
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange("Rejected")}>
-              Rejected
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      return new Date(row.getValue("createdAt")).toLocaleDateString();
     },
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const router = useRouter();
       const application = row.original;
-
-      const handleStatusChange = async (newStatus: LoanStatus) => {
-        const result = await updateLoanStatus(application.id, newStatus);
-        if (result.success) {
-          router.refresh();
-        } else {
-          console.error("Failed to update status:", result.error);
-        }
-      };
 
       return (
         <DropdownMenu>
@@ -156,13 +79,11 @@ export const columns: ColumnDef<LoanApplication>[] = [
               Copy application ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange("Approved")}>
-              Approve application
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/loans/${application.id}`}>View details</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange("Rejected")}>
-              Reject application
-            </DropdownMenuItem>
+            <DropdownMenuItem>Approve application</DropdownMenuItem>
+            <DropdownMenuItem>Reject application</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

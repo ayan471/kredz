@@ -73,7 +73,7 @@ const CbStepTwo: React.FC = () => {
           </div>
 
           <div className="grid w-full items-center gap-4">
-            <Label htmlFor="fullName">Select A Plan</Label>
+            <Label htmlFor="fullName">Select a Plan</Label>
             <RadioGroup>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
@@ -81,7 +81,7 @@ const CbStepTwo: React.FC = () => {
                   id="r1"
                   {...register("empType")}
                 />
-                <Label htmlFor="r1">1 month: ₹300</Label>
+                <Label htmlFor="r1">1 month: ₹300 including GST</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
@@ -89,7 +89,7 @@ const CbStepTwo: React.FC = () => {
                   id="r2"
                   {...register("empType")}
                 />
-                <Label htmlFor="r2">3 months : ₹900</Label>
+                <Label htmlFor="r2">3 months : ₹900 including GST</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
@@ -97,7 +97,7 @@ const CbStepTwo: React.FC = () => {
                   id="r3"
                   {...register("empType")}
                 />
-                <Label htmlFor="r3">6 month: ₹1800</Label>
+                <Label htmlFor="r3">6 month: ₹1800 including GST</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
@@ -105,7 +105,7 @@ const CbStepTwo: React.FC = () => {
                   id="r4"
                   {...register("empType")}
                 />
-                <Label htmlFor="r4">9 month: ₹2700</Label>
+                <Label htmlFor="r4">9 month: ₹2700 including GST</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
@@ -113,7 +113,7 @@ const CbStepTwo: React.FC = () => {
                   id="r5"
                   {...register("empType")}
                 />
-                <Label htmlFor="r5">12 month: ₹3600</Label>
+                <Label htmlFor="r5">12 month: ₹3600 including GST</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
@@ -121,7 +121,7 @@ const CbStepTwo: React.FC = () => {
                   id="r6"
                   {...register("empType")}
                 />
-                <Label htmlFor="r6">15 month: ₹4500</Label>
+                <Label htmlFor="r6">15 month: ₹4500 including GST</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
@@ -129,7 +129,7 @@ const CbStepTwo: React.FC = () => {
                   id="r7"
                   {...register("empType")}
                 />
-                <Label htmlFor="r7">18 month: ₹5400</Label>
+                <Label htmlFor="r7">18 month: ₹5400 including GST</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
@@ -137,7 +137,7 @@ const CbStepTwo: React.FC = () => {
                   id="r8"
                   {...register("empType")}
                 />
-                <Label htmlFor="r8">21 month: ₹6300</Label>
+                <Label htmlFor="r8">21 month: ₹6300 including GST</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
@@ -145,7 +145,7 @@ const CbStepTwo: React.FC = () => {
                   id="r9"
                   {...register("empType")}
                 />
-                <Label htmlFor="r9">24 month: ₹7200</Label>
+                <Label htmlFor="r9">24 month: ₹7200 including GST</Label>
               </div>
             </RadioGroup>
           </div>

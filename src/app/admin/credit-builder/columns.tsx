@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +40,7 @@ export const columns: ColumnDef<CreditBuilderApplication>[] = [
   {
     accessorKey: "phoneNo",
     header: "Phone Number",
+    enableColumnFilter: true,
   },
   {
     accessorKey: "creditScore",
@@ -72,7 +74,11 @@ export const columns: ColumnDef<CreditBuilderApplication>[] = [
               Copy application ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View details</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/credit-builder/${application.id}`}>
+                View details
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem>Approve application</DropdownMenuItem>
             <DropdownMenuItem>Reject application</DropdownMenuItem>
           </DropdownMenuContent>

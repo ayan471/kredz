@@ -204,13 +204,6 @@ const LaStepOne = () => {
             <Label htmlFor="monIncome">Monthly Income(in ₹)</Label>
             <Input type="text" id="monIncome" {...register("monIncome")} />
           </div>
-
-          {membershipPlan && (
-            <div className="grid w-full items-center gap-1.5">
-              <Label>Eligible Membership Plan</Label>
-              <div className="font-semibold text-lg">{membershipPlan}</div>
-            </div>
-          )}
         </div>
 
         <p className="font-bold">
@@ -224,7 +217,7 @@ const LaStepOne = () => {
                 <SelectValue placeholder="Select number of EMIs" />
               </SelectTrigger>
               <SelectContent>
-                {[1, 2, 3, 4, 5].map((num) => (
+                {[1, 2, 3, 4, "More than 4"].map((num) => (
                   <SelectItem key={num} value={num.toString()}>
                     {num}
                   </SelectItem>

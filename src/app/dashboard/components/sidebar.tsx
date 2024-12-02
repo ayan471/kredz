@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import {
   Home,
   CreditCard,
@@ -17,6 +18,7 @@ import {
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useUser();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -29,10 +31,14 @@ export function Sidebar() {
         <Menu />
       </button>
       <div
-        className={`flex flex-col w-64 bg-gray-800 text-white fixed inset-y-0 left-0 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition duration-200 ease-in-out z-10`}
+        className={`flex flex-col w-[340px] bg-gray-800 text-white fixed inset-y-0 left-0 transform ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } md:relative md:translate-x-0 transition duration-200 ease-in-out z-10`}
       >
         <div className="flex items-center justify-center h-20 shadow-md">
-          <h1 className="text-3xl font-bold">User Dashboard</h1>
+          <h1 className="text-3xl font-bold">
+            {user ? `${user.firstName}'s Dashboard` : "Dashboard"}
+          </h1>
         </div>
         <nav className="flex-1 overflow-y-auto">
           <ul className="flex flex-col py-4">
@@ -51,14 +57,16 @@ export function Sidebar() {
                 label: "My Subscription",
               },
               {
-                href: "/dashboard/credit-health",
+                href: "#",
                 icon: Activity,
                 label: "Credit Health Analysis",
+                comingSoon: true,
               },
               {
-                href: "/dashboard/channel-partner",
+                href: "#",
                 icon: Users,
                 label: "Channel Partner",
+                comingSoon: true,
               },
             ].map((item) => (
               <li key={item.href}>
@@ -71,6 +79,11 @@ export function Sidebar() {
                     <item.icon />
                   </span>
                   <span className="text-sm font-medium">{item.label}</span>
+                  {item.comingSoon && (
+                    <span className="ml-2 px-2 py-1 text-xs font-semibold text-gray-800 bg-yellow-400 rounded-full">
+                      Coming Soon
+                    </span>
+                  )}
                 </Link>
               </li>
             ))}

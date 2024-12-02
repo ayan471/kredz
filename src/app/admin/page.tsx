@@ -39,7 +39,7 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-6">
       <header className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Dashboard Overview</h1>
+        <h1 className="text-3xl font-bold">Admin Panel - Kredz</h1>
       </header>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

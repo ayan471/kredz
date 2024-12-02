@@ -20,21 +20,33 @@ const MainLoginSignupSection = async () => {
             plans.
           </p>
           <div className="flex items-center gap-4">
-            <Link href={"/sign-up"}>
-              <Button className="text-xl md:text-2xl max-w-min p-6 mx-auto md:mx-0">
-                Apply Now
-              </Button>
-            </Link>
-            <Link href={"/sign-up"}>
-              <Button className="text-xl md:text-2xl max-w-min p-6 mx-auto md:mx-0">
-                Loan Application
-              </Button>
-            </Link>
-            <Link href={"/sign-up"}>
-              <Button className="text-xl md:text-2xl max-w-min p-6 mx-auto md:mx-0">
-                Credit Builder
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <Link href={"/loan-application"}>
+                  <Button className="text-xl md:text-2xl max-w-min p-6 mx-auto md:mx-0">
+                    Loan Application
+                  </Button>
+                </Link>
+                <Link href={"/credit-builder"}>
+                  <Button className="text-xl md:text-2xl max-w-min p-6 mx-auto md:mx-0">
+                    Credit Builder
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href={"/sign-up"}>
+                  <Button className="text-xl md:text-2xl max-w-min p-6 mx-auto md:mx-0">
+                    Loan Application
+                  </Button>
+                </Link>
+                <Link href={"/sign-up"}>
+                  <Button className="text-xl md:text-2xl max-w-min p-6 mx-auto md:mx-0">
+                    Credit Builder
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
