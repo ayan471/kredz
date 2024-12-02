@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { submitLoanApplicationStep1 } from "@/actions/loanApplicationActions";
 import {
@@ -17,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 type FormValues = {
   fullName: string;
@@ -38,16 +38,17 @@ type FormValues = {
 
 const LaStepOne = () => {
   const { toast } = useToast();
+  const router = useRouter();
   const form = useForm<FormValues>();
   const { register, control, handleSubmit, setValue } = form;
 
   const onSubmit = async (data: FormValues) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      if (value instanceof FileList) {
+      if (value instanceof FileList && value.length > 0) {
         formData.append(key, value[0]);
       } else {
-        formData.append(key, value);
+        formData.append(key, value as string);
       }
     });
 
@@ -58,7 +59,7 @@ const LaStepOne = () => {
         title: "Application Submitted!",
         description: "Your loan application has been received.",
       });
-      window.location.href = "/loan-application/eligible";
+      router.push(`/loan-application/eligible?id=${result.id}`);
     } else {
       toast({
         title: "Error",

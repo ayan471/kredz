@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
-import { submitLoanEligibility } from "@/actions/loanApplicationActions";
+import {
+  getLoanApplicationData,
+  updateLoanApplicationData,
+} from "@/actions/loanApplicationActions";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type FormValues = {
   fullName: string;
@@ -21,23 +25,47 @@ type FormValues = {
 
 const LaStepTwo = () => {
   const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const form = useForm<FormValues>();
-  const { register, control, handleSubmit } = form;
+  const { register, control, handleSubmit, setValue } = form;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const id = searchParams.get("id");
+      if (id) {
+        const result = await getLoanApplicationData(id);
+        if (result.success && result.data) {
+          Object.entries(result.data).forEach(([key, value]) => {
+            if (key in form.getValues() && value !== null) {
+              setValue(key as keyof FormValues, value as string);
+            }
+          });
+        }
+      }
+    };
+    fetchData();
+  }, [searchParams, setValue, form]);
 
   const onSubmit = async (data: FormValues) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
+    const id = searchParams.get("id");
+    if (!id) {
+      toast({
+        title: "Error",
+        description: "Application ID not found",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const result = await submitLoanEligibility(formData);
+    const result = await updateLoanApplicationData(id, { ...data, step: 2 });
 
     if (result.success) {
       toast({
         title: "Eligibility Submitted!",
         description: "Your loan eligibility has been determined.",
       });
-      window.location.href = "/loan-application/membership";
+      router.push(`/loan-application/membership?id=${id}`);
     } else {
       toast({
         title: "Error",

@@ -100,3 +100,25 @@ model ChannelPartner {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
+
+model LoanApplicationData {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String
+  fullName       String?
+  phoneNo        String?
+  amtRequired    String?
+  prpseOfLoan    String?
+  aadharNo       String?
+  panNo          String?
+  creditScore    String?
+  empType        String?
+  EmpOthers      String?
+  monIncome      String?
+  currEmis       String?
+  emailID        String?
+  emiTenure      String?
+  membershipPlan String?
+  step           Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

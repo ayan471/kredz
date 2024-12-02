@@ -5,6 +5,39 @@ import { currentUser } from "@clerk/nextjs/server";
 
 const prisma = new PrismaClient();
 
+export async function saveLoanApplicationData(data: Record<string, string>) {
+  const user = await currentUser();
+  if (!user) {
+    return { success: false, error: "User not authenticated" };
+  }
+
+  try {
+    console.log("Saving loan application data:", data);
+    const applicationData = await prisma.loanApplicationData.create({
+      data: {
+        userId: user.id,
+        fullName: data.fullName,
+        phoneNo: data.phoneNo,
+        amtRequired: data.amtRequired,
+        prpseOfLoan: data.prpseOfLoan,
+        aadharNo: data.aadharNo,
+        panNo: data.panNo,
+        creditScore: data.creditScore,
+        empType: data.empType,
+        EmpOthers: data.EmpOthers,
+        monIncome: data.monIncome,
+        currEmis: data.currEmis,
+        step: 1,
+      },
+    });
+    console.log("Loan application data saved:", applicationData);
+    return { success: true, id: applicationData.id };
+  } catch (error) {
+    console.error("Error saving loan application data:", error);
+    return { success: false, error: "Failed to save application data" };
+  }
+}
+
 export async function submitLoanApplicationStep1(formData: FormData) {
   const user = await currentUser();
   if (!user) {
@@ -12,27 +45,43 @@ export async function submitLoanApplicationStep1(formData: FormData) {
   }
 
   try {
+    const data: Record<string, string> = {};
+    formData.forEach((value, key) => {
+      if (value instanceof File) {
+        data[key] = value.name;
+      } else {
+        data[key] = value as string;
+      }
+    });
+
+    console.log("Submitting loan application step 1:", data);
+    const applicationData = await saveLoanApplicationData(data);
+    if (!applicationData.success) {
+      throw new Error(applicationData.error);
+    }
+
     const application = await prisma.loanApplication.create({
       data: {
         userId: user.id,
-        fullName: formData.get("fullName") as string,
-        phoneNo: formData.get("phoneNo") as string,
-        amtRequired: formData.get("amtRequired") as string,
-        prpseOfLoan: formData.get("prpseOfLoan") as string,
-        aadharImg: (formData.get("aadharImg") as File).name,
-        aadharNo: formData.get("aadharNo") as string,
-        panImg: (formData.get("panImg") as File).name,
-        panNo: formData.get("panNo") as string,
-        creditScore: formData.get("creditScore") as string,
-        empType: formData.get("empType") as string,
-        EmpOthers: formData.get("EmpOthers") as string,
-        monIncome: formData.get("monIncome") as string,
-        currEmis: formData.get("currEmis") as string,
-        selfieImg: (formData.get("selfieImg") as File).name,
-        bankStatmntImg: (formData.get("bankStatmntImg") as File).name,
+        fullName: data.fullName,
+        phoneNo: data.phoneNo,
+        amtRequired: data.amtRequired,
+        prpseOfLoan: data.prpseOfLoan,
+        aadharImg: data.aadharImg,
+        aadharNo: data.aadharNo,
+        panImg: data.panImg,
+        panNo: data.panNo,
+        creditScore: data.creditScore,
+        empType: data.empType,
+        EmpOthers: data.EmpOthers,
+        monIncome: data.monIncome,
+        currEmis: data.currEmis,
+        selfieImg: data.selfieImg,
+        bankStatmntImg: data.bankStatmntImg,
       },
     });
-    return { success: true, data: application };
+    console.log("Loan application created:", application);
+    return { success: true, data: application, id: applicationData.id };
   } catch (error) {
     console.error("Error submitting loan application:", error);
     return { success: false, error: "Failed to submit application" };
@@ -72,6 +121,44 @@ export async function submitLoanEligibility(formData: FormData) {
     console.error("Error submitting loan eligibility:", error);
     return { success: false, error: "Failed to submit eligibility" };
   }
+}
+
+export async function getLoanApplicationData(id: string) {
+  try {
+    const data = await prisma.loanApplicationData.findUnique({
+      where: { id },
+    });
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching loan application data:", error);
+    return { success: false, error: "Failed to fetch application data" };
+  }
+}
+
+export async function updateLoanApplicationData(
+  id: string,
+  data: Record<string, any>
+) {
+  try {
+    const updatedData = await prisma.loanApplicationData.update({
+      where: { id },
+      data: {
+        ...data,
+        step: data.step || 1,
+      },
+    });
+    return { success: true, id: updatedData.id };
+  } catch (error) {
+    console.error("Error updating loan application data:", error);
+    return { success: false, error: "Failed to update application data" };
+  }
+}
+
+export async function determineMembershipPlan(salary: number): Promise<string> {
+  if (salary <= 15000) return "Bronze";
+  if (salary <= 25000) return "Silver";
+  if (salary <= 35000) return "Gold";
+  return "Platinum";
 }
 
 export async function submitLoanMembership(formData: FormData) {
