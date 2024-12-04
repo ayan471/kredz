@@ -2,7 +2,9 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { getUserSubscription } from "@/actions/formActions";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 function formatDate(date: Date | null) {
   if (!date) return "N/A";
@@ -11,6 +13,15 @@ function formatDate(date: Date | null) {
     month: "2-digit",
     year: "numeric",
   });
+}
+
+async function getUserSubscription(userId: string) {
+  const subscription = await prisma.creditBuilderSubscription.findFirst({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return subscription;
 }
 
 export default async function SubscriptionPage() {

@@ -5,6 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const prisma = new PrismaClient();
 
+function formatDate(date: Date | null) {
+  if (!date) return "N/A";
+  return date.toLocaleDateString();
+}
+
 async function getUserData(userId: string) {
   const loanApplication = await prisma.loanApplication.findFirst({
     where: {
@@ -67,7 +72,10 @@ export default async function DashboardPage() {
                 <p>Plan: {creditBuilderSubscription.plan}</p>
                 <p>
                   Subscribed on:{" "}
-                  {creditBuilderSubscription.createdAt.toLocaleDateString()}
+                  {formatDate(creditBuilderSubscription.createdAt)}
+                </p>
+                <p>
+                  Expires on: {formatDate(creditBuilderSubscription.expiryDate)}
                 </p>
               </div>
             ) : (
