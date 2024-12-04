@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { currentUser, auth } from "@clerk/nextjs/server";
 import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
+import { addMonths } from "date-fns";
 
 const prisma = new PrismaClient();
 
@@ -135,6 +136,36 @@ export async function getCreditBuilderData(userId: string) {
     return null;
   }
 }
+
+export async function getUserSubscription(userId: string) {
+  try {
+    const subscription = await prisma.creditBuilderSubscription.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (subscription && !subscription.expiryDate) {
+      // If expiryDate is null, calculate it based on the plan and createdAt date
+      const durationInMonths = parseInt(subscription.plan.split(" ")[0]);
+      subscription.expiryDate = addMonths(
+        subscription.createdAt,
+        durationInMonths
+      );
+
+      // Update the subscription in the database
+      await prisma.creditBuilderSubscription.update({
+        where: { id: subscription.id },
+        data: { expiryDate: subscription.expiryDate },
+      });
+    }
+
+    return subscription;
+  } catch (error) {
+    console.error("Error fetching user subscription:", error);
+    return null;
+  }
+}
+
 export async function submitCreditBuilderSubscription(data: {
   fullName: string;
   phoneNo: string;
@@ -147,10 +178,16 @@ export async function submitCreditBuilderSubscription(data: {
   }
 
   try {
+    const durationInMonths = parseInt(data.plan.split(" ")[0]);
+    const expiryDate = addMonths(new Date(), durationInMonths);
+
     await prisma.creditBuilderSubscription.create({
       data: {
         userId,
-        ...data,
+        fullName: data.fullName,
+        phoneNo: data.phoneNo,
+        plan: data.plan,
+        expiryDate,
       },
     });
 

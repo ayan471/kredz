@@ -25,13 +25,16 @@ model CreditBuilderApplication {
 }
 
 model CreditBuilderSubscription {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String
-  fullName  String
-  phoneNo   String
-  plan      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String
+  fullName   String
+  phoneNo    String
+  plan       String
+  createdAt  DateTime  @default(now())
+  expiryDate DateTime?
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
 }
 
 model CreditBuilderApplicationData {

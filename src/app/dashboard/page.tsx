@@ -7,15 +7,14 @@ const prisma = new PrismaClient();
 
 async function getUserData(userId: string) {
   const loanApplication = await prisma.loanApplication.findFirst({
-    where: { userId },
+    where: {
+      userId,
+      status: {
+        not: "Incomplete",
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
-
-  const creditBuilderApplication =
-    await prisma.creditBuilderApplication.findFirst({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    });
 
   const creditBuilderSubscription =
     await prisma.creditBuilderSubscription.findFirst({
@@ -25,7 +24,6 @@ async function getUserData(userId: string) {
 
   return {
     loanApplication,
-    creditBuilderApplication,
     creditBuilderSubscription,
   };
 }
@@ -36,11 +34,8 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const {
-    loanApplication,
-    creditBuilderApplication,
-    creditBuilderSubscription,
-  } = await getUserData(userId);
+  const { loanApplication, creditBuilderSubscription } =
+    await getUserData(userId);
 
   return (
     <div className="container mx-auto p-4">
@@ -57,7 +52,7 @@ export default async function DashboardPage() {
                 <p>Status: {loanApplication.status}</p>
               </div>
             ) : (
-              <p>No loan application found</p>
+              <p>No completed loan application found</p>
             )}
           </CardContent>
         </Card>

@@ -1,15 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
+import { getUserSubscription } from "@/actions/formActions";
 
-const prisma = new PrismaClient();
-
-async function getUserSubscription(userId: string) {
-  return await prisma.creditBuilderSubscription.findFirst({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
+function formatDate(date: Date | null) {
+  if (!date) return "N/A";
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   });
 }
 
@@ -36,7 +36,11 @@ export default async function SubscriptionPage() {
               </p>
               <p>
                 <strong>Start Date:</strong>{" "}
-                {subscription.createdAt.toLocaleDateString()}
+                {formatDate(subscription.createdAt)}
+              </p>
+              <p>
+                <strong>Expiry Date:</strong>{" "}
+                {formatDate(subscription.expiryDate)}
               </p>
               <Link
                 href="/access-content"
