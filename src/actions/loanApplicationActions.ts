@@ -124,7 +124,7 @@ export async function submitLoanApplicationStep1(formData: FormData) {
         currEmis: data.currEmis,
         selfieImgUrl: data.selfieImgUrl,
         bankStatmntImgUrl: data.bankStatmntImgUrl,
-        status: "Incomplete",
+        status: "In Progress", // Changed from "Incomplete" to "In Progress"
       },
     });
     console.log("Loan application created:", application);
@@ -277,5 +277,33 @@ export async function updateLoanStatus(id: string, status: string) {
   } catch (error) {
     console.error("Failed to update loan status:", error);
     return { success: false, error: "Failed to update loan status" };
+  }
+}
+
+export async function approveLoan(id: string) {
+  try {
+    await prisma.loanApplication.update({
+      where: { id },
+      data: { status: "Approved" },
+    });
+    revalidatePath("/admin/loans");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to approve loan:", error);
+    return { success: false, error: "Failed to approve loan" };
+  }
+}
+
+export async function rejectLoan(id: string) {
+  try {
+    await prisma.loanApplication.update({
+      where: { id },
+      data: { status: "Rejected" },
+    });
+    revalidatePath("/admin/loans");
+    return { success: false };
+  } catch (error) {
+    console.error("Failed to reject loan:", error);
+    return { success: false, error: "Failed to reject loan" };
   }
 }

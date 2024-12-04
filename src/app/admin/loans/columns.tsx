@@ -2,7 +2,12 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import {
+  ArrowUpDown,
+  MoreHorizontal,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -12,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { approveLoan, rejectLoan } from "@/actions/loanApplicationActions";
 
 export type LoanApplication = {
   id: string;
@@ -19,8 +25,8 @@ export type LoanApplication = {
   fullName: string;
   phoneNo: string;
   amtRequired: string;
-  status: string;
   createdAt: Date;
+  status: string | null;
 };
 
 export const columns: ColumnDef<LoanApplication>[] = [
@@ -41,7 +47,6 @@ export const columns: ColumnDef<LoanApplication>[] = [
   {
     accessorKey: "phoneNo",
     header: "Phone Number",
-    enableColumnFilter: true,
   },
   {
     accessorKey: "amtRequired",
@@ -50,6 +55,25 @@ export const columns: ColumnDef<LoanApplication>[] = [
   {
     accessorKey: "status",
     header: "Status",
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string | null;
+      if (!status) return "N/A";
+      return (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-semibold ${
+            status === "Incomplete"
+              ? "bg-gray-200 text-gray-800"
+              : status === "In Progress"
+                ? "bg-blue-200 text-blue-800"
+                : status === "Approved"
+                  ? "bg-green-200 text-green-800"
+                  : "bg-red-200 text-red-800"
+          }`}
+        >
+          {status}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "createdAt",
@@ -82,8 +106,14 @@ export const columns: ColumnDef<LoanApplication>[] = [
             <DropdownMenuItem asChild>
               <Link href={`/admin/loans/${application.id}`}>View details</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>Approve application</DropdownMenuItem>
-            <DropdownMenuItem>Reject application</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => approveLoan(application.id)}>
+              <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+              Approve application
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => rejectLoan(application.id)}>
+              <XCircle className="mr-2 h-4 w-4 text-red-600" />
+              Reject application
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

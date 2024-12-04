@@ -1,7 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Overview } from "./components/overview";
 import { RecentApplications } from "./components/recent-applications";
+
 import { PrismaClient } from "@prisma/client";
+import { ApprovedLoans } from "./loans/components/approved-loans";
+import { RejectedLoans } from "./loans/components/rejected-loans";
 
 const prisma = new PrismaClient();
 
@@ -18,11 +21,9 @@ async function getLoanApplicationCount() {
 }
 
 async function getApprovedLoansCount() {
-  return await prisma.loanEligibility.count({
+  return await prisma.loanApplication.count({
     where: {
-      membership: {
-        isNot: null,
-      },
+      status: "Approved",
     },
   });
 }
@@ -58,6 +59,42 @@ async function getMonthlyLoanData() {
   return formattedData;
 }
 
+async function getApprovedLoans() {
+  return await prisma.loanApplication.findMany({
+    where: {
+      status: "Approved",
+    },
+    select: {
+      id: true,
+      fullName: true,
+      amtRequired: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 5,
+  });
+}
+
+async function getRejectedLoans() {
+  return await prisma.loanApplication.findMany({
+    where: {
+      status: "Rejected",
+    },
+    select: {
+      id: true,
+      fullName: true,
+      amtRequired: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 5,
+  });
+}
+
 export default async function AdminDashboard() {
   const creditBuilderCount = await getCreditBuilderCount();
   const creditBuilderSubscriptionCount =
@@ -66,6 +103,8 @@ export default async function AdminDashboard() {
   const approvedLoansCount = await getApprovedLoansCount();
   const rejectedLoansCount = await getRejectedLoansCount();
   const monthlyLoanData = await getMonthlyLoanData();
+  const approvedLoans = await getApprovedLoans();
+  const rejectedLoans = await getRejectedLoans();
 
   return (
     <div className="space-y-6">
@@ -117,6 +156,10 @@ export default async function AdminDashboard() {
         </Card>
       </div>
       <Overview data={monthlyLoanData} />
+      <div className="grid gap-4 md:grid-cols-2">
+        <ApprovedLoans loans={approvedLoans} />
+        <RejectedLoans loans={rejectedLoans} />
+      </div>
       <RecentApplications />
     </div>
   );
