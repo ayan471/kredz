@@ -1,86 +1,86 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Overview } from "./components/overview";
-import { RecentApplications } from "./components/recent-applications";
-import { UserButton } from "@clerk/nextjs";
 import { PrismaClient } from "@prisma/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const prisma = new PrismaClient();
 
-async function getUserCreditBuilderCount(userId: string) {
-  return await prisma.creditBuilderApplication.count({
+async function getUserData(userId: string) {
+  const loanApplication = await prisma.loanApplication.findFirst({
     where: { userId },
+    orderBy: { createdAt: "desc" },
   });
+
+  const creditBuilderApplication =
+    await prisma.creditBuilderApplication.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+
+  const creditBuilderSubscription =
+    await prisma.creditBuilderSubscription.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+
+  return {
+    loanApplication,
+    creditBuilderApplication,
+    creditBuilderSubscription,
+  };
 }
 
-async function getUserLoanApplicationCount(userId: string) {
-  return await prisma.loanApplication.count({
-    where: { userId },
-  });
-}
-
-async function getUserApprovedLoansCount(userId: string) {
-  return await prisma.loanEligibility.count({
-    where: {
-      userId,
-      membership: {
-        isNot: null,
-      },
-    },
-  });
-}
-
-export default async function UserDashboard() {
+export default async function DashboardPage() {
   const { userId } = auth();
-
   if (!userId) {
     redirect("/sign-in");
   }
 
-  const creditBuilderCount = await getUserCreditBuilderCount(userId);
-  const loanApplicationCount = await getUserLoanApplicationCount(userId);
-  const approvedLoansCount = await getUserApprovedLoansCount(userId);
+  const {
+    loanApplication,
+    creditBuilderApplication,
+    creditBuilderSubscription,
+  } = await getUserData(userId);
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold mb-4 sm:mb-0">Dashboard</h1>
-      </header>
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Your Credit Builder Applications
-            </CardTitle>
+          <CardHeader>
+            <CardTitle>Loan Application</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{creditBuilderCount}</div>
+            {loanApplication ? (
+              <div>
+                <p>Amount: {loanApplication.amtRequired}</p>
+                <p>Status: {loanApplication.status}</p>
+              </div>
+            ) : (
+              <p>No loan application found</p>
+            )}
           </CardContent>
         </Card>
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Your Loan Applications
-            </CardTitle>
+          <CardHeader>
+            <CardTitle>Credit Builder Subscription</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loanApplicationCount}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Your Approved Loans
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{approvedLoansCount}</div>
+            {creditBuilderSubscription ? (
+              <div>
+                <p>Plan: {creditBuilderSubscription.plan}</p>
+                <p>
+                  Subscribed on:{" "}
+                  {creditBuilderSubscription.createdAt.toLocaleDateString()}
+                </p>
+              </div>
+            ) : (
+              <p>No active subscription found</p>
+            )}
           </CardContent>
         </Card>
       </div>
-      <Overview userId={userId} />
-      <RecentApplications userId={userId} />
     </div>
   );
 }

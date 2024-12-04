@@ -8,18 +8,20 @@ datasource db {
 }
 
 model CreditBuilderApplication {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String
-  fullName    String
-  phoneNo     String
-  aadharImg   String
-  aadharNo    String
-  panImg      String
-  panNo       String
-  creditScore String
-  currEmis    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String
+  fullName          String
+  phoneNo           String
+  aadharImgFrontUrl String?
+  aadharImgBackUrl  String?
+  aadharNo          String
+  panImgFrontUrl    String?
+  panImgBackUrl     String?
+  panNo             String
+  creditScore       String
+  currEmis          String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model CreditBuilderSubscription {
@@ -32,28 +34,46 @@ model CreditBuilderSubscription {
   updatedAt DateTime @updatedAt
 }
 
+model CreditBuilderApplicationData {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @unique
+  fullName    String?
+  phoneNo     String?
+  aadharImg   String?
+  aadharNo    String?
+  panImg      String?
+  panNo       String?
+  creditScore String?
+  currEmis    String?
+  step        Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model LoanApplication {
-  id             String           @id @default(auto()) @map("_id") @db.ObjectId
-  userId         String
-  fullName       String
-  phoneNo        String
-  amtRequired    String
-  prpseOfLoan    String
-  aadharImg      String
-  aadharNo       String
-  panImg         String
-  panNo          String
-  creditScore    String
-  empType        String
-  EmpOthers      String?
-  monIncome      String
-  currEmis       String?
-  selfieImg      String
-  bankStatmntImg String
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  status         String?          @default("In Progress")
-  eligibility    LoanEligibility?
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String
+  fullName          String
+  phoneNo           String
+  amtRequired       String
+  prpseOfLoan       String
+  aadharImgFrontUrl String?
+  aadharImgBackUrl  String?
+  aadharNo          String
+  panImgFrontUrl    String?
+  panImgBackUrl     String?
+  panNo             String
+  creditScore       String
+  empType           String
+  EmpOthers         String?
+  monIncome         String
+  currEmis          String?
+  selfieImgUrl      String?
+  bankStatmntImgUrl String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  status            String?          @default("In Progress")
+  eligibility       LoanEligibility?
 }
 
 model LoanEligibility {

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
@@ -9,22 +9,37 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-
 import { useUser } from "@clerk/nextjs";
-import { submitCreditBuilderSubscription } from "@/actions/formActions";
+import {
+  getCreditBuilderData,
+  submitCreditBuilderSubscription,
+} from "@/actions/formActions";
 
 type FormValues = {
   fullName: string;
   phoneNo: string;
-  empType: string;
+  plan: string;
 };
 
 const CbStepTwo: React.FC = () => {
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<FormValues>();
-  const { register, control, handleSubmit } = form;
+  const { register, control, handleSubmit, setValue } = form;
   const { user } = useUser();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user) {
+        const data = await getCreditBuilderData(user.id);
+        if (data) {
+          setValue("fullName", data.fullName || "");
+          setValue("phoneNo", data.phoneNo || "");
+        }
+      }
+    };
+    fetchData();
+  }, [user, setValue]);
 
   const onSubmit = async (data: FormValues) => {
     if (!user) {
@@ -73,13 +88,13 @@ const CbStepTwo: React.FC = () => {
           </div>
 
           <div className="grid w-full items-center gap-4">
-            <Label htmlFor="fullName">Select a Plan</Label>
+            <Label htmlFor="plan">Select a Plan</Label>
             <RadioGroup>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
                   value="1 month: ₹189 + GST - Real Price: ₹300"
                   id="r1"
-                  {...register("empType")}
+                  {...register("plan")}
                 />
                 <Label htmlFor="r1">1 month: ₹300 including GST</Label>
               </div>
@@ -87,7 +102,7 @@ const CbStepTwo: React.FC = () => {
                 <RadioGroupItem
                   value="3 months : ₹299 + GST - Real Price: ₹900"
                   id="r2"
-                  {...register("empType")}
+                  {...register("plan")}
                 />
                 <Label htmlFor="r2">3 months : ₹900 including GST</Label>
               </div>
@@ -95,7 +110,7 @@ const CbStepTwo: React.FC = () => {
                 <RadioGroupItem
                   value="6 month: ₹526 + GST - Real Price: ₹1800"
                   id="r3"
-                  {...register("empType")}
+                  {...register("plan")}
                 />
                 <Label htmlFor="r3">6 month: ₹1800 including GST</Label>
               </div>
@@ -103,7 +118,7 @@ const CbStepTwo: React.FC = () => {
                 <RadioGroupItem
                   value="9 month: ₹779 + GST - Real Price: ₹2700"
                   id="r4"
-                  {...register("empType")}
+                  {...register("plan")}
                 />
                 <Label htmlFor="r4">9 month: ₹2700 including GST</Label>
               </div>
@@ -111,7 +126,7 @@ const CbStepTwo: React.FC = () => {
                 <RadioGroupItem
                   value="12 month: ₹1015 + GST - Real Price: ₹3600"
                   id="r5"
-                  {...register("empType")}
+                  {...register("plan")}
                 />
                 <Label htmlFor="r5">12 month: ₹3600 including GST</Label>
               </div>
@@ -119,7 +134,7 @@ const CbStepTwo: React.FC = () => {
                 <RadioGroupItem
                   value="15 month: ₹1265 + GST - Real Price: ₹4500"
                   id="r6"
-                  {...register("empType")}
+                  {...register("plan")}
                 />
                 <Label htmlFor="r6">15 month: ₹4500 including GST</Label>
               </div>
@@ -127,7 +142,7 @@ const CbStepTwo: React.FC = () => {
                 <RadioGroupItem
                   value="18 month: ₹1518 + GST - Real Price: ₹5400"
                   id="r7"
-                  {...register("empType")}
+                  {...register("plan")}
                 />
                 <Label htmlFor="r7">18 month: ₹5400 including GST</Label>
               </div>
@@ -135,7 +150,7 @@ const CbStepTwo: React.FC = () => {
                 <RadioGroupItem
                   value="21 month: ₹1768 + GST - Real Price: ₹6300"
                   id="r8"
-                  {...register("empType")}
+                  {...register("plan")}
                 />
                 <Label htmlFor="r8">21 month: ₹6300 including GST</Label>
               </div>
@@ -143,7 +158,7 @@ const CbStepTwo: React.FC = () => {
                 <RadioGroupItem
                   value="24 month: ₹2018 + GST - Real Price: ₹7200"
                   id="r9"
-                  {...register("empType")}
+                  {...register("plan")}
                 />
                 <Label htmlFor="r9">24 month: ₹7200 including GST</Label>
               </div>

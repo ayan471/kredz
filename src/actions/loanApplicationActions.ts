@@ -3,9 +3,39 @@
 import { PrismaClient } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { v2 as cloudinary } from "cloudinary";
 
 const prisma = new PrismaClient();
 
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY, // Make sure this is set in your .env file
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export async function uploadToCloudinary(
+  file: File,
+  folder: string
+): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: folder },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary upload error:", error);
+          reject(error);
+        } else {
+          resolve(result!.secure_url);
+        }
+      }
+    );
+
+    uploadStream.end(buffer);
+  });
+}
 export async function saveLoanApplicationData(data: Record<string, string>) {
   const user = await currentUser();
   if (!user) {
@@ -51,13 +81,21 @@ export async function submitLoanApplicationStep1(formData: FormData) {
 
   try {
     const data: Record<string, string> = {};
-    formData.forEach((value, key) => {
+    const fileUploads: Promise<void>[] = [];
+
+    for (const [key, value] of formData.entries()) {
       if (value instanceof File) {
-        data[key] = value.name;
+        fileUploads.push(
+          uploadToCloudinary(value, "loan_applications").then((url) => {
+            data[`${key}Url`] = url;
+          })
+        );
       } else {
         data[key] = value as string;
       }
-    });
+    }
+
+    await Promise.all(fileUploads);
 
     console.log("Submitting loan application step 1:", data);
     const applicationData = await saveLoanApplicationData(data);
@@ -72,17 +110,19 @@ export async function submitLoanApplicationStep1(formData: FormData) {
         phoneNo: data.phoneNo,
         amtRequired: data.amtRequired,
         prpseOfLoan: data.prpseOfLoan,
-        aadharImg: data.aadharImg,
+        aadharImgFrontUrl: data.aadharImgFrontUrl,
+        aadharImgBackUrl: data.aadharImgBackUrl,
         aadharNo: data.aadharNo,
-        panImg: data.panImg,
+        panImgFrontUrl: data.panImgFrontUrl,
+        panImgBackUrl: data.panImgBackUrl,
         panNo: data.panNo,
         creditScore: data.creditScore,
         empType: data.empType,
         EmpOthers: data.EmpOthers,
         monIncome: data.monIncome,
         currEmis: data.currEmis,
-        selfieImg: data.selfieImg,
-        bankStatmntImg: data.bankStatmntImg,
+        selfieImgUrl: data.selfieImgUrl,
+        bankStatmntImgUrl: data.bankStatmntImgUrl,
       },
     });
     console.log("Loan application created:", application);

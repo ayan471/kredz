@@ -26,9 +26,11 @@ type FormValues = {
   phoneNo: string;
   amtRequired: string;
   prpseOfLoan: string;
-  aadharImg: FileList;
+  aadharImgFront: FileList;
+  aadharImgBack: FileList;
   aadharNo: string;
-  panImg: FileList;
+  panImgFront: FileList;
+  panImgBack: FileList;
   panNo: string;
   creditScore: string;
   empType: string;
@@ -45,6 +47,7 @@ const LaStepOne = () => {
   const form = useForm<FormValues>();
   const { register, control, handleSubmit, setValue, watch } = form;
   const [membershipPlan, setMembershipPlan] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const monIncome = watch("monIncome");
 
@@ -63,12 +66,14 @@ const LaStepOne = () => {
   }, [monIncome]);
 
   const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
     const formData = new FormData();
+
     Object.entries(data).forEach(([key, value]) => {
       if (value instanceof FileList && value.length > 0) {
         formData.append(key, value[0]);
-      } else {
-        formData.append(key, value as string);
+      } else if (typeof value === "string") {
+        formData.append(key, value);
       }
     });
 
@@ -94,6 +99,8 @@ const LaStepOne = () => {
           error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -130,11 +137,21 @@ const LaStepOne = () => {
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="aadharImg">Aadhar Card Upload</Label>
+            <Label htmlFor="aadharImgFront">Aadhar Card Front Upload</Label>
             <Input
-              id="aadharImg"
+              id="aadharImgFront"
               type="file"
-              {...register("aadharImg")}
+              {...register("aadharImgFront")}
+              className="w-full"
+            />
+          </div>
+
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="aadharImgBack">Aadhar Card Back Upload</Label>
+            <Input
+              id="aadharImgBack"
+              type="file"
+              {...register("aadharImgBack")}
               className="w-full"
             />
           </div>
@@ -145,8 +162,13 @@ const LaStepOne = () => {
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="panImg">PAN Card Upload</Label>
-            <Input id="panImg" type="file" {...register("panImg")} />
+            <Label htmlFor="panImgFront">PAN Card Front Upload</Label>
+            <Input id="panImgFront" type="file" {...register("panImgFront")} />
+          </div>
+
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="panImgBack">PAN Card Back Upload</Label>
+            <Input id="panImgBack" type="file" {...register("panImgBack")} />
           </div>
 
           <div className="grid w-full items-center gap-1.5">
@@ -241,8 +263,8 @@ const LaStepOne = () => {
           </div>
         </div>
 
-        <Button type="submit" className="mt-8 text-md">
-          Check Eligibility
+        <Button type="submit" className="mt-8 text-md" disabled={isSubmitting}>
+          {isSubmitting ? "Submitting..." : "Check Eligibility"}
         </Button>
       </form>
       <DevTool control={control} />

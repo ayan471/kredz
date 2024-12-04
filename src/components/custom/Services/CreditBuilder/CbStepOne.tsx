@@ -1,12 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Select,
@@ -16,14 +15,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUser } from "@clerk/nextjs";
-import { submitCreditBuilderApplication } from "@/actions/formActions";
+import { useRouter } from "next/navigation";
+import { saveCreditBuilderData } from "@/actions/formActions";
 
 type FormValues = {
   fullName: string;
   phoneNo: string;
-  aadharImg: FileList;
+  aadharImgFront: FileList;
+  aadharImgBack: FileList;
   aadharNo: string;
-  panImg: FileList;
+  panImgFront: FileList;
+  panImgBack: FileList;
   panNo: string;
   creditScore: string;
   currEmis: string;
@@ -35,9 +37,11 @@ interface CbStepOneProps {
 
 const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
   const { toast } = useToast();
+  const router = useRouter();
   const form = useForm<FormValues>();
   const { register, control, handleSubmit, setValue } = form;
   const { user } = useUser();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = async (data: FormValues) => {
     if (!user) {
@@ -49,35 +53,41 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
       return;
     }
 
-    // Convert FileList to File objects
-    const aadharImgFile = data.aadharImg[0];
-    const panImgFile = data.panImg[0];
+    setIsSubmitting(true);
 
     // Create FormData object
     const formData = new FormData();
     formData.append("fullName", data.fullName);
     formData.append("phoneNo", data.phoneNo);
-    formData.append("aadharImg", aadharImgFile);
+    formData.append("aadharImgFront", data.aadharImgFront[0]);
+    formData.append("aadharImgBack", data.aadharImgBack[0]);
     formData.append("aadharNo", data.aadharNo);
-    formData.append("panImg", panImgFile);
+    formData.append("panImgFront", data.panImgFront[0]);
+    formData.append("panImgBack", data.panImgBack[0]);
     formData.append("panNo", data.panNo);
     formData.append("creditScore", data.creditScore);
     formData.append("currEmis", data.currEmis);
 
-    const result = await submitCreditBuilderApplication(formData);
-    if (result.success) {
-      toast({
-        title: "Application Submitted!",
-        description: "We've received your credit builder application.",
-      });
-      onComplete(); // Call the onComplete function to move to the next step
-    } else {
+    try {
+      const result = await saveCreditBuilderData(formData);
+      if (result.success) {
+        toast({
+          title: "Data Saved!",
+          description: "Your credit builder application data has been saved.",
+        });
+        router.push("/credit-builder/subscription");
+      } else {
+        throw new Error(result.error || "Failed to save data");
+      }
+    } catch (error) {
+      console.error("Error submitting credit builder data:", error);
       toast({
         title: "Submission Failed",
-        description:
-          "There was an error submitting your application. Please try again.",
+        description: "There was an error saving your data. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -102,11 +112,21 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="aadharImg">Aadhar Card Upload</Label>
+            <Label htmlFor="aadharImgFront">Aadhar Card Front Upload</Label>
             <Input
-              id="aadharImg"
+              id="aadharImgFront"
               type="file"
-              {...register("aadharImg")}
+              {...register("aadharImgFront")}
+              className="w-full"
+            />
+          </div>
+
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="aadharImgBack">Aadhar Card Back Upload</Label>
+            <Input
+              id="aadharImgBack"
+              type="file"
+              {...register("aadharImgBack")}
               className="w-full"
             />
           </div>
@@ -117,8 +137,13 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="panImg">PAN Card Upload</Label>
-            <Input id="panImg" type="file" {...register("panImg")} />
+            <Label htmlFor="panImgFront">PAN Card Front Upload</Label>
+            <Input id="panImgFront" type="file" {...register("panImgFront")} />
+          </div>
+
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="panImgBack">PAN Card Back Upload</Label>
+            <Input id="panImgBack" type="file" {...register("panImgBack")} />
           </div>
 
           <div className="grid w-full items-center gap-1.5">
@@ -153,8 +178,8 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
           </div>
         </div>
 
-        <Button type="submit" className="mt-8 text-md">
-          Submit
+        <Button type="submit" className="mt-8 text-md" disabled={isSubmitting}>
+          {isSubmitting ? "Submitting..." : "Submit"}
         </Button>
       </form>
 

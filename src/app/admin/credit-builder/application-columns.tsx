@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CreditBuilderApplication } from "@prisma/client";
-import { formatCurrency } from "@/components/lib/utils";
 
 export const columns: ColumnDef<CreditBuilderApplication>[] = [
   {
@@ -43,7 +42,6 @@ export const columns: ColumnDef<CreditBuilderApplication>[] = [
         </Button>
       );
     },
-    enableColumnFilter: true,
   },
   {
     accessorKey: "creditScore",
@@ -71,10 +69,6 @@ export const columns: ColumnDef<CreditBuilderApplication>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
-    },
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("currEmis"));
-      return formatCurrency(amount);
     },
   },
   {

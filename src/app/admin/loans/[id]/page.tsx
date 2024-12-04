@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const prisma = new PrismaClient();
 
@@ -18,6 +20,39 @@ export default async function LoanApplicationDetailPage({
     notFound();
   }
 
+  const ImageWithDownload = ({
+    src,
+    alt,
+    filename,
+  }: {
+    src: string | null;
+    alt: string;
+    filename: string;
+  }) => {
+    if (!src) {
+      return <p>No image available</p>;
+    }
+
+    return (
+      <div className="mt-2">
+        <div className="relative w-full h-48">
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            style={{ objectFit: "contain" }}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
+        <Button asChild className="mt-2">
+          <a href={src} download={filename}>
+            Download {alt}
+          </a>
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-3xl font-bold mb-6">Loan Application Details</h1>
@@ -26,7 +61,7 @@ export default async function LoanApplicationDetailPage({
           <CardTitle>{application.fullName}&apos;s Loan Application</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <h3 className="font-semibold">User ID</h3>
               <p>{application.userId}</p>
@@ -80,42 +115,60 @@ export default async function LoanApplicationDetailPage({
               <p>{application.createdAt.toLocaleDateString()}</p>
             </div>
           </div>
-          <div>
-            <h3 className="font-semibold">Aadhar Image</h3>
-            <img
-              src={application.aadharImg}
-              alt="Aadhar"
-              className="mt-2 max-w-full h-auto"
-            />
-          </div>
-          <div>
-            <h3 className="font-semibold">PAN Image</h3>
-            <img
-              src={application.panImg}
-              alt="PAN"
-              className="mt-2 max-w-full h-auto"
-            />
-          </div>
-          <div>
-            <h3 className="font-semibold">Selfie Image</h3>
-            <img
-              src={application.selfieImg}
-              alt="Selfie"
-              className="mt-2 max-w-full h-auto"
-            />
-          </div>
-          <div>
-            <h3 className="font-semibold">Bank Statement Image</h3>
-            <img
-              src={application.bankStatmntImg}
-              alt="Bank Statement"
-              className="mt-2 max-w-full h-auto"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-semibold">Aadhar Image (Front)</h3>
+              <ImageWithDownload
+                src={application.aadharImgFrontUrl}
+                alt="Aadhar Front"
+                filename="aadhar_front.jpg"
+              />
+            </div>
+            <div>
+              <h3 className="font-semibold">Aadhar Image (Back)</h3>
+              <ImageWithDownload
+                src={application.aadharImgBackUrl}
+                alt="Aadhar Back"
+                filename="aadhar_back.jpg"
+              />
+            </div>
+            <div>
+              <h3 className="font-semibold">PAN Image (Front)</h3>
+              <ImageWithDownload
+                src={application.panImgFrontUrl}
+                alt="PAN Front"
+                filename="pan_front.jpg"
+              />
+            </div>
+            <div>
+              <h3 className="font-semibold">PAN Image (Back)</h3>
+              <ImageWithDownload
+                src={application.panImgBackUrl}
+                alt="PAN Back"
+                filename="pan_back.jpg"
+              />
+            </div>
+            <div>
+              <h3 className="font-semibold">Selfie Image</h3>
+              <ImageWithDownload
+                src={application.selfieImgUrl}
+                alt="Selfie"
+                filename="selfie.jpg"
+              />
+            </div>
+            <div>
+              <h3 className="font-semibold">Bank Statement Image</h3>
+              <ImageWithDownload
+                src={application.bankStatmntImgUrl}
+                alt="Bank Statement"
+                filename="bank_statement.jpg"
+              />
+            </div>
           </div>
           {application.eligibility && (
             <div>
               <h3 className="font-semibold text-lg mt-4">Loan Eligibility</h3>
-              <div className="grid grid-cols-2 gap-4 mt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <div>
                   <h4 className="font-semibold">Email ID</h4>
                   <p>{application.eligibility.emailID}</p>

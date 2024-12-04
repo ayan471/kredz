@@ -1,14 +1,16 @@
-import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const prisma = new PrismaClient();
+import { PrismaClient } from "@prisma/client";
+import { ImageWithDownload } from "@/components/ImageWithDownload";
 
 export default async function CreditBuilderDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
+  const prisma = new PrismaClient();
+
   const application = await prisma.creditBuilderApplication.findUnique({
     where: { id: params.id },
   });
@@ -26,7 +28,7 @@ export default async function CreditBuilderDetailPage({
         <CardHeader>
           <CardTitle>{application.fullName}&apos;s Application</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4">
+        <CardContent className="grid gap-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h3 className="font-semibold">User ID</h3>
@@ -61,21 +63,35 @@ export default async function CreditBuilderDetailPage({
               <p>{application.createdAt.toLocaleDateString()}</p>
             </div>
           </div>
-          <div>
-            <h3 className="font-semibold">Aadhar Image</h3>
-            <img
-              src={application.aadharImg}
-              alt="Aadhar"
-              className="mt-2 max-w-full h-auto"
-            />
-          </div>
-          <div>
-            <h3 className="font-semibold">PAN Image</h3>
-            <img
-              src={application.panImg}
-              alt="PAN"
-              className="mt-2 max-w-full h-auto"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            {application.aadharImgFrontUrl && (
+              <ImageWithDownload
+                src={application.aadharImgFrontUrl}
+                alt="Aadhar Front"
+                title="Aadhar Image (Front)"
+              />
+            )}
+            {application.aadharImgBackUrl && (
+              <ImageWithDownload
+                src={application.aadharImgBackUrl}
+                alt="Aadhar Back"
+                title="Aadhar Image (Back)"
+              />
+            )}
+            {application.panImgFrontUrl && (
+              <ImageWithDownload
+                src={application.panImgFrontUrl}
+                alt="PAN Front"
+                title="PAN Image (Front)"
+              />
+            )}
+            {application.panImgBackUrl && (
+              <ImageWithDownload
+                src={application.panImgBackUrl}
+                alt="PAN Back"
+                title="PAN Image (Back)"
+              />
+            )}
           </div>
         </CardContent>
       </Card>
