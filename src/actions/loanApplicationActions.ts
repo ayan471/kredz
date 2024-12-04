@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY, // Make sure this is set in your .env file
+  api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
@@ -36,6 +36,7 @@ export async function uploadToCloudinary(
     uploadStream.end(buffer);
   });
 }
+
 export async function saveLoanApplicationData(data: Record<string, string>) {
   const user = await currentUser();
   if (!user) {
@@ -123,6 +124,7 @@ export async function submitLoanApplicationStep1(formData: FormData) {
         currEmis: data.currEmis,
         selfieImgUrl: data.selfieImgUrl,
         bankStatmntImgUrl: data.bankStatmntImgUrl,
+        status: "Incomplete",
       },
     });
     console.log("Loan application created:", application);

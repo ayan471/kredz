@@ -1,6 +1,10 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import {
+  CreditBuilderApplication,
+  CreditBuilderSubscription,
+} from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -12,86 +16,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CreditBuilderApplication } from "@prisma/client";
 import { formatCurrency } from "@/components/lib/utils";
 
-export const columns: ColumnDef<CreditBuilderApplication>[] = [
+export const applicationColumns: ColumnDef<CreditBuilderApplication>[] = [
   {
     accessorKey: "fullName",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Full Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: "Full Name",
   },
   {
     accessorKey: "phoneNo",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Phone Number
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    enableColumnFilter: true,
+    header: "Phone Number",
   },
   {
     accessorKey: "creditScore",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Credit Score
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: "Credit Score",
   },
   {
     accessorKey: "currEmis",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Current EMIs
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("currEmis"));
-      return formatCurrency(amount);
-    },
+    header: "Current EMIs",
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Application Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: "Application Date",
     cell: ({ row }) => {
-      return new Date(row.getValue("createdAt")).toLocaleDateString();
+      const date = new Date(row.getValue("createdAt"));
+      return date.toLocaleDateString();
     },
   },
   {
@@ -116,7 +65,9 @@ export const columns: ColumnDef<CreditBuilderApplication>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href={`/admin/credit-builder/${application.id}`}>
+              <Link
+                href={`/admin/credit-builder/application/${application.id}`}
+              >
                 View details
               </Link>
             </DropdownMenuItem>
@@ -125,6 +76,29 @@ export const columns: ColumnDef<CreditBuilderApplication>[] = [
           </DropdownMenuContent>
         </DropdownMenu>
       );
+    },
+  },
+];
+
+export const subscriptionColumns: ColumnDef<CreditBuilderSubscription>[] = [
+  {
+    accessorKey: "fullName",
+    header: "Full Name",
+  },
+  {
+    accessorKey: "phoneNo",
+    header: "Phone Number",
+  },
+  {
+    accessorKey: "plan",
+    header: "Subscription Plan",
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Subscription Date",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("createdAt"));
+      return date.toLocaleDateString();
     },
   },
 ];

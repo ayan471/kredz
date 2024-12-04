@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { columns as applicationColumns } from "./application-columns";
+
 import { columns as subscriptionColumns } from "./subscription-columns";
 import { DataTable } from "../data-table";
 
@@ -29,7 +29,8 @@ export default async function CreditBuilderPage() {
     <div className="container mx-auto py-10">
       <h1 className="text-3xl font-bold mb-8">Credit Builder Dashboard</h1>
 
-      <DataTable columns={subscriptionColumns} data={subscriptions} />
+      <h2 className="text-2xl font-semibold mb-4 mt-8">Subscriptions</h2>
+      <DataTable columns={subscriptionColumns} data={applications} />
     </div>
   );
 }

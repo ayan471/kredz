@@ -1,19 +1,23 @@
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { PrismaClient } from "@prisma/client";
 import { ImageWithDownload } from "@/components/ImageWithDownload";
+
+const prisma = new PrismaClient();
 
 export default async function CreditBuilderDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const prisma = new PrismaClient();
-
-  const application = await prisma.creditBuilderApplication.findUnique({
-    where: { id: params.id },
-  });
+  let application;
+  try {
+    application = await prisma.creditBuilderApplication.findUnique({
+      where: { id: params.id },
+    });
+  } catch (error) {
+    console.error("Error fetching credit builder application:", error);
+  }
 
   if (!application) {
     notFound();

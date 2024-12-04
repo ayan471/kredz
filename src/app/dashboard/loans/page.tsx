@@ -7,7 +7,12 @@ const prisma = new PrismaClient();
 
 async function getUserLoans(userId: string) {
   return await prisma.loanApplication.findMany({
-    where: { userId },
+    where: {
+      userId,
+      status: {
+        not: "Incomplete",
+      },
+    },
     include: { eligibility: true },
   });
 }
@@ -23,27 +28,30 @@ export default async function LoansPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">My Loans</h1>
-      {loans.map((loan) => (
-        <Card key={loan.id}>
-          <CardHeader>
-            <CardTitle>Loan Application: {loan.prpseOfLoan}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>
-              <strong>Amount Required:</strong> {loan.amtRequired}
-            </p>
-            <p>
-              <strong>Status:</strong>{" "}
-              {loan.eligibility ? "Approved" : "Pending"}
-            </p>
-            {loan.eligibility && (
+      {loans.length > 0 ? (
+        loans.map((loan) => (
+          <Card key={loan.id}>
+            <CardHeader>
+              <CardTitle>Loan Application: {loan.prpseOfLoan}</CardTitle>
+            </CardHeader>
+            <CardContent>
               <p>
-                <strong>EMI Tenure:</strong> {loan.eligibility.emiTenure}
+                <strong>Amount Required:</strong> {loan.amtRequired}
               </p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+              <p>
+                <strong>Status:</strong> {loan.status}
+              </p>
+              {loan.eligibility && (
+                <p>
+                  <strong>EMI Tenure:</strong> {loan.eligibility.emiTenure}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ))
+      ) : (
+        <p>You have no completed loan applications.</p>
+      )}
     </div>
   );
 }
