@@ -7,6 +7,7 @@ import {
   MoreHorizontal,
   CheckCircle,
   XCircle,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -17,7 +18,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { approveLoan, rejectLoan } from "@/actions/loanApplicationActions";
+import {
+  approveLoan,
+  makeUserEligible,
+  rejectLoan,
+} from "@/actions/loanApplicationActions";
 
 export type LoanApplication = {
   id: string;
@@ -53,8 +58,8 @@ export const columns: ColumnDef<LoanApplication>[] = [
     header: "Amount Required",
   },
   {
-    accessorKey: "status",
     header: "Status",
+    accessorKey: "status",
     cell: ({ row }) => {
       const status = row.getValue("status") as string | null;
       if (!status) return "N/A";
@@ -67,7 +72,9 @@ export const columns: ColumnDef<LoanApplication>[] = [
                 ? "bg-blue-200 text-blue-800"
                 : status === "Approved"
                   ? "bg-green-200 text-green-800"
-                  : "bg-red-200 text-red-800"
+                  : status === "Eligible"
+                    ? "bg-yellow-200 text-yellow-800"
+                    : "bg-red-200 text-red-800"
           }`}
         >
           {status}
@@ -113,6 +120,10 @@ export const columns: ColumnDef<LoanApplication>[] = [
             <DropdownMenuItem onClick={() => rejectLoan(application.id)}>
               <XCircle className="mr-2 h-4 w-4 text-red-600" />
               Reject application
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => makeUserEligible(application.id)}>
+              <UserCheck className="mr-2 h-4 w-4 text-yellow-600" />
+              Make eligible
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

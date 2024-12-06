@@ -20,5 +20,5 @@ export interface LoanApplication {
   bankStatmntImgUrl?: string;
   createdAt: Date;
   updatedAt: Date;
-  status?: string;
+  status?: "In Progress" | "Approved" | "Rejected" | "Eligible";
 }

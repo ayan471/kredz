@@ -330,7 +330,7 @@ export async function checkExistingLoanApplication(): Promise<{
       where: {
         userId: user.id,
         status: {
-          in: ["In Progress", "Approved"],
+          in: ["In Progress", "Approved", "Eligible"],
         },
       },
       orderBy: { createdAt: "desc" },
@@ -349,5 +349,19 @@ export async function checkExistingLoanApplication(): Promise<{
       applicationData: null,
       error: "Failed to check existing application",
     };
+  }
+}
+
+export async function makeUserEligible(id: string) {
+  try {
+    await prisma.loanApplication.update({
+      where: { id },
+      data: { status: "Eligible" },
+    });
+    revalidatePath("/admin/loans");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to make user eligible:", error);
+    return { success: false, error: "Failed to make user eligible" };
   }
 }

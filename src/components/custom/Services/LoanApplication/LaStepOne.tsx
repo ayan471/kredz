@@ -90,7 +90,10 @@ const LaStepOne = () => {
   }, [monIncome]);
 
   const onSubmit = async (data: FormValues) => {
-    if (hasExistingApplication) {
+    if (
+      hasExistingApplication &&
+      existingApplicationData?.status !== "Eligible"
+    ) {
       toast({
         title: "Application Already Exists",
         description:
@@ -138,7 +141,11 @@ const LaStepOne = () => {
     }
   };
 
-  if (hasExistingApplication && existingApplicationData) {
+  if (
+    hasExistingApplication &&
+    existingApplicationData &&
+    existingApplicationData.status !== "Eligible"
+  ) {
     return (
       <div className="mx-auto w-full max-w-[520px]">
         <h2 className="text-2xl font-bold mb-4">Existing Loan Application</h2>
@@ -165,6 +172,18 @@ const LaStepOne = () => {
 
   return (
     <div className="mx-auto w-full max-w-[520px]">
+      {existingApplicationData?.status === "Eligible" && (
+        <div
+          className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6"
+          role="alert"
+        >
+          <p className="font-bold">Good news!</p>
+          <p>
+            You are eligible to apply for a new loan. Please fill out the form
+            below.
+          </p>
+        </div>
+      )}
       <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
         <p className="font-bold">
           Step 1:<span className="text-red-600">*</span>
