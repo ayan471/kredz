@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { v2 as cloudinary } from "cloudinary";
+import { LoanApplication } from "@/types";
 
 const prisma = new PrismaClient();
 
@@ -305,5 +306,48 @@ export async function rejectLoan(id: string) {
   } catch (error) {
     console.error("Failed to reject loan:", error);
     return { success: false, error: "Failed to reject loan" };
+  }
+}
+
+export async function checkExistingLoanApplication(): Promise<{
+  success: boolean;
+  hasExistingApplication: boolean;
+  applicationData: LoanApplication | null;
+  error?: string;
+}> {
+  const user = await currentUser();
+  if (!user) {
+    return {
+      success: false,
+      hasExistingApplication: false,
+      applicationData: null,
+      error: "User not authenticated",
+    };
+  }
+
+  try {
+    const existingApplication = await prisma.loanApplication.findFirst({
+      where: {
+        userId: user.id,
+        status: {
+          in: ["In Progress", "Approved"],
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return {
+      success: true,
+      hasExistingApplication: !!existingApplication,
+      applicationData: existingApplication as LoanApplication | null,
+    };
+  } catch (error) {
+    console.error("Error checking existing loan application:", error);
+    return {
+      success: false,
+      hasExistingApplication: false,
+      applicationData: null,
+      error: "Failed to check existing application",
+    };
   }
 }

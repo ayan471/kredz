@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import {
   submitLoanApplicationStep1,
   determineMembershipPlan,
+  checkExistingLoanApplication,
 } from "@/actions/loanApplicationActions";
 import {
   Select,
@@ -20,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
+import { LoanApplication } from "@/types";
 
 type FormValues = {
   fullName: string;
@@ -48,8 +50,30 @@ const LaStepOne = () => {
   const { register, control, handleSubmit, setValue, watch } = form;
   const [membershipPlan, setMembershipPlan] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasExistingApplication, setHasExistingApplication] = useState(false);
+  const [existingApplicationData, setExistingApplicationData] =
+    useState<LoanApplication | null>(null);
 
   const monIncome = watch("monIncome");
+
+  useEffect(() => {
+    const checkExistingApplication = async () => {
+      const result = await checkExistingLoanApplication();
+      if (result.success) {
+        setHasExistingApplication(result.hasExistingApplication);
+        setExistingApplicationData(result.applicationData);
+      } else {
+        toast({
+          title: "Error",
+          description:
+            "Failed to check existing applications. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    checkExistingApplication();
+  }, [toast]);
 
   useEffect(() => {
     const updateMembershipPlan = async () => {
@@ -66,6 +90,16 @@ const LaStepOne = () => {
   }, [monIncome]);
 
   const onSubmit = async (data: FormValues) => {
+    if (hasExistingApplication) {
+      toast({
+        title: "Application Already Exists",
+        description:
+          "You already have a loan application in progress. You cannot submit a new application at this time.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     const formData = new FormData();
 
@@ -104,6 +138,31 @@ const LaStepOne = () => {
     }
   };
 
+  if (hasExistingApplication && existingApplicationData) {
+    return (
+      <div className="mx-auto w-full max-w-[520px]">
+        <h2 className="text-2xl font-bold mb-4">Existing Loan Application</h2>
+        <p className="mb-4">
+          You already have a loan application in progress. You cannot submit a
+          new application at this time.
+        </p>
+        <div className="bg-gray-100 p-4 rounded-md">
+          <h3 className="font-semibold mb-2">Application Details:</h3>
+          <p>Status: {existingApplicationData.status || "In Progress"}</p>
+          <p>Amount Required: ₹{existingApplicationData.amtRequired}</p>
+          <p>Purpose: {existingApplicationData.prpseOfLoan}</p>
+          <p>
+            Submitted on:{" "}
+            {new Date(existingApplicationData.createdAt).toLocaleDateString()}
+          </p>
+        </div>
+        <Button className="mt-4" onClick={() => router.push("/dashboard")}>
+          Go to Dashboard
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-[520px]">
       <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
@@ -114,24 +173,39 @@ const LaStepOne = () => {
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="fullName">Full Name</Label>
-            <Input type="text" id="fullName" {...register("fullName")} />
+            <Input
+              type="text"
+              id="fullName"
+              {...register("fullName")}
+              required
+            />
           </div>
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="phoneNo">Phone No</Label>
-            <Input type="tel" id="phoneNo" {...register("phoneNo")} />
+            <Input type="tel" id="phoneNo" {...register("phoneNo")} required />
           </div>
         </div>
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="amtRequired">Loan Amount Required(in ₹)</Label>
-            <Input type="text" id="amtRequired" {...register("amtRequired")} />
+            <Input
+              type="text"
+              id="amtRequired"
+              {...register("amtRequired")}
+              required
+            />
           </div>
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="prpseOfLoan">Purpose of Loan</Label>
-            <Input type="text" id="prpseOfLoan" {...register("prpseOfLoan")} />
+            <Input
+              type="text"
+              id="prpseOfLoan"
+              {...register("prpseOfLoan")}
+              required
+            />
           </div>
         </div>
 
@@ -158,7 +232,12 @@ const LaStepOne = () => {
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="aadharNo">Aadhar Number</Label>
-            <Input type="text" id="aadharNo" {...register("aadharNo")} />
+            <Input
+              type="text"
+              id="aadharNo"
+              {...register("aadharNo")}
+              required
+            />
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -173,7 +252,7 @@ const LaStepOne = () => {
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="panNo">PAN Number</Label>
-            <Input type="text" id="panNo" {...register("panNo")} />
+            <Input type="text" id="panNo" {...register("panNo")} required />
           </div>
         </div>
 
@@ -184,7 +263,12 @@ const LaStepOne = () => {
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="creditScore">Credit Score</Label>
-            <Input type="text" id="creditScore" {...register("creditScore")} />
+            <Input
+              type="text"
+              id="creditScore"
+              {...register("creditScore")}
+              required
+            />
           </div>
 
           <div className="grid w-full items-center gap-4">
@@ -224,7 +308,12 @@ const LaStepOne = () => {
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="monIncome">Monthly Income(in ₹)</Label>
-            <Input type="text" id="monIncome" {...register("monIncome")} />
+            <Input
+              type="text"
+              id="monIncome"
+              {...register("monIncome")}
+              required
+            />
           </div>
         </div>
 
