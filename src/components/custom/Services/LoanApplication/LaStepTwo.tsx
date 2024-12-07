@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ const LaStepTwo = () => {
   const searchParams = useSearchParams();
   const form = useForm<FormValues>();
   const { register, control, handleSubmit, setValue } = form;
+  const [eligibleAmount, setEligibleAmount] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,11 +37,13 @@ const LaStepTwo = () => {
       if (id) {
         const result = await getLoanApplicationData(id);
         if (result.success && result.data) {
-          Object.entries(result.data).forEach(([key, value]) => {
+          const applicationData = result.data;
+          Object.entries(applicationData).forEach(([key, value]) => {
             if (key in form.getValues() && value !== null) {
               setValue(key as keyof FormValues, value as string);
             }
           });
+          setEligibleAmount(applicationData.eligibleAmount || null);
         }
       }
     };
@@ -79,10 +82,13 @@ const LaStepTwo = () => {
   return (
     <div className="mx-auto w-full max-w-[520px]">
       <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
-        <p className="text-xl mb-8">
-          Congrats! Your Pre-Approved UPTO 3X of monthly income Offer is
-          Successfully Confirmed. Process Credit Builder Loan Your Offer Now.
-        </p>
+        {eligibleAmount !== null && (
+          <p className="text-xl font-bold mb-4">
+            Congrats! Your Pre-Approved UPTO 3X of monthly income Offer is
+            Successfully Confirmed. Process Credit Builder Loan Your Offer Now.
+            Your eligible loan amount: ₹{eligibleAmount.toLocaleString()}
+          </p>
+        )}
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">

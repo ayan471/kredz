@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { v2 as cloudinary } from "cloudinary";
-import { LoanApplication } from "@/types";
+import { LoanApplication, LoanApplicationData } from "@/types";
 
 const prisma = new PrismaClient();
 
@@ -171,16 +171,56 @@ export async function submitLoanEligibility(formData: FormData) {
   }
 }
 
-export async function getLoanApplicationData(id: string) {
+export async function getLoanApplicationData(id: string): Promise<{
+  success: boolean;
+  data: LoanApplicationData | null;
+  error?: string;
+}> {
   try {
     const data = await prisma.loanApplicationData.findUnique({
       where: { id },
     });
-    return { success: true, data };
+
+    if (data) {
+      let eligibleAmount: number | null = null;
+      if (data.monIncome) {
+        eligibleAmount = await calculateEligibleAmount(
+          parseFloat(data.monIncome)
+        );
+      }
+
+      const loanApplicationData: LoanApplicationData = {
+        ...data,
+        eligibleAmount,
+      };
+
+      return { success: true, data: loanApplicationData };
+    }
+
+    return { success: true, data: null };
   } catch (error) {
     console.error("Error fetching loan application data:", error);
-    return { success: false, error: "Failed to fetch application data" };
+    return {
+      success: false,
+      data: null,
+      error: "Failed to fetch application data",
+    };
   }
+}
+
+async function calculateEligibleAmount(salary: number): Promise<number> {
+  if (salary <= 10000) return 37000;
+  if (salary <= 23000) return 53000;
+  if (salary <= 30000) return 67000;
+  if (salary <= 37000) return 83000;
+  if (salary <= 45000) return 108000;
+  if (salary <= 55000) return 131000;
+  if (salary <= 65000) return 178000;
+  if (salary <= 75000) return 216000;
+  if (salary <= 85000) return 256000;
+  if (salary <= 95000) return 308000;
+  if (salary <= 125000) return 376000;
+  return 487000;
 }
 
 export async function updateLoanApplicationData(

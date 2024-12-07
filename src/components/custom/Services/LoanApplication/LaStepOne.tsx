@@ -10,7 +10,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import {
   submitLoanApplicationStep1,
-  determineMembershipPlan,
   checkExistingLoanApplication,
 } from "@/actions/loanApplicationActions";
 import {
@@ -37,24 +36,40 @@ type FormValues = {
   creditScore: string;
   empType: string;
   EmpOthers: string;
+  monIncomeRange: string;
   monIncome: string;
   currEmis: string;
   selfieImg: FileList;
   bankStatmntImg: FileList;
 };
 
+const incomeRanges = [
+  { label: "0-10,000", value: "0-10000", eligibleAmount: 37000 },
+  { label: "10,001-23,000", value: "10001-23000", eligibleAmount: 53000 },
+  { label: "23,001-30,000", value: "23001-30000", eligibleAmount: 67000 },
+  { label: "30,001-37,000", value: "30001-37000", eligibleAmount: 83000 },
+  { label: "37,001-45,000", value: "37001-45000", eligibleAmount: 108000 },
+  { label: "45,001-55,000", value: "45001-55000", eligibleAmount: 131000 },
+  { label: "55,001-65,000", value: "55001-65000", eligibleAmount: 178000 },
+  { label: "65,001-75,000", value: "65001-75000", eligibleAmount: 216000 },
+  { label: "75,001-85,000", value: "75001-85000", eligibleAmount: 256000 },
+  { label: "85,001-95,000", value: "85001-95000", eligibleAmount: 308000 },
+  { label: "95,001-1,25,000", value: "95001-125000", eligibleAmount: 376000 },
+  { label: "More than 1,25,000", value: "125001+", eligibleAmount: 487000 },
+];
+
 const LaStepOne = () => {
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<FormValues>();
   const { register, control, handleSubmit, setValue, watch } = form;
-  const [membershipPlan, setMembershipPlan] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasExistingApplication, setHasExistingApplication] = useState(false);
   const [existingApplicationData, setExistingApplicationData] =
     useState<LoanApplication | null>(null);
 
-  const monIncome = watch("monIncome");
+  const monIncomeRange = watch("monIncomeRange");
+  const membershipPlan = "basic"; // Example membership plan
 
   useEffect(() => {
     const checkExistingApplication = async () => {
@@ -74,20 +89,6 @@ const LaStepOne = () => {
 
     checkExistingApplication();
   }, [toast]);
-
-  useEffect(() => {
-    const updateMembershipPlan = async () => {
-      if (monIncome) {
-        const income = parseFloat(monIncome);
-        if (!isNaN(income)) {
-          const plan = await determineMembershipPlan(income);
-          setMembershipPlan(plan);
-        }
-      }
-    };
-
-    updateMembershipPlan();
-  }, [monIncome]);
 
   const onSubmit = async (data: FormValues) => {
     if (
@@ -114,7 +115,18 @@ const LaStepOne = () => {
       }
     });
 
-    formData.append("membershipPlan", membershipPlan);
+    // Ensure monIncome is included
+    formData.append("monIncome", data.monIncome);
+
+    const selectedRange = incomeRanges.find(
+      (range) => range.value === data.monIncomeRange
+    );
+    if (selectedRange) {
+      formData.append(
+        "eligibleAmount",
+        selectedRange.eligibleAmount.toString()
+      );
+    }
 
     try {
       const result = await submitLoanApplicationStep1(formData);
@@ -325,6 +337,23 @@ const LaStepOne = () => {
             <Input type="text" id="EmpOthers" {...register("EmpOthers")} />
           </div>
 
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="monIncomeRange">Monthly Income Range</Label>
+            <Select
+              onValueChange={(value) => setValue("monIncomeRange", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select income range" />
+              </SelectTrigger>
+              <SelectContent>
+                {incomeRanges.map((range) => (
+                  <SelectItem key={range.value} value={range.value}>
+                    {range.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="monIncome">Monthly Income(in ₹)</Label>
             <Input
