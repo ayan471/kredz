@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { DownloadCSV } from "./download-csv";
 
 const prisma = new PrismaClient();
 
@@ -55,7 +56,10 @@ export default async function LoanApplicationDetailPage({
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Loan Application Details</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Loan Application Details</h1>
+        <DownloadCSV data={application} />
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>{application.fullName}&apos;s Loan Application</CardTitle>
