@@ -8,6 +8,19 @@ import { LoanApplication, LoanApplicationData } from "@/types";
 
 const prisma = new PrismaClient();
 
+type ApprovalDetails = {
+  loanAmount: string;
+  processingFees: string;
+  gst: string;
+  otherCharges: string;
+  rateOfInterest: string;
+  tenure: string;
+  netDisbursement: string;
+  disbursementAccount: string;
+  disbursementDate: string;
+  lender: string;
+  approvedAmount: string;
+};
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -250,6 +263,36 @@ export async function determineMembershipPlan(salary: number): Promise<string> {
   if (salary <= 25000) return "Silver";
   if (salary <= 35000) return "Gold";
   return "Platinum";
+}
+
+export async function approveLoanWithDetails(
+  applicationId: string,
+  details: ApprovalDetails
+) {
+  try {
+    const updatedApplication = await prisma.loanApplication.update({
+      where: { id: applicationId },
+      data: {
+        status: "Approved",
+        approvedAmount: parseFloat(details.approvedAmount),
+        loanAmount: parseFloat(details.loanAmount),
+        processingFees: parseFloat(details.processingFees),
+        gst: parseFloat(details.gst),
+        otherCharges: parseFloat(details.otherCharges),
+        rateOfInterest: parseFloat(details.rateOfInterest),
+        tenure: parseInt(details.tenure),
+        netDisbursement: parseFloat(details.netDisbursement),
+        disbursementAccount: details.disbursementAccount,
+        disbursementDate: new Date(details.disbursementDate),
+        lender: details.lender,
+      },
+    });
+
+    return { success: true, data: updatedApplication };
+  } catch (error) {
+    console.error("Error approving loan application:", error);
+    return { success: false, error: "Failed to approve loan application" };
+  }
 }
 
 export async function submitLoanMembership(formData: FormData) {

@@ -111,7 +111,7 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
         </div>
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
-          <div className="grid w-full max-w-sm items-center gap-1.5">
+          {/* <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="aadharImgFront">Aadhar Card Front Upload</Label>
             <Input
               id="aadharImgFront"
@@ -119,9 +119,9 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
               {...register("aadharImgFront")}
               className="w-full"
             />
-          </div>
+          </div> */}
 
-          <div className="grid w-full max-w-sm items-center gap-1.5">
+          {/* <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="aadharImgBack">Aadhar Card Back Upload</Label>
             <Input
               id="aadharImgBack"
@@ -129,22 +129,22 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
               {...register("aadharImgBack")}
               className="w-full"
             />
-          </div>
+          </div> */}
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="aadharNo">Aadhar Number</Label>
             <Input type="text" id="aadharNo" {...register("aadharNo")} />
           </div>
 
-          <div className="grid w-full max-w-sm items-center gap-1.5">
+          {/* <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="panImgFront">PAN Card Front Upload</Label>
             <Input id="panImgFront" type="file" {...register("panImgFront")} />
-          </div>
+          </div> */}
 
-          <div className="grid w-full max-w-sm items-center gap-1.5">
+          {/* <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="panImgBack">PAN Card Back Upload</Label>
             <Input id="panImgBack" type="file" {...register("panImgBack")} />
-          </div>
+          </div> */}
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="panNo">PAN Number</Label>

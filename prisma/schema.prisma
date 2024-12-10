@@ -54,46 +54,59 @@ model CreditBuilderApplicationData {
 }
 
 model LoanApplication {
-  id                String           @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String
-  fullName          String
-  phoneNo           String
-  amtRequired       String
-  prpseOfLoan       String
-  aadharImgFrontUrl String?
-  aadharImgBackUrl  String?
-  aadharNo          String
-  panImgFrontUrl    String?
-  panImgBackUrl     String?
-  panNo             String
-  creditScore       String
-  empType           String
-  EmpOthers         String?
-  monIncome         String
-  currEmis          String?
-  selfieImgUrl      String?
-  bankStatmntImgUrl String?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  status            String?          @default("In Progress")
-  eligibility       LoanEligibility?
-  loanEligibility   Float?
+  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String
+  fullName            String
+  phoneNo             String
+  amtRequired         String
+  prpseOfLoan         String
+  aadharImgFrontUrl   String?
+  aadharImgBackUrl    String?
+  aadharNo            String
+  panImgFrontUrl      String?
+  panImgBackUrl       String?
+  panNo               String
+  creditScore         String
+  empType             String
+  EmpOthers           String?
+  monIncome           String
+  currEmis            String?
+  selfieImgUrl        String?
+  bankStatmntImgUrl   String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  status              String?          @default("In Progress")
+  eligibility         LoanEligibility?
+  eligibleAmount      Float?
+  loanEligibility     Float?
+  loanAmount          Float?
+  approvedAmount      Float?
+  processingFees      Float?
+  gst                 Float?
+  otherCharges        Float?
+  rateOfInterest      Float?
+  tenure              Int?
+  netDisbursement     Float?
+  disbursementAccount String?
+  disbursementDate    DateTime?
+  lender              String?
 }
 
 model LoanEligibility {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String
-  application   LoanApplication @relation(fields: [applicationId], references: [id])
-  applicationId String          @unique @db.ObjectId
-  fullName      String
-  phoneNo       String
-  emailID       String
-  panNo         String
-  aadharNo      String
-  emiTenure     String
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  membership    LoanMembership?
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String
+  application     LoanApplication @relation(fields: [applicationId], references: [id])
+  applicationId   String          @unique @db.ObjectId
+  fullName        String
+  phoneNo         String
+  emailID         String
+  panNo           String
+  aadharNo        String
+  emiTenure       String
+  loanEligibility Float?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  membership      LoanMembership?
 }
 
 model LoanMembership {

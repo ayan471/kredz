@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,7 @@ import {
   makeUserEligible,
   rejectLoan,
 } from "@/actions/loanApplicationActions";
+import { ApprovalModal } from "./components/approval-modal";
 
 export type LoanApplication = {
   id: string;
@@ -30,6 +32,7 @@ export type LoanApplication = {
   fullName: string;
   phoneNo: string;
   amtRequired: string;
+  approvedAmount: number | null;
   createdAt: Date;
   status: string | null;
 };
@@ -55,7 +58,50 @@ export const columns: ColumnDef<LoanApplication>[] = [
   },
   {
     accessorKey: "amtRequired",
-    header: "Amount Required",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Amount Required
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const amount = parseFloat(row.getValue("amtRequired"));
+      const formatted = new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+      }).format(amount);
+
+      return <div className="font-medium">{formatted}</div>;
+    },
+  },
+  {
+    accessorKey: "approvedAmount",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Approved Amount
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const amount = row.getValue("approvedAmount") as number | null;
+      if (amount === null || amount === undefined) return "N/A";
+      const formatted = new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+      }).format(amount);
+
+      return <div className="font-medium">{formatted}</div>;
+    },
   },
   {
     header: "Status",
@@ -84,49 +130,75 @@ export const columns: ColumnDef<LoanApplication>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: "Application Date",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Application Date
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
-      return new Date(row.getValue("createdAt")).toLocaleDateString();
+      return new Date(row.getValue("createdAt")).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
     },
   },
   {
     id: "actions",
     cell: ({ row }) => {
       const application = row.original;
+      const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(application.id)}
-            >
-              Copy application ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href={`/admin/loans/${application.id}`}>View details</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => approveLoan(application.id)}>
-              <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-              Approve application
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => rejectLoan(application.id)}>
-              <XCircle className="mr-2 h-4 w-4 text-red-600" />
-              Reject application
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => makeUserEligible(application.id)}>
-              <UserCheck className="mr-2 h-4 w-4 text-yellow-600" />
-              Make eligible
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(application.id)}
+              >
+                Copy application ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={`/admin/loans/${application.id}`}>
+                  View details
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsApprovalModalOpen(true)}>
+                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                Approve application
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => rejectLoan(application.id)}>
+                <XCircle className="mr-2 h-4 w-4 text-red-600" />
+                Reject application
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => makeUserEligible(application.id)}
+              >
+                <UserCheck className="mr-2 h-4 w-4 text-yellow-600" />
+                Make eligible
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <ApprovalModal
+            isOpen={isApprovalModalOpen}
+            onClose={() => setIsApprovalModalOpen(false)}
+            applicationId={application.id}
+          />
+        </>
       );
     },
   },

@@ -15,6 +15,7 @@ async function getLoanApplications(): Promise<LoanApplication[]> {
       fullName: true,
       phoneNo: true,
       amtRequired: true,
+      approvedAmount: true,
       status: true,
       createdAt: true,
     },

@@ -77,15 +77,15 @@ const CbStepTwo: React.FC = () => {
         </p>
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
-          <div className="grid w-full items-center gap-1.5">
+          {/* <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="fullName">Full Name</Label>
             <Input type="text" id="fullName" {...register("fullName")} />
-          </div>
+          </div> */}
 
-          <div className="grid w-full items-center gap-1.5">
+          {/* <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="phoneNo">Phone No</Label>
             <Input type="tel" id="phoneNo" {...register("phoneNo")} />
-          </div>
+          </div> */}
 
           <div className="grid w-full items-center gap-4">
             <Label htmlFor="plan">Select a Plan</Label>
