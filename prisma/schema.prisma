@@ -90,6 +90,7 @@ model LoanApplication {
   disbursementAccount String?
   disbursementDate    DateTime?
   lender              String?
+  membershipPlan      String?
 }
 
 model LoanEligibility {

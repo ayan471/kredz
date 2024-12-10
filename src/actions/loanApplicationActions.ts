@@ -81,10 +81,29 @@ export async function saveLoanApplicationData(data: Record<string, string>) {
       },
     });
     console.log("Loan application data saved:", applicationData);
-    return { success: true, id: applicationData.id };
+    return { success: true, id: applicationData.id, membershipPlan };
   } catch (error) {
     console.error("Error saving loan application data:", error);
     return { success: false, error: "Failed to save application data" };
+  }
+}
+
+export async function getUserMembership(userId: string) {
+  console.log("Fetching membership for user:", userId);
+  try {
+    const loanApplication = await prisma.loanApplication.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    console.log("Fetched loan application:", loanApplication);
+
+    return loanApplication;
+  } catch (error) {
+    console.error("Error fetching loan application:", error);
+    return null;
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -138,7 +157,8 @@ export async function submitLoanApplicationStep1(formData: FormData) {
         currEmis: data.currEmis,
         selfieImgUrl: data.selfieImgUrl,
         bankStatmntImgUrl: data.bankStatmntImgUrl,
-        status: "In Progress", // Changed from "Incomplete" to "In Progress"
+        status: "In Progress",
+        membershipPlan: applicationData.membershipPlan, // Changed from "Incomplete" to "In Progress"
       },
     });
     console.log("Loan application created:", application);
