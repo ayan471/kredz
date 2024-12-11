@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
 import InnerHeroOne from "@/components/custom/Global/InnerHeroOne";
-import DetailCard from "@/components/custom/Services/CreditBuilder/DetailCard";
 import CbStepOne from "@/components/custom/Services/CreditBuilder/CbStepOne";
 import CbStepTwo from "@/components/custom/Services/CreditBuilder/CbStepTwo";
+import { useState } from "react";
 
 const CreditBuilder = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -24,11 +23,7 @@ const CreditBuilder = () => {
 
       <div className="flex flex-col justify-center items-center xl:flex-row">
         <div className="flex flex-1 mx-auto py-4 px-[20px] max-w-[620px] mt-8">
-          {currentStep === 1 ? (
-            <CbStepOne onComplete={handleStepOneComplete} />
-          ) : (
-            <CbStepTwo />
-          )}
+          {currentStep === 1 ? <CbStepOne /> : <CbStepTwo />}
         </div>
       </div>
     </div>
