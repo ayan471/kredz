@@ -1,7 +1,6 @@
-import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PrismaClient } from "@prisma/client";
-import { ImageWithDownload } from "@/components/ImageWithDownload";
+import { notFound } from "next/navigation";
 
 const prisma = new PrismaClient();
 
@@ -66,36 +65,6 @@ export default async function CreditBuilderDetailPage({
               <h3 className="font-semibold">Application Date</h3>
               <p>{application.createdAt.toLocaleDateString()}</p>
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {application.aadharImgFrontUrl && (
-              <ImageWithDownload
-                src={application.aadharImgFrontUrl}
-                alt="Aadhar Front"
-                title="Aadhar Image (Front)"
-              />
-            )}
-            {application.aadharImgBackUrl && (
-              <ImageWithDownload
-                src={application.aadharImgBackUrl}
-                alt="Aadhar Back"
-                title="Aadhar Image (Back)"
-              />
-            )}
-            {application.panImgFrontUrl && (
-              <ImageWithDownload
-                src={application.panImgFrontUrl}
-                alt="PAN Front"
-                title="PAN Image (Front)"
-              />
-            )}
-            {application.panImgBackUrl && (
-              <ImageWithDownload
-                src={application.panImgBackUrl}
-                alt="PAN Back"
-                title="PAN Image (Back)"
-              />
-            )}
           </div>
         </CardContent>
       </Card>
