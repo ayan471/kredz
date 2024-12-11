@@ -39,32 +39,13 @@ export async function submitCreditBuilderApplication(formData: FormData) {
 
   try {
     const data: Record<string, string> = {};
-    const fileUploads: Promise<void>[] = [];
-
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        fileUploads.push(
-          uploadToCloudinary(value, "credit_builder").then((url) => {
-            data[`${key}Url`] = url;
-          })
-        );
-      } else {
-        data[key] = value as string;
-      }
-    }
-
-    await Promise.all(fileUploads);
 
     const application = await prisma.creditBuilderApplication.create({
       data: {
         userId: user.id,
         fullName: data.fullName,
         phoneNo: data.phoneNo,
-        aadharImgFrontUrl: data.aadharImgFrontUrl,
-        aadharImgBackUrl: data.aadharImgBackUrl,
         aadharNo: data.aadharNo,
-        panImgFrontUrl: data.panImgFrontUrl,
-        panImgBackUrl: data.panImgBackUrl,
         panNo: data.panNo,
         creditScore: data.creditScore,
         currEmis: data.currEmis,
@@ -77,43 +58,26 @@ export async function submitCreditBuilderApplication(formData: FormData) {
   }
 }
 
-export async function saveCreditBuilderData(formData: FormData) {
+export async function saveCreditBuilderData(data: {
+  fullName: string;
+  phoneNo: string;
+  aadharNo: string;
+  panNo: string;
+  creditScore: string;
+  currEmis: string;
+}) {
   const user = await currentUser();
   if (!user) {
     return { success: false, error: "User not authenticated" };
   }
 
   try {
-    const data: Record<string, string> = {};
-    const fileUploads: Promise<void>[] = [];
-
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        fileUploads.push(
-          uploadToCloudinary(value, "credit_builder").then((url) => {
-            data[`${key}Url`] = url;
-          })
-        );
-      } else {
-        data[key] = value as string;
-      }
-    }
-
-    await Promise.all(fileUploads);
-
-    const creditBuilderData = await prisma.creditBuilderApplication.create({
-      data: {
+    const creditBuilderData = await prisma.creditBuilderApplicationData.upsert({
+      where: { userId: user.id },
+      update: data,
+      create: {
         userId: user.id,
-        fullName: data.fullName,
-        phoneNo: data.phoneNo,
-        aadharImgFrontUrl: data.aadharImgFrontUrl,
-        aadharImgBackUrl: data.aadharImgBackUrl,
-        aadharNo: data.aadharNo,
-        panImgFrontUrl: data.panImgFrontUrl,
-        panImgBackUrl: data.panImgBackUrl,
-        panNo: data.panNo,
-        creditScore: data.creditScore,
-        currEmis: data.currEmis,
+        ...data,
       },
     });
 
@@ -178,10 +142,15 @@ export async function submitCreditBuilderSubscription(data: {
   }
 
   try {
+    // Validate required fields
+    if (!data.fullName || !data.phoneNo || !data.plan) {
+      return { success: false, error: "All fields are required" };
+    }
+
     const durationInMonths = parseInt(data.plan.split(" ")[0]);
     const expiryDate = addMonths(new Date(), durationInMonths);
 
-    await prisma.creditBuilderSubscription.create({
+    const subscription = await prisma.creditBuilderSubscription.create({
       data: {
         userId,
         fullName: data.fullName,
@@ -191,7 +160,8 @@ export async function submitCreditBuilderSubscription(data: {
       },
     });
 
-    return { success: true };
+    revalidatePath("/credit-builder/subscription");
+    return { success: true, data: subscription };
   } catch (error) {
     console.error("Error submitting credit builder subscription:", error);
     return { success: false, error: "Failed to submit subscription" };

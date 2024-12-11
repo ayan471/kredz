@@ -21,21 +21,13 @@ import { saveCreditBuilderData } from "@/actions/formActions";
 type FormValues = {
   fullName: string;
   phoneNo: string;
-  aadharImgFront: FileList;
-  aadharImgBack: FileList;
   aadharNo: string;
-  panImgFront: FileList;
-  panImgBack: FileList;
   panNo: string;
   creditScore: string;
   currEmis: string;
 };
 
-interface CbStepOneProps {
-  onComplete: () => void;
-}
-
-const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
+const CbStepOne: React.FC = () => {
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<FormValues>();
@@ -55,21 +47,8 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
 
     setIsSubmitting(true);
 
-    // Create FormData object
-    const formData = new FormData();
-    formData.append("fullName", data.fullName);
-    formData.append("phoneNo", data.phoneNo);
-    formData.append("aadharImgFront", data.aadharImgFront[0]);
-    formData.append("aadharImgBack", data.aadharImgBack[0]);
-    formData.append("aadharNo", data.aadharNo);
-    formData.append("panImgFront", data.panImgFront[0]);
-    formData.append("panImgBack", data.panImgBack[0]);
-    formData.append("panNo", data.panNo);
-    formData.append("creditScore", data.creditScore);
-    formData.append("currEmis", data.currEmis);
-
     try {
-      const result = await saveCreditBuilderData(formData);
+      const result = await saveCreditBuilderData(data);
       if (result.success) {
         toast({
           title: "Data Saved!",
@@ -101,54 +80,40 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="fullName">Full Name</Label>
-            <Input type="text" id="fullName" {...register("fullName")} />
+            <Input
+              type="text"
+              id="fullName"
+              {...register("fullName", { required: true })}
+            />
           </div>
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="phoneNo">Phone No</Label>
-            <Input type="tel" id="phoneNo" {...register("phoneNo")} />
+            <Input
+              type="tel"
+              id="phoneNo"
+              {...register("phoneNo", { required: true })}
+            />
           </div>
         </div>
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
-          {/* <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="aadharImgFront">Aadhar Card Front Upload</Label>
-            <Input
-              id="aadharImgFront"
-              type="file"
-              {...register("aadharImgFront")}
-              className="w-full"
-            />
-          </div> */}
-
-          {/* <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="aadharImgBack">Aadhar Card Back Upload</Label>
-            <Input
-              id="aadharImgBack"
-              type="file"
-              {...register("aadharImgBack")}
-              className="w-full"
-            />
-          </div> */}
-
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="aadharNo">Aadhar Number</Label>
-            <Input type="text" id="aadharNo" {...register("aadharNo")} />
+            <Input
+              type="text"
+              id="aadharNo"
+              {...register("aadharNo", { required: true })}
+            />
           </div>
-
-          {/* <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="panImgFront">PAN Card Front Upload</Label>
-            <Input id="panImgFront" type="file" {...register("panImgFront")} />
-          </div> */}
-
-          {/* <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="panImgBack">PAN Card Back Upload</Label>
-            <Input id="panImgBack" type="file" {...register("panImgBack")} />
-          </div> */}
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="panNo">PAN Number</Label>
-            <Input type="text" id="panNo" {...register("panNo")} />
+            <Input
+              type="text"
+              id="panNo"
+              {...register("panNo", { required: true })}
+            />
           </div>
         </div>
 
@@ -159,7 +124,11 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="creditScore">Credit Score</Label>
-            <Input type="text" id="creditScore" {...register("creditScore")} />
+            <Input
+              type="text"
+              id="creditScore"
+              {...register("creditScore", { required: true })}
+            />
           </div>
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="currEmis">Current EMIs</Label>
@@ -179,7 +148,7 @@ const CbStepOne: React.FC<CbStepOneProps> = ({ onComplete }) => {
         </div>
 
         <Button type="submit" className="mt-8 text-md" disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Submit"}
+          {isSubmitting ? "Submitting..." : "Submit and Continue"}
         </Button>
       </form>
 

@@ -57,10 +57,9 @@ export function Sidebar() {
                 label: "My Subscription",
               },
               {
-                href: "#",
+                href: "/dashboard/credit-health",
                 icon: Activity,
                 label: "Credit Health Analysis",
-                comingSoon: true,
               },
               {
                 href: "#",

@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -24,22 +23,42 @@ type FormValues = {
 const CbStepTwo: React.FC = () => {
   const { toast } = useToast();
   const router = useRouter();
-  const form = useForm<FormValues>();
-  const { register, control, handleSubmit, setValue } = form;
+  const [isLoading, setIsLoading] = useState(true);
+  const form = useForm<FormValues>({
+    defaultValues: {
+      fullName: "",
+      phoneNo: "",
+      plan: "",
+    },
+  });
+  const { register, control, handleSubmit, setValue, watch } = form;
   const { user } = useUser();
+
+  const selectedPlan = watch("plan");
 
   useEffect(() => {
     const fetchData = async () => {
       if (user) {
-        const data = await getCreditBuilderData(user.id);
-        if (data) {
-          setValue("fullName", data.fullName || "");
-          setValue("phoneNo", data.phoneNo || "");
+        try {
+          const data = await getCreditBuilderData(user.id);
+          if (data) {
+            setValue("fullName", data.fullName || "");
+            setValue("phoneNo", data.phoneNo || "");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load user data. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
         }
       }
     };
     fetchData();
-  }, [user, setValue]);
+  }, [user, setValue, toast]);
 
   const onSubmit = async (data: FormValues) => {
     if (!user) {
@@ -51,22 +70,43 @@ const CbStepTwo: React.FC = () => {
       return;
     }
 
-    const result = await submitCreditBuilderSubscription(data);
-    if (result.success) {
+    if (!data.plan) {
       toast({
-        title: "Subscription Submitted!",
-        description: "We've received your credit builder subscription.",
+        title: "Plan Selection Required",
+        description: "Please select a subscription plan.",
+        variant: "destructive",
       });
-      router.push("/credit-builder/subscription/success");
-    } else {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await submitCreditBuilderSubscription(data);
+      if (result.success) {
+        toast({
+          title: "Subscription Submitted!",
+          description: "We've received your credit builder subscription.",
+        });
+        router.push("/credit-builder/subscription/success");
+      } else {
+        throw new Error(result.error || "Failed to submit subscription");
+      }
+    } catch (error) {
+      console.error("Error submitting subscription:", error);
       toast({
         title: "Submission Failed",
         description:
           "There was an error submitting your subscription. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="mx-auto w-full max-w-[520px]">
@@ -77,97 +117,65 @@ const CbStepTwo: React.FC = () => {
         </p>
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
-          {/* <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input type="text" id="fullName" {...register("fullName")} />
-          </div> */}
-
-          {/* <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="phoneNo">Phone No</Label>
-            <Input type="tel" id="phoneNo" {...register("phoneNo")} />
-          </div> */}
-
           <div className="grid w-full items-center gap-4">
             <Label htmlFor="plan">Select a Plan</Label>
-            <RadioGroup>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="1 month: ₹189 + GST - Real Price: ₹300"
-                  id="r1"
-                  {...register("plan")}
-                />
-                <Label htmlFor="r1">1 month: ₹300 including GST</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="3 months : ₹299 + GST - Real Price: ₹900"
-                  id="r2"
-                  {...register("plan")}
-                />
-                <Label htmlFor="r2">3 months : ₹900 including GST</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="6 month: ₹526 + GST - Real Price: ₹1800"
-                  id="r3"
-                  {...register("plan")}
-                />
-                <Label htmlFor="r3">6 month: ₹1800 including GST</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="9 month: ₹779 + GST - Real Price: ₹2700"
-                  id="r4"
-                  {...register("plan")}
-                />
-                <Label htmlFor="r4">9 month: ₹2700 including GST</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="12 month: ₹1015 + GST - Real Price: ₹3600"
-                  id="r5"
-                  {...register("plan")}
-                />
-                <Label htmlFor="r5">12 month: ₹3600 including GST</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="15 month: ₹1265 + GST - Real Price: ₹4500"
-                  id="r6"
-                  {...register("plan")}
-                />
-                <Label htmlFor="r6">15 month: ₹4500 including GST</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="18 month: ₹1518 + GST - Real Price: ₹5400"
-                  id="r7"
-                  {...register("plan")}
-                />
-                <Label htmlFor="r7">18 month: ₹5400 including GST</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="21 month: ₹1768 + GST - Real Price: ₹6300"
-                  id="r8"
-                  {...register("plan")}
-                />
-                <Label htmlFor="r8">21 month: ₹6300 including GST</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="24 month: ₹2018 + GST - Real Price: ₹7200"
-                  id="r9"
-                  {...register("plan")}
-                />
-                <Label htmlFor="r9">24 month: ₹7200 including GST</Label>
-              </div>
+            <RadioGroup
+              value={selectedPlan}
+              onValueChange={(value) => setValue("plan", value)}
+            >
+              {[
+                {
+                  value: "1 month: ₹300 including GST",
+                  label: "1 month: ₹300 including GST",
+                },
+                {
+                  value: "3 months: ₹900 including GST",
+                  label: "3 months : ₹900 including GST",
+                },
+                {
+                  value: "6 month: ₹1800 including GST",
+                  label: "6 month: ₹1800 including GST",
+                },
+                {
+                  value: "9 month: ₹2700 including GST",
+                  label: "9 month: ₹2700 including GST",
+                },
+                {
+                  value: "12 month: ₹3600 including GST",
+                  label: "12 month: ₹3600 including GST",
+                },
+                {
+                  value: "15 month: ₹4500 including GST",
+                  label: "15 month: ₹4500 including GST",
+                },
+                {
+                  value: "18 month: ₹5400 including GST",
+                  label: "18 month: ₹5400 including GST",
+                },
+                {
+                  value: "21 month: ₹6300 including GST",
+                  label: "21 month: ₹6300 including GST",
+                },
+                {
+                  value: "24 month: ₹7200 including GST",
+                  label: "24 month: ₹7200 including GST",
+                },
+              ].map((plan, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value={plan.value}
+                    id={`r${index + 1}`}
+                    {...register("plan")}
+                  />
+                  <Label htmlFor={`r${index + 1}`}>{plan.label}</Label>
+                </div>
+              ))}
             </RadioGroup>
           </div>
         </div>
 
-        <Button type="submit" className="mt-8 text-md">
-          Make Payment
+        <Button type="submit" className="mt-8 text-md" disabled={isLoading}>
+          {isLoading ? "Processing..." : "Make Payment"}
         </Button>
       </form>
 
