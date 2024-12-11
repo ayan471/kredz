@@ -89,6 +89,23 @@ export async function saveCreditBuilderData(data: {
   }
 }
 
+export async function getCreditScoreData(userId: string) {
+  try {
+    const creditData = await prisma.creditBuilderApplicationData.findUnique({
+      where: { userId },
+    });
+
+    if (!creditData) {
+      throw new Error("Credit score data not found");
+    }
+
+    return creditData;
+  } catch (error) {
+    console.error("Failed to fetch credit score data:", error);
+    throw error;
+  }
+}
+
 export async function getCreditBuilderData(userId: string) {
   try {
     const data = await prisma.creditBuilderApplicationData.findUnique({
