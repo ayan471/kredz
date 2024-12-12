@@ -118,6 +118,51 @@ export async function getCreditBuilderData(userId: string) {
   }
 }
 
+export async function updateCreditHealth(
+  subscriptionId: string,
+  creditFactors: {
+    creditUtilizationRatio: number;
+    creditBehavior: number;
+    paymentHistory: number;
+    ageOfCredit: number;
+  }
+) {
+  try {
+    const subscription = await prisma.creditBuilderSubscription.findUnique({
+      where: { id: subscriptionId },
+    });
+
+    if (!subscription) {
+      throw new Error("Subscription not found");
+    }
+
+    const updatedCards = [
+      {
+        name: "Credit Utilization Ratio",
+        score: creditFactors.creditUtilizationRatio,
+      },
+      { name: "Credit Behavior", score: creditFactors.creditBehavior },
+      { name: "Payment History", score: creditFactors.paymentHistory },
+      { name: "Age of Credit", score: creditFactors.ageOfCredit },
+    ];
+
+    const updatedSubscription = await prisma.creditBuilderSubscription.update({
+      where: { id: subscriptionId },
+      data: {
+        creditHealth: JSON.stringify(updatedCards),
+      },
+    });
+
+    revalidatePath("/admin/credit-builder");
+    revalidatePath("/dashboard/credit-health");
+
+    return { success: true, data: updatedCards };
+  } catch (error) {
+    console.error("Error updating credit health:", error);
+    return { success: false, error: "Failed to update credit health" };
+  }
+}
+
 export async function getUserSubscription(userId: string) {
   try {
     const subscription = await prisma.creditBuilderSubscription.findFirst({

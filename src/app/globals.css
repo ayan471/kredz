@@ -84,17 +84,23 @@
   }
 }
 
-
+@layer utilities {
+  .bg-gradient-text {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
 
 .postContParaFixCstm p {
-  margin-bottom:20px;
-  font-size:16px; 
+  margin-bottom: 20px;
+  font-size: 16px;
 }
-.postContParaFixCstm ul{
+.postContParaFixCstm ul {
   margin-bottom: 16px;
 }
 
-.postContParaFixCstm img{
+.postContParaFixCstm img {
   margin-bottom: 26px;
 }
 
@@ -104,60 +110,51 @@
 }
 
 .postContParaFixCstm h2 {
-  font-size:24px;
-  font-weight:bold;
-  margin-bottom:22px; 
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 22px;
 }
 
 .postContParaFixCstm a {
-  color:#246BEB;
-  font-weight:bold;
+  color: #246beb;
+  font-weight: bold;
   text-decoration: underline;
 }
 
-
 .aCstmClass .overflow-hidden {
-  height:100%; 
+  height: 100%;
 }
 
 .aCstmClass .PrevNextBtnCstmCls button {
-  background:none !important; 
-  width: 50px !important; 
-  height:50px !important; 
+  background: none !important;
+  width: 50px !important;
+  height: 50px !important;
 }
-
 
 .aCstmClass .PrevNextBtnCstmCls button:hover {
-  background:white !important; 
+  background: white !important;
 }
-.aCstmClass .PrevNextBtnCstmCls button svg{
-  width: 30px !important; 
-  height:30px !important; 
+.aCstmClass .PrevNextBtnCstmCls button svg {
+  width: 30px !important;
+  height: 30px !important;
 }
 
-@media(max-width:620px) {
-  .slick-prev
-  {
-      top: 90% !important;
-      left: 12% !important;
-  }  
-  .slick-next
-  {
-      top: 90% !important;
-      right: 12% !important;
+@media (max-width: 620px) {
+  .slick-prev {
+    top: 90% !important;
+    left: 12% !important;
+  }
+  .slick-next {
+    top: 90% !important;
+    right: 12% !important;
   }
 }
 
-
-
-@media(max-width:767px) {
-  .cstmClsTestiminial button
-  {
-      display: none !important;
-  }  
+@media (max-width: 767px) {
+  .cstmClsTestiminial button {
+    display: none !important;
+  }
 }
- 
-
 
 /* Footer CSS */
 
@@ -166,16 +163,12 @@
 }
 
 .testContCstCls {
-  min-width:100% !important; 
+  min-width: 100% !important;
 }
 
 .ff-powered-img {
-  display:none !important; 
+  display: none !important;
 }
-
-
-
-
 
 img[btnvisibility="hidden"] {
   display: none !important;

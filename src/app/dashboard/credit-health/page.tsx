@@ -1,8 +1,14 @@
-import { ThumbsUp, ArrowRight, AlertCircle } from "lucide-react";
-import { Card } from "@/components/ui/card";
-
 import { auth } from "@clerk/nextjs/server";
-import { getCreditScoreData } from "@/actions/formActions";
+import { getCreditScoreData, getUserSubscription } from "@/actions/formActions";
+import CreditScoreGauge from "./CreditScoreGauge";
+import CreditFactorCard from "./CreditFactorCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import WelcomeMessage from "./WelcomeMessage";
+
+interface CreditHealthFactor {
+  name: string;
+  score: number;
+}
 
 export default async function CreditScoreDashboard() {
   const { userId } = auth();
@@ -11,140 +17,69 @@ export default async function CreditScoreDashboard() {
   }
 
   const creditData = await getCreditScoreData(userId);
-
-  const getScoreColor = (score: number) => {
-    if (score < 620) return "red";
-    if (score < 680) return "orange";
-    if (score < 740) return "yellow";
-    return "green";
-  };
-
-  const getScoreCategory = (score: number) => {
-    if (score < 620) return "Very Poor";
-    if (score < 680) return "Fair";
-    if (score < 740) return "Good";
-    return "Excellent";
-  };
+  const subscription = await getUserSubscription(userId);
 
   const score = parseInt(creditData.creditScore || "0");
-  const scoreColor = getScoreColor(score);
-  const scoreCategory = getScoreCategory(score);
+
+  const creditHealthFactors: CreditHealthFactor[] = subscription?.creditHealth
+    ? JSON.parse(subscription.creditHealth)
+    : [
+        { name: "Credit Utilization", score: 0 },
+        { name: "Payment History", score: score > 0 ? 100 : 0 },
+        { name: "Credit Age", score: 0 },
+        { name: "Credit Mix", score: 0 },
+      ];
 
   return (
-    <div className="min-h-screen bg-[#F8F9FF] p-4 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-12">
-        {/* Credit Score Section */}
-        <section className="text-center space-y-8">
-          <h1 className="text-[#000080] text-4xl font-bold">
-            Your Credit Score
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <header className="text-center space-y-4 mb-12">
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+            Credit Score Dashboard
           </h1>
+          <WelcomeMessage userName={creditData.fullName} />
+        </header>
 
-          <div className="relative w-[300px] h-[150px] mx-auto">
-            <div className="relative w-full h-full">
-              {/* Semi-circular gauge background */}
-              <div className="absolute inset-0 rounded-t-full border-[16px] border-b-0 border-gray-200" />
-              {/* Colored segment */}
-              <div
-                className={`absolute inset-0 rounded-t-full border-[16px] border-b-0 border-${scoreColor}-400`}
-                style={{
-                  clipPath: `polygon(0 0, ${(score / 900) * 100}% 0, ${(score / 900) * 100}% 100%, 0% 100%)`,
-                }}
-              />
-
-              {/* Score display */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[-20%] text-center">
-                <div className="text-5xl font-bold">{score}</div>
-                <div className={`text-${scoreColor}-500 text-sm mt-1`}>
-                  {scoreCategory}
-                </div>
-                <div className="text-xs text-gray-500">300-900</div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <Card className="col-span-1 lg:col-span-2 bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-2xl font-semibold text-slate-200">
+                Your Credit Score
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center space-y-6">
+              <div className="w-64 h-64">
+                <CreditScoreGauge score={score} />
               </div>
-            </div>
-          </div>
+              <p className="text-center text-slate-400 max-w-md">
+                {score > 740
+                  ? "Excellent job! Your credit score is in great shape. Keep up the good work!"
+                  : "There's room for improvement in your credit score. Let's work on boosting it!"}
+              </p>
+              <p className="text-sm text-slate-500">
+                Last updated:{" "}
+                {new Date(creditData.updatedAt).toLocaleDateString()}
+              </p>
+            </CardContent>
+          </Card>
 
-          <div className="space-y-2 text-gray-500">
-            <p>
-              Last update: {new Date(creditData.updatedAt).toLocaleDateString()}
-            </p>
-            <p>
-              <span className="font-semibold text-black">
-                {creditData.fullName}
-              </span>{" "}
-              <span>
-                {scoreCategory === "Excellent"
-                  ? "you have an excellent credit score. Keep up the good work!"
-                  : "it seems you have scope to improve your overall credit score."}
-              </span>
-            </p>
-          </div>
+          <Card className="col-span-1 bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-2xl font-semibold text-slate-200">
+                Credit Factors
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {creditHealthFactors.map((factor: CreditHealthFactor) => (
+                <CreditFactorCard key={factor.name} factor={factor} />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
 
-          <div className="flex items-center justify-center gap-2 text-gray-500">
-            <span>Powered by</span>
-            <img src="/placeholder.svg" alt="CRIF Logo" className="h-6" />
-          </div>
-        </section>
-
-        {/* Credit Factors Section */}
-        <section className="space-y-6">
-          <div className="text-center space-y-4">
-            <h2 className="text-[#000080] text-3xl font-bold">
-              Your Credit Factors
-            </h2>
-            <p className="text-xl font-semibold">
-              Below are all of your credit factors which are affecting your
-              overall score
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { name: "Credit Utilization Ratio", score: 0 },
-              { name: "Credit Behavior", score: 0 },
-              { name: "Payment History", score: score > 0 ? 100 : 0 },
-              { name: "Age of Credit", score: 0 },
-            ].map((factor) => (
-              <Card key={factor.name} className="p-4 space-y-4">
-                <h3 className="text-[#000080] text-xl font-bold">
-                  {factor.name}
-                </h3>
-                <div
-                  className={`text-${getScoreColor(factor.score)}-500 text-2xl font-bold`}
-                >
-                  {factor.score}%
-                </div>
-                <div className="h-2 bg-gray-100 rounded-full">
-                  <div
-                    className={`h-full bg-${getScoreColor(factor.score)}-500 rounded-full`}
-                    style={{ width: `${factor.score}%` }}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-3 py-1 rounded-full bg-${getScoreColor(factor.score)}-100 text-${getScoreColor(factor.score)}-700`}
-                  >
-                    {getScoreCategory(factor.score)}
-                  </span>
-                </div>
-                <div
-                  className={`flex items-center gap-1 text-${getScoreColor(factor.score)}-500`}
-                >
-                  {factor.score >= 680 ? (
-                    <>
-                      <ThumbsUp className="w-4 h-4" />
-                      <span>Excellent</span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="w-4 h-4" />
-                      <span>Need Improvement</span>
-                    </>
-                  )}
-                </div>
-                <ArrowRight className="w-5 h-5 text-gray-400" />
-              </Card>
-            ))}
-          </div>
-        </section>
+        <footer className="text-center text-slate-500 text-sm">
+          <p>Powered by CRIF</p>
+        </footer>
       </div>
     </div>
   );
