@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,14 +61,15 @@ const incomeRanges = [
 const LaStepOne = () => {
   const { toast } = useToast();
   const router = useRouter();
-  const form = useForm<FormValues>();
-  const { register, control, handleSubmit, setValue, watch } = form;
+  const { register, control, handleSubmit, setValue, watch } =
+    useForm<FormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasExistingApplication, setHasExistingApplication] = useState(false);
   const [existingApplicationData, setExistingApplicationData] =
     useState<LoanApplication | null>(null);
 
   const monIncomeRange = watch("monIncomeRange");
+  const empType = watch("empType");
   const membershipPlan = "basic"; // Example membership plan
 
   useEffect(() => {
@@ -304,55 +305,55 @@ const LaStepOne = () => {
 
           <div className="grid w-full items-center gap-4">
             <Label htmlFor="empType">Employment Type</Label>
-            <RadioGroup>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="Salaried"
-                  id="r1"
-                  {...register("empType")}
-                />
-                <Label htmlFor="r1">Salaried</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="Self Employed"
-                  id="r2"
-                  {...register("empType")}
-                />
-                <Label htmlFor="r2">Self Employed</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="Others"
-                  id="r3"
-                  {...register("empType")}
-                />
-                <Label htmlFor="r3">Others(mention below)</Label>
-              </div>
-            </RadioGroup>
+            <Controller
+              name="empType"
+              control={control}
+              render={({ field }) => (
+                <RadioGroup onValueChange={field.onChange} value={field.value}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Salaried" id="r1" />
+                    <Label htmlFor="r1">Salaried</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Self Employed" id="r2" />
+                    <Label htmlFor="r2">Self Employed</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Others" id="r3" />
+                    <Label htmlFor="r3">Others(mention below)</Label>
+                  </div>
+                </RadioGroup>
+              )}
+            />
           </div>
 
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="EmpOthers">Employment Type(if Others)</Label>
-            <Input type="text" id="EmpOthers" {...register("EmpOthers")} />
-          </div>
+          {empType === "Others" && (
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="EmpOthers">Employment Type(if Others)</Label>
+              <Input type="text" id="EmpOthers" {...register("EmpOthers")} />
+            </div>
+          )}
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="monIncomeRange">Monthly Income Range</Label>
-            <Select
-              onValueChange={(value) => setValue("monIncomeRange", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select income range" />
-              </SelectTrigger>
-              <SelectContent>
-                {incomeRanges.map((range) => (
-                  <SelectItem key={range.value} value={range.value}>
-                    {range.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              name="monIncomeRange"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select income range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {incomeRanges.map((range) => (
+                      <SelectItem key={range.value} value={range.value}>
+                        {range.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="monIncome">Monthly Income(in ₹)</Label>
@@ -371,18 +372,24 @@ const LaStepOne = () => {
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="currEmis">Current EMIs</Label>
-            <Select onValueChange={(value) => setValue("currEmis", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select number of EMIs" />
-              </SelectTrigger>
-              <SelectContent>
-                {[1, 2, 3, 4, "More than 4"].map((num) => (
-                  <SelectItem key={num} value={num.toString()}>
-                    {num}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              name="currEmis"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select number of EMIs" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, "More than 4"].map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        {num}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">

@@ -13,6 +13,8 @@ import {
   determineMembershipPlan,
 } from "@/actions/loanApplicationActions";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { Star, Check } from "lucide-react";
 
 type FormValues = {
   fullName: string;
@@ -30,6 +32,11 @@ const LaStepThree = () => {
   const form = useForm<FormValues>();
   const { register, control, handleSubmit, setValue } = form;
   const [eligiblePlan, setEligiblePlan] = useState<string>("");
+  const [planDetails, setPlanDetails] = useState<{
+    name: string;
+    price: number;
+    features: string[];
+  }>({ name: "", price: 0, features: [] });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,6 +55,23 @@ const LaStepThree = () => {
           const membershipPlan = await determineMembershipPlan(monIncome);
           setEligiblePlan(membershipPlan);
           setValue("membershipPlan", membershipPlan);
+
+          // Set plan details (replace with actual data)
+          setPlanDetails({
+            name: membershipPlan,
+            price:
+              membershipPlan === "Gold"
+                ? 999
+                : membershipPlan === "Silver"
+                  ? 499
+                  : 299,
+            features: [
+              "Pre-approved loan offer",
+              "Instant processing",
+              "Exclusive interest rates",
+              "24/7 customer support",
+            ],
+          });
         }
       }
     };
@@ -85,13 +109,66 @@ const LaStepThree = () => {
 
   return (
     <div className="mx-auto w-full max-w-[520px]">
-      <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
-        <p className="text-xl mb-8">
-          Buy Membership Plan & Get Your upto 3X of monthly income. Pre-Approved
-          Loan Offer Processed Instantly.
-        </p>
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-3xl font-bold text-center mb-8"
+      >
+        Membership Plan
+      </motion.h1>
 
-        <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="text-xl mb-8 text-center"
+      >
+        Buy Membership Plan & Get Your upto 3X of monthly income. Pre-Approved
+        Loan Offer Processed Instantly.
+      </motion.p>
+
+      <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="flex flex-col gap-6 bg-gradient-to-br from-blue-500 to-purple-600 p-8 border-[1px] rounded-xl text-white shadow-lg"
+        >
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">{planDetails.name} Plan</h2>
+            <div className="flex items-center">
+              <Star className="w-6 h-6 fill-current text-yellow-400 mr-2" />
+              <span className="text-3xl font-bold">₹{planDetails.price}</span>
+            </div>
+          </div>
+          <ul className="mt-4 space-y-2">
+            {planDetails.features.map((feature, index) => (
+              <motion.li
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+                className="flex items-center"
+              >
+                <Check className="w-5 h-5 mr-2 text-green-400" />
+                {feature}
+              </motion.li>
+            ))}
+          </ul>
+          <Input
+            type="hidden"
+            id="membershipPlan"
+            {...register("membershipPlan")}
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="flex flex-col gap-6 bg-white p-6 border-[1px] rounded-xl shadow-md"
+        >
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="fullName">Full Name</Label>
             <Input type="text" id="fullName" {...register("fullName")} />
@@ -116,23 +193,20 @@ const LaStepThree = () => {
             <Label htmlFor="aadharNo">Aadhar No</Label>
             <Input type="text" id="aadharNo" {...register("aadharNo")} />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
-          <div className="grid w-full items-center gap-4">
-            <Label htmlFor="membershipPlan">Eligible Membership Plan</Label>
-            <div className="text-lg font-semibold">{eligiblePlan}</div>
-            <Input
-              type="hidden"
-              id="membershipPlan"
-              {...register("membershipPlan")}
-            />
-          </div>
-        </div>
-
-        <Button type="submit" className="mt-8 text-md">
-          Payment Gateway Link
-        </Button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+        >
+          <Button
+            type="submit"
+            className="w-full text-md py-6 text-lg font-semibold"
+          >
+            Proceed to Payment
+          </Button>
+        </motion.div>
       </form>
 
       <DevTool control={control} />
