@@ -12,9 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CreditBuilderApplication } from "@prisma/client";
+import { CreditBuilderSubscription } from "@prisma/client";
 
-export const columns: ColumnDef<CreditBuilderApplication>[] = [
+export const columns: ColumnDef<CreditBuilderSubscription>[] = [
   {
     accessorKey: "fullName",
     header: ({ column }) => {
@@ -74,11 +74,10 @@ export const columns: ColumnDef<CreditBuilderApplication>[] = [
       return new Date(row.getValue("createdAt")).toLocaleDateString();
     },
   },
-
   {
     id: "actions",
     cell: ({ row }) => {
-      const application = row.original;
+      const subscription = row.original;
 
       return (
         <DropdownMenu>
@@ -91,14 +90,14 @@ export const columns: ColumnDef<CreditBuilderApplication>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(application.id)}
+              onClick={() => navigator.clipboard.writeText(subscription.id)}
             >
-              Copy application ID
+              Copy subscription ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link
-                href={`/admin/credit-builder/application/${application.id}`}
+                href={`/admin/credit-builder/subscription/${subscription.id}`}
               >
                 View details
               </Link>
