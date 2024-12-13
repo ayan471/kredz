@@ -96,9 +96,11 @@ export async function getCreditScoreData(userId: string) {
     });
 
     if (!creditData) {
-      throw new Error("Credit score data not found");
+      console.log(`No credit data found for user ${userId}`);
+      return null;
     }
 
+    console.log(`Credit data for user ${userId}:`, creditData);
     return creditData;
   } catch (error) {
     console.error("Failed to fetch credit score data:", error);
@@ -118,14 +120,22 @@ export async function getCreditBuilderData(userId: string) {
   }
 }
 
+interface CreditHealthFactors {
+  creditUtilization: number;
+  paymentHistory: number;
+  creditAge: { years: number; months: number; days: number };
+  creditMix: number;
+  totalActiveAccounts: { count: number; lenders: string };
+  delayHistory: { count: number; lenders: string };
+  inquiries: { count: number; lenders: string };
+  overdueAccounts: { count: number; lenders: string };
+  scoringFactors: string;
+  recommendation: string;
+}
+
 export async function updateCreditHealth(
   subscriptionId: string,
-  creditFactors: {
-    creditUtilizationRatio: number;
-    creditBehavior: number;
-    paymentHistory: number;
-    ageOfCredit: number;
-  }
+  creditFactors: CreditHealthFactors
 ) {
   try {
     const subscription = await prisma.creditBuilderSubscription.findUnique({
@@ -137,13 +147,44 @@ export async function updateCreditHealth(
     }
 
     const updatedCards = [
-      {
-        name: "Credit Utilization Ratio",
-        score: creditFactors.creditUtilizationRatio,
-      },
-      { name: "Credit Behavior", score: creditFactors.creditBehavior },
+      { name: "Credit Utilization", score: creditFactors.creditUtilization },
       { name: "Payment History", score: creditFactors.paymentHistory },
-      { name: "Age of Credit", score: creditFactors.ageOfCredit },
+      {
+        name: "Credit Age",
+        score: 0, // You may want to calculate a score based on years, months, and days
+        details: creditFactors.creditAge,
+      },
+      { name: "Credit Mix", score: creditFactors.creditMix },
+      {
+        name: "Total Active Accounts",
+        score: creditFactors.totalActiveAccounts.count,
+        details: creditFactors.totalActiveAccounts,
+      },
+      {
+        name: "Delay History",
+        score: creditFactors.delayHistory.count,
+        details: creditFactors.delayHistory,
+      },
+      {
+        name: "No. of Inquiries",
+        score: creditFactors.inquiries.count,
+        details: creditFactors.inquiries,
+      },
+      {
+        name: "Overdue Accounts",
+        score: creditFactors.overdueAccounts.count,
+        details: creditFactors.overdueAccounts,
+      },
+      {
+        name: "Scoring Factors",
+        score: 0, // You may want to calculate a score based on the factors
+        details: { factors: creditFactors.scoringFactors },
+      },
+      {
+        name: "Our Recommendation",
+        score: 0, // Recommendations typically don't have a score
+        details: { recommendation: creditFactors.recommendation },
+      },
     ];
 
     const updatedSubscription = await prisma.creditBuilderSubscription.update({
@@ -170,6 +211,11 @@ export async function getUserSubscription(userId: string) {
       orderBy: { createdAt: "desc" },
     });
 
+    if (!subscription) {
+      console.log(`No subscription found for user ${userId}`);
+      return null;
+    }
+
     if (subscription && !subscription.expiryDate) {
       // If expiryDate is null, calculate it based on the plan and createdAt date
       const durationInMonths = parseInt(subscription.plan.split(" ")[0]);
@@ -185,6 +231,7 @@ export async function getUserSubscription(userId: string) {
       });
     }
 
+    console.log(`Subscription for user ${userId}:`, subscription);
     return subscription;
   } catch (error) {
     console.error("Error fetching user subscription:", error);
@@ -241,12 +288,16 @@ export async function getAdminDashboardData() {
       await prisma.creditBuilderApplication.findMany();
     const creditBuilderSubscriptions =
       await prisma.creditBuilderSubscription.findMany();
+    const loanApplications = await prisma.loanApplication.findMany();
+    const channelPartners = await prisma.channelPartner.findMany();
 
     return {
       success: true,
       data: {
         creditBuilderApplications,
         creditBuilderSubscriptions,
+        loanApplications,
+        channelPartners,
       },
     };
   } catch (error) {
