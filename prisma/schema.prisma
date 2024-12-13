@@ -86,6 +86,7 @@ model LoanApplication {
   disbursementDate    DateTime?
   lender              String?
   membershipPlan      String?
+  emi                 Float?
 }
 
 model LoanEligibility {

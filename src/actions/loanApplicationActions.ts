@@ -296,28 +296,49 @@ export async function determineMembershipPlan(salary: number): Promise<string> {
 
 export async function approveLoanWithDetails(
   applicationId: string,
-  details: ApprovalDetails
+  data: {
+    approvedAmount: string;
+    processingFees: string;
+    gst: string;
+    otherCharges: string;
+    rateOfInterest: string;
+    tenure: string;
+    netDisbursement: string;
+    disbursementAccount: string;
+    disbursementDate: string;
+    lender: string;
+    emi: string;
+  }
 ) {
   try {
-    const updatedApplication = await prisma.loanApplication.update({
+    const approvedAmount = parseFloat(data.approvedAmount);
+    const processingFees = parseFloat(data.processingFees);
+    const gst = parseFloat(data.gst);
+    const otherCharges = parseFloat(data.otherCharges);
+    const rateOfInterest = parseFloat(data.rateOfInterest);
+    const tenure = parseInt(data.tenure);
+    const netDisbursement = parseFloat(data.netDisbursement);
+    const emi = parseFloat(data.emi);
+
+    const updatedLoan = await prisma.loanApplication.update({
       where: { id: applicationId },
       data: {
         status: "Approved",
-        approvedAmount: parseFloat(details.approvedAmount),
-        loanAmount: parseFloat(details.loanAmount),
-        processingFees: parseFloat(details.processingFees),
-        gst: parseFloat(details.gst),
-        otherCharges: parseFloat(details.otherCharges),
-        rateOfInterest: parseFloat(details.rateOfInterest),
-        tenure: parseInt(details.tenure),
-        netDisbursement: parseFloat(details.netDisbursement),
-        disbursementAccount: details.disbursementAccount,
-        disbursementDate: new Date(details.disbursementDate),
-        lender: details.lender,
+        approvedAmount,
+        processingFees,
+        gst,
+        otherCharges,
+        rateOfInterest,
+        tenure,
+        netDisbursement,
+        disbursementAccount: data.disbursementAccount,
+        disbursementDate: new Date(data.disbursementDate),
+        lender: data.lender,
+        emi,
       },
     });
 
-    return { success: true, data: updatedApplication };
+    return { success: true, id: updatedLoan.id };
   } catch (error) {
     console.error("Error approving loan application:", error);
     return { success: false, error: "Failed to approve loan application" };

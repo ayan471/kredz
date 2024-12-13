@@ -17,7 +17,6 @@ import { approveLoanWithDetails } from "@/actions/loanApplicationActions";
 
 type ApprovalFormData = {
   approvedAmount: string;
-  loanAmount: string;
   processingFees: string;
   gst: string;
   otherCharges: string;
@@ -27,6 +26,7 @@ type ApprovalFormData = {
   disbursementAccount: string;
   disbursementDate: string;
   lender: string;
+  emi: string;
 };
 
 type ApprovalModalProps = {
@@ -38,6 +38,18 @@ type ApprovalModalProps = {
 const calculateGST = (processingFees: string): string => {
   const fees = parseFloat(processingFees) || 0;
   return (fees * 0.18).toFixed(2);
+};
+
+const calculateEMI = (
+  principal: number,
+  rate: number,
+  tenure: number
+): number => {
+  const monthlyRate = rate / 12 / 100;
+  const emi =
+    (principal * monthlyRate * Math.pow(1 + monthlyRate, tenure)) /
+    (Math.pow(1 + monthlyRate, tenure) - 1);
+  return Math.round(emi);
 };
 
 export function ApprovalModal({
@@ -57,11 +69,25 @@ export function ApprovalModal({
   const { toast } = useToast();
 
   const processingFees = watch("processingFees");
+  const approvedAmount = watch("approvedAmount");
+  const rateOfInterest = watch("rateOfInterest");
+  const tenure = watch("tenure");
 
   useEffect(() => {
     const gst = calculateGST(processingFees);
     setValue("gst", gst);
   }, [processingFees, setValue]);
+
+  useEffect(() => {
+    const amount = parseFloat(approvedAmount) || 0;
+    const rate = parseFloat(rateOfInterest) || 0;
+    const tenureMonths = parseInt(tenure) || 0;
+
+    if (amount > 0 && rate > 0 && tenureMonths > 0) {
+      const emi = calculateEMI(amount, rate, tenureMonths);
+      setValue("emi", emi.toString());
+    }
+  }, [approvedAmount, rateOfInterest, tenure, setValue]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -172,12 +198,23 @@ export function ApprovalModal({
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="tenure" className="text-right">
-              Tenure
+              Tenure (months)
             </Label>
             <Input
               id="tenure"
               className="col-span-3"
               {...register("tenure", { required: "Tenure is required" })}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="emi" className="text-right">
+              EMI
+            </Label>
+            <Input
+              id="emi"
+              className="col-span-3"
+              {...register("emi")}
+              readOnly
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
