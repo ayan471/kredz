@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,11 @@ import {
   updateLoanApplicationData,
 } from "@/actions/loanApplicationActions";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { IndianRupee, Calendar, PiggyBank } from "lucide-react";
+import { calculateEMI } from "@/components/lib/utils";
 
 type FormValues = {
   fullName: string;
@@ -24,13 +28,23 @@ type FormValues = {
   emiTenure: string;
 };
 
+type EMIDetails = {
+  emi: number;
+  totalPayment: number;
+  totalInterest: number;
+  interestRate: number;
+};
+
 const LaStepTwo = () => {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const form = useForm<FormValues>();
-  const { register, control, handleSubmit, setValue } = form;
+  const { register, control, handleSubmit, setValue, watch } = form;
   const [eligibleAmount, setEligibleAmount] = useState<number | null>(null);
+  const [emiDetails, setEmiDetails] = useState<EMIDetails | null>(null);
+
+  const selectedTenure = watch("emiTenure");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,6 +65,13 @@ const LaStepTwo = () => {
     fetchData();
   }, [searchParams, setValue, form]);
 
+  useEffect(() => {
+    if (eligibleAmount && selectedTenure) {
+      const details = calculateEMI(eligibleAmount, parseInt(selectedTenure));
+      setEmiDetails(details);
+    }
+  }, [eligibleAmount, selectedTenure]);
+
   const onSubmit = async (data: FormValues) => {
     const id = searchParams.get("id");
     if (!id) {
@@ -62,7 +83,11 @@ const LaStepTwo = () => {
       return;
     }
 
-    const result = await updateLoanApplicationData(id, { ...data, step: 2 });
+    const result = await updateLoanApplicationData(id, {
+      ...data,
+      step: 2,
+      // Remove emiAmount, totalPayment, and totalInterest from here
+    });
 
     if (result.success) {
       toast({
@@ -166,49 +191,109 @@ const LaStepTwo = () => {
           <div className="grid w-full items-center gap-4">
             <Label htmlFor="emiTenure">Select EMI Tenure</Label>
 
-            <RadioGroup>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="12" id="r1" {...register("emiTenure")} />
-                <Label htmlFor="r1">12 months (EMI amount at 11% p.a.)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="24" id="r2" {...register("emiTenure")} />
-                <Label htmlFor="r2">24 months (EMI amount at 11% p.a.)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="36" id="r3" {...register("emiTenure")} />
-                <Label htmlFor="r3">36 months (EMI amount at 11% p.a.)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="48" id="r4" {...register("emiTenure")} />
-                <Label htmlFor="r4">48 months (EMI amount at 11% p.a.)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="60" id="r5" {...register("emiTenure")} />
-                <Label htmlFor="r5">60 months (EMI amount at 11% p.a.)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="72" id="r6" {...register("emiTenure")} />
-                <Label htmlFor="r6">72 months (EMI amount at 11% p.a.)</Label>
-              </div>
-            </RadioGroup>
+            <Controller
+              name="emiTenure"
+              control={control}
+              render={({ field }) => (
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  className="space-y-2"
+                >
+                  {[12, 24, 36, 48, 60, 72].map((months) => {
+                    const monthlyEMI = eligibleAmount
+                      ? calculateEMI(eligibleAmount, months).emi
+                      : 0;
+
+                    return (
+                      <div
+                        key={months}
+                        className="flex items-center justify-between p-3 rounded-lg hover:bg-white/50 transition-colors"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value={months.toString()}
+                            id={`r${months}`}
+                          />
+                          <Label htmlFor={`r${months}`}>{months} months</Label>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-semibold">
+                            ₹{monthlyEMI.toLocaleString()}
+                          </span>
+                          <span className="text-sm text-gray-600">/month</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
+              )}
+            />
           </div>
+
+          <AnimatePresence mode="wait">
+            {emiDetails && (
+              <motion.div
+                key={selectedTenure}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="mt-4"
+              >
+                <Card className="bg-white/80">
+                  <CardContent className="pt-6">
+                    <h3 className="text-lg font-semibold mb-4">
+                      EMI Breakdown
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <IndianRupee className="w-5 h-5 text-blue-600" />
+                          <span>Monthly EMI</span>
+                        </div>
+                        <span className="font-semibold">
+                          ₹{emiDetails.emi.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="w-5 h-5 text-purple-600" />
+                          <span>Loan Tenure</span>
+                        </div>
+                        <span className="font-semibold">
+                          {selectedTenure} months
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <PiggyBank className="w-5 h-5 text-green-600" />
+                          <span>Total Interest</span>
+                        </div>
+                        <span className="font-semibold">
+                          ₹{emiDetails.totalInterest.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="pt-2 mt-2 border-t">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">Total Payment</span>
+                          <span className="font-bold text-lg">
+                            ₹{emiDetails.totalPayment.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <Button type="submit" className="mt-8 text-md">
           Submit
         </Button>
       </form>
-
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-        className="text-xl mt-8 p-4 bg-blue-200 border-l-4 border-blue-600 text-blue-800"
-      >
-        You need to buy a membership due to this reason lorem ipsum. You'll find
-        a Subscription in the next step.
-      </motion.p>
 
       <DevTool control={control} />
     </div>

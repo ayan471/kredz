@@ -261,12 +261,21 @@ export async function updateLoanApplicationData(
   data: Record<string, any>
 ) {
   try {
+    // Create a new object with only the fields that exist in the LoanApplicationData model
+    const updateData = {
+      fullName: data.fullName,
+      phoneNo: data.phoneNo,
+      emailID: data.emailID,
+      panNo: data.panNo,
+      aadharNo: data.aadharNo,
+      emiTenure: data.emiTenure,
+      step: data.step || 1,
+      // Add any other fields that exist in your LoanApplicationData model
+    };
+
     const updatedData = await prisma.loanApplicationData.update({
       where: { id },
-      data: {
-        ...data,
-        step: data.step || 1,
-      },
+      data: updateData,
     });
     return { success: true, id: updatedData.id };
   } catch (error) {

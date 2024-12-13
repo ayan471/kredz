@@ -22,3 +22,28 @@ export function formatDate(date: Date | null | undefined) {
     year: "numeric",
   });
 }
+
+export const calculateEMI = (
+  principal: number,
+  tenure: number,
+  annualInterestRate: number = 11
+) => {
+  // Convert annual interest rate to monthly
+  const monthlyRate = annualInterestRate / 12 / 100;
+
+  // Calculate EMI using the formula: EMI = P × r × (1 + r)^n / ((1 + r)^n - 1)
+  const emi =
+    (principal * monthlyRate * Math.pow(1 + monthlyRate, tenure)) /
+    (Math.pow(1 + monthlyRate, tenure) - 1);
+
+  // Calculate total payment and total interest
+  const totalPayment = emi * tenure;
+  const totalInterest = totalPayment - principal;
+
+  return {
+    emi: Math.round(emi),
+    totalPayment: Math.round(totalPayment),
+    totalInterest: Math.round(totalInterest),
+    interestRate: annualInterestRate,
+  };
+};
