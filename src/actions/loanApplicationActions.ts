@@ -498,3 +498,35 @@ export async function makeUserEligible(id: string) {
     return { success: false, error: "Failed to make user eligible" };
   }
 }
+
+export async function payEMI(loanId: string, amount: number) {
+  try {
+    const loan = await prisma.loanApplication.findUnique({
+      where: { id: loanId },
+      include: { emiPayments: true },
+    });
+
+    if (!loan) {
+      throw new Error("Loan not found");
+    }
+
+    if (loan.emiPayments.length >= (loan.tenure || 0)) {
+      throw new Error("All EMIs have been paid for this loan");
+    }
+
+    const payment = await prisma.eMIPayment.create({
+      data: {
+        loanId,
+        amount,
+        paymentDate: new Date(),
+      },
+    });
+
+    revalidatePath(`/dashboard/loans/${loanId}`);
+
+    return { success: true, payment };
+  } catch (error) {
+    console.error("Error processing EMI payment:", error);
+    return { success: false, error: "Failed to process EMI payment" };
+  }
+}

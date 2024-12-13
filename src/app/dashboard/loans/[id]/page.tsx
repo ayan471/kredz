@@ -25,6 +25,7 @@ import {
   Percent,
   Wallet,
 } from "lucide-react";
+import EMIPayButton from "../EMIPayButton";
 
 const prisma = new PrismaClient();
 
@@ -34,7 +35,7 @@ async function getLoanDetails(id: string, userId: string) {
       id,
       userId,
     },
-    include: { eligibility: true },
+    include: { eligibility: true, emiPayments: true },
   });
 
   if (!loan) {
@@ -76,6 +77,20 @@ export default async function LoanDetailsPage({
       : loan.status === "Rejected"
         ? "bg-red-100 text-red-800"
         : "bg-yellow-100 text-yellow-800";
+
+  const isEMIPaymentDue = () => {
+    if (loan.status !== "Approved" || !loan.approvedAmount || !loan.tenure) {
+      return false;
+    }
+
+    const currentDate = new Date();
+    const loanStartDate = new Date(loan.updatedAt);
+    const monthsPassed =
+      (currentDate.getFullYear() - loanStartDate.getFullYear()) * 12 +
+      (currentDate.getMonth() - loanStartDate.getMonth());
+
+    return monthsPassed < loan.tenure && loan.emiPayments.length < loan.tenure;
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -172,7 +187,7 @@ export default async function LoanDetailsPage({
         </Card>
 
         {loan.approvedAmount && (
-          <Card className="overflow-hidden shadow-lg">
+          <Card className="overflow-hidden shadow-lg mb-6">
             <CardHeader className="bg-green-500 text-white p-6">
               <CardTitle className="text-2xl font-bold">
                 Approval Details
@@ -216,6 +231,20 @@ export default async function LoanDetailsPage({
                   </div>
                 )}
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {isEMIPaymentDue() && (
+          <Card className="overflow-hidden shadow-lg">
+            <CardHeader className="bg-blue-500 text-white p-6">
+              <CardTitle className="text-2xl font-bold">EMI Payment</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <p className="mb-4">
+                Your next EMI payment is due. Please pay to avoid late fees.
+              </p>
+              <EMIPayButton loanId={loan.id} emiAmount={loan.emi || 0} />
             </CardContent>
           </Card>
         )}

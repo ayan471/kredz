@@ -87,6 +87,15 @@ model LoanApplication {
   lender              String?
   membershipPlan      String?
   emi                 Float?
+  emiPayments         EMIPayment[]
+}
+
+model EMIPayment {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  loanId      String          @db.ObjectId
+  amount      Float
+  paymentDate DateTime
+  loan        LoanApplication @relation(fields: [loanId], references: [id])
 }
 
 model LoanEligibility {
