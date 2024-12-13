@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 import Link from "next/link";
 import {
@@ -14,8 +15,45 @@ import {
   DollarSign,
   Briefcase,
   PieChart,
+  ArrowRight,
+  type LucideIcon,
 } from "lucide-react";
 import { getUserMembership } from "@/actions/loanApplicationActions";
+
+interface LoanApplication {
+  membershipPlan: string;
+  createdAt: string;
+  fullName: string;
+  phoneNo: string;
+  panNo: string;
+  aadharNo: string;
+  amtRequired: string;
+  prpseOfLoan: string;
+  creditScore: string;
+  currEmis: string | null;
+  empType: string;
+  monIncome: string;
+  EmpOthers?: string;
+  status: string;
+}
+
+interface InfoItemProps {
+  icon?: LucideIcon;
+  label: string;
+  value: string;
+}
+
+function InfoItem({ icon: Icon, label, value }: InfoItemProps) {
+  return (
+    <div className="flex items-start space-x-3">
+      {Icon && <Icon className="w-5 h-5 text-indigo-500 mt-0.5" />}
+      <div>
+        <p className="text-sm font-medium text-gray-500">{label}</p>
+        <p className="text-base font-semibold text-gray-900">{value}</p>
+      </div>
+    </div>
+  );
+}
 
 export default async function MembershipPage() {
   const { userId } = auth();
@@ -25,159 +63,173 @@ export default async function MembershipPage() {
   }
 
   console.log("Fetching membership for user ID:", userId);
-  const loanApplication = await getUserMembership(userId);
+  const loanApplication = (await getUserMembership(
+    userId
+  )) as LoanApplication | null;
 
   return (
-    <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      {/* <h1 className="text-4xl font-bold mb-8 text-center">My Membership</h1> */}
-      {loanApplication && loanApplication.membershipPlan ? (
-        <div className="grid gap-8 md:grid-cols-2">
-          <Card className="col-span-2">
-            <CardHeader className="bg-primary text-primary-foreground">
-              <CardTitle className="text-2xl flex items-center justify-between">
-                <span>Membership Status</span>
-                <BadgeCheck className="w-8 h-8" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="col-span-1 md:col-span-2">
-                  <div className="bg-secondary p-4 rounded-lg text-center">
-                    <h2 className="text-2xl font-bold mb-2">Your Plan</h2>
-                    <div className="text-4xl font-extrabold text-primary">
-                      {loanApplication.membershipPlan}
-                    </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-extrabold text-center text-indigo-900 mb-12">
+          My Membership
+        </h1>
+        {loanApplication && loanApplication.membershipPlan ? (
+          <div className="space-y-8">
+            <Card className="overflow-hidden shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-3xl font-bold text-white">
+                    {loanApplication.membershipPlan} Plan
+                  </CardTitle>
+                  <BadgeCheck className="w-12 h-12 text-yellow-300" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <InfoItem
+                    icon={Calendar}
+                    label="Start Date"
+                    value={new Date(
+                      loanApplication.createdAt
+                    ).toLocaleDateString()}
+                  />
+                  <InfoItem
+                    icon={User}
+                    label="Full Name"
+                    value={loanApplication.fullName}
+                  />
+                  <InfoItem
+                    icon={Phone}
+                    label="Phone"
+                    value={loanApplication.phoneNo}
+                  />
+                  <InfoItem
+                    icon={FileText}
+                    label="PAN"
+                    value={loanApplication.panNo}
+                  />
+                  <InfoItem
+                    icon={FileText}
+                    label="Aadhar"
+                    value={loanApplication.aadharNo}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card className="shadow-lg">
+                <CardHeader className="bg-blue-50 border-b border-blue-100">
+                  <CardTitle className="text-xl text-blue-700 flex items-center space-x-2">
+                    <DollarSign className="w-6 h-6" />
+                    <span>Loan Details</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <InfoItem
+                      label="Amount Required"
+                      value={`₹${parseInt(loanApplication.amtRequired).toLocaleString()}`}
+                    />
+                    <InfoItem
+                      label="Purpose"
+                      value={loanApplication.prpseOfLoan}
+                    />
+                    <InfoItem
+                      label="Credit Score"
+                      value={loanApplication.creditScore}
+                    />
+                    <InfoItem
+                      label="Current EMIs"
+                      value={loanApplication.currEmis || "N/A"}
+                    />
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  <p>
-                    <span className="font-medium">Start Date:</span>{" "}
-                    {new Date(loanApplication.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <User className="w-5 h-5 text-primary" />
-                  <p>
-                    <span className="font-medium">Full Name:</span>{" "}
-                    {loanApplication.fullName}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Phone className="w-5 h-5 text-primary" />
-                  <p>
-                    <span className="font-medium">Phone:</span>{" "}
-                    {loanApplication.phoneNo}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <FileText className="w-5 h-5 text-primary" />
-                  <p>
-                    <span className="font-medium">PAN:</span>{" "}
-                    {loanApplication.panNo}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <FileText className="w-5 h-5 text-primary" />
-                  <p>
-                    <span className="font-medium">Aadhar:</span>{" "}
-                    {loanApplication.aadharNo}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center space-x-2">
-                <DollarSign className="w-6 h-6 text-primary" />
-                <span>Loan Application Details</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p>
-                  <span className="font-medium">Amount Required:</span> ₹
-                  {parseInt(loanApplication.amtRequired).toLocaleString()}
-                </p>
-                <p>
-                  <span className="font-medium">Purpose:</span>{" "}
-                  {loanApplication.prpseOfLoan}
-                </p>
-                <p>
-                  <span className="font-medium">Credit Score:</span>{" "}
-                  {loanApplication.creditScore}
-                </p>
-                <p>
-                  <span className="font-medium">Current EMIs:</span>{" "}
-                  {loanApplication.currEmis || "N/A"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center space-x-2">
-                <Briefcase className="w-6 h-6 text-primary" />
-                <span>Employment Details</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p>
-                  <span className="font-medium">Employment Type:</span>{" "}
-                  {loanApplication.empType}
-                </p>
-                <p>
-                  <span className="font-medium">Monthly Income:</span> ₹
-                  {parseInt(loanApplication.monIncome).toLocaleString()}
-                </p>
-                {loanApplication.EmpOthers && (
-                  <p>
-                    <span className="font-medium">Additional Info:</span>{" "}
-                    {loanApplication.EmpOthers}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="col-span-2">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center space-x-2">
-                <PieChart className="w-6 h-6 text-primary" />
-                <span>Loan Status</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <p className="text-lg">
-                  <span className="font-medium">Current Status:</span>{" "}
-                  {loanApplication.status}
-                </p>
-                {/* <Button asChild>
-                  <Link href="/apply-loan">Apply for Another Loan</Link>
-                </Button> */}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <p className="text-xl">
-                You don't have an active membership or loan application.
-              </p>
-              <Button asChild size="lg">
-                <Link href="/apply-loan">Apply for Loan</Link>
-              </Button>
+              <Card className="shadow-lg">
+                <CardHeader className="bg-green-50 border-b border-green-100">
+                  <CardTitle className="text-xl text-green-700 flex items-center space-x-2">
+                    <Briefcase className="w-6 h-6" />
+                    <span>Employment Details</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <InfoItem
+                      label="Employment Type"
+                      value={loanApplication.empType}
+                    />
+                    <InfoItem
+                      label="Monthly Income"
+                      value={`₹${parseInt(loanApplication.monIncome).toLocaleString()}`}
+                    />
+                    {loanApplication.EmpOthers && (
+                      <InfoItem
+                        label="Additional Info"
+                        value={loanApplication.EmpOthers}
+                      />
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
-      )}
+
+            <Card className="shadow-lg">
+              <CardHeader className="bg-purple-50 border-b border-purple-100">
+                <CardTitle className="text-xl text-purple-700 flex items-center space-x-2">
+                  <PieChart className="w-6 h-6" />
+                  <span>Loan Status</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Current Status</p>
+                    <Badge variant="outline" className="text-lg font-semibold">
+                      {loanApplication.status}
+                    </Badge>
+                  </div>
+                  <Button asChild>
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center space-x-2"
+                    >
+                      <span>View Dashboard</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <Card className="max-w-md mx-auto shadow-xl">
+            <CardContent className="p-8">
+              <div className="text-center space-y-6">
+                <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto">
+                  <CreditCard className="w-12 h-12 text-yellow-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  No Active Membership
+                </h2>
+                <p className="text-gray-600">
+                  You don't have an active membership or loan application.
+                </p>
+                <Button asChild size="lg" className="w-full">
+                  <Link
+                    href="/apply-loan"
+                    className="flex items-center justify-center space-x-2"
+                  >
+                    <span>Apply for Loan</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
