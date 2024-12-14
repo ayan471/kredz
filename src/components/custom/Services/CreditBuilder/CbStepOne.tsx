@@ -73,10 +73,6 @@ const CbStepOne: React.FC = () => {
   return (
     <div className="mx-auto w-full max-w-[520px]">
       <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
-        <p className="font-bold">
-          Step 1:<span className="text-red-600">*</span>
-        </p>
-
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="fullName">Full Name</Label>
@@ -116,10 +112,6 @@ const CbStepOne: React.FC = () => {
             />
           </div>
         </div>
-
-        <p className="font-bold">
-          Step 2: <span className="text-red-600">*</span>
-        </p>
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
           <div className="grid w-full items-center gap-1.5">

@@ -3,7 +3,7 @@ import CbStepTwo from "@/components/custom/Services/CreditBuilder/CbStepTwo";
 
 const CreditBuilderSubscription = () => {
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
       <InnerHeroOne
         bgImgUrl="/global/banners/orange-gradient.jpg"
         title="Credit Builder Subscription"
@@ -11,10 +11,8 @@ const CreditBuilderSubscription = () => {
         ctaText=""
       />
 
-      <div className="flex flex-col justify-center items-center xl:flex-row">
-        <div className="flex flex-1 mx-auto py-4 px-[20px] max-w-[620px] mt-8">
-          <CbStepTwo />
-        </div>
+      <div className="container mx-auto px-4 py-12">
+        <CbStepTwo />
       </div>
     </div>
   );
