@@ -33,8 +33,10 @@ const CreditScoreGauge: React.FC<CreditScoreGaugeProps> = ({ score }) => {
 
       {/* Colored arc */}
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-        <motion.path
-          d="M50 10 A40 40 0 0 1 90 50"
+        <motion.circle
+          cx="50"
+          cy="50"
+          r="42"
           fill="none"
           stroke={scoreColor}
           strokeWidth="16"
@@ -42,6 +44,10 @@ const CreditScoreGauge: React.FC<CreditScoreGaugeProps> = ({ score }) => {
           initial={{ pathLength: 0 }}
           animate={{ pathLength: percentage / 100 }}
           transition={{ duration: 1.5, ease: "easeInOut" }}
+          style={{
+            rotate: -90,
+            transformOrigin: "center",
+          }}
         />
       </svg>
 
