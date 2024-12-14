@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
   Home,
@@ -14,81 +14,124 @@ import {
   Activity,
   Users,
   Menu,
+  X,
 } from "lucide-react";
+import { CreditBuilderSubscription } from "@prisma/client";
 
-export function Sidebar() {
+interface SidebarProps {
+  subscription: CreditBuilderSubscription | null;
+}
+
+export function Sidebar({ subscription }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useUser();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        isOpen &&
+        (event.target as HTMLElement).closest(".sidebar") === null
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [isOpen]);
+
+  const isSubscriptionExpired =
+    subscription && subscription.expiryDate
+      ? new Date(subscription.expiryDate) < new Date()
+      : true;
+
+  const navigation = [
+    { href: "/dashboard", icon: Home, label: "Dashboard" },
+    { href: "/dashboard/account", icon: User, label: "My Account" },
+    { href: "/dashboard/loans", icon: FileText, label: "My Loans" },
+    { href: "/dashboard/membership", icon: Star, label: "My Membership" },
+    {
+      href: "/dashboard/subscription",
+      icon: BookOpen,
+      label: "My Subscription",
+    },
+    {
+      href: "/dashboard/credit-health",
+      icon: Activity,
+      label: "Credit Health Analysis",
+      locked: isSubscriptionExpired,
+    },
+    { href: "#", icon: Users, label: "Channel Partner", comingSoon: true },
+  ];
+
   return (
     <>
       <button
-        className="md:hidden fixed top-4 left-4 z-20 p-2 bg-gray-800 text-white rounded"
+        className="md:hidden fixed top-4 left-4 z-30 p-2 bg-gray-800 text-white rounded-full shadow-lg"
         onClick={toggleSidebar}
+        aria-label={isOpen ? "Close menu" : "Open menu"}
       >
-        <Menu />
+        {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
       <div
-        className={`flex flex-col w-[340px] bg-gray-800 text-white fixed inset-y-0 left-0 transform ${
+        className={`sidebar fixed inset-y-0 left-0 z-20 w-64 bg-gray-800 text-white transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } md:relative md:translate-x-0 transition duration-200 ease-in-out z-10`}
+        } md:relative md:translate-x-0`}
       >
-        <div className="flex items-center justify-center h-20 shadow-md">
-          <h1 className="text-3xl font-bold">
+        <div className="flex items-center justify-between h-16 px-4 bg-gray-900">
+          <h1 className="text-xl font-bold truncate">
             {user ? `${user.firstName}'s Dashboard` : "Dashboard"}
           </h1>
+          <button
+            className="md:hidden p-1 rounded-md hover:bg-gray-700"
+            onClick={toggleSidebar}
+            aria-label="Close menu"
+          >
+            <X size={20} />
+          </button>
         </div>
-        <nav className="flex-1 overflow-y-auto">
-          <ul className="flex flex-col py-4">
-            {[
-              { href: "/dashboard", icon: Home, label: "Dashboard" },
-              { href: "/dashboard/account", icon: User, label: "My Account" },
-              { href: "/dashboard/loans", icon: FileText, label: "My Loans" },
-              {
-                href: "/dashboard/membership",
-                icon: Star,
-                label: "My Membership",
-              },
-              {
-                href: "/dashboard/subscription",
-                icon: BookOpen,
-                label: "My Subscription",
-              },
-              {
-                href: "/dashboard/credit-health",
-                icon: Activity,
-                label: "Credit Health Analysis",
-              },
-              {
-                href: "#",
-                icon: Users,
-                label: "Channel Partner",
-                comingSoon: true,
-              },
-            ].map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-300 hover:text-white"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <span className="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400">
-                    <item.icon />
+        <nav className="mt-4">
+          <ul className="space-y-2">
+            {navigation.map((item) => (
+              <li key={item.href} className="px-4">
+                {item.locked ? (
+                  <span
+                    className="flex items-center py-2 text-gray-500 cursor-not-allowed"
+                    title="Subscription required"
+                  >
+                    <item.icon className="w-5 h-5 mr-3" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                    <span className="ml-2 text-xs">(Locked)</span>
                   </span>
-                  <span className="text-sm font-medium">{item.label}</span>
-                  {item.comingSoon && (
-                    <span className="ml-2 px-2 py-1 text-xs font-semibold text-gray-800 bg-yellow-400 rounded-full">
-                      Coming Soon
-                    </span>
-                  )}
-                </Link>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="flex items-center py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <item.icon className="w-5 h-5 mr-3" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                    {item.comingSoon && (
+                      <span className="ml-2 px-2 py-1 text-xs font-semibold text-gray-800 bg-yellow-400 rounded-full">
+                        Soon
+                      </span>
+                    )}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
         </nav>
       </div>
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
+          onClick={toggleSidebar}
+        ></div>
+      )}
     </>
   );
 }
