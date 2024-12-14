@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getCreditScoreData, getUserSubscription } from "@/actions/formActions";
 import CreditScoreGauge from "./CreditScoreGauge";
 import CreditFactorCard from "./CreditFactorCard";
+import MonthlyCreditFactors from "./MonthlyCreditFactors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import WelcomeMessage from "./WelcomeMessage";
 
@@ -43,6 +44,7 @@ interface Subscription {
   expiryDate: Date | null;
   updatedAt: Date;
   creditHealth: string | null;
+  monthlyHealthData: string | null;
 }
 
 export default async function CreditScoreDashboard() {
@@ -53,7 +55,7 @@ export default async function CreditScoreDashboard() {
 
   let creditData: CreditData | null = null;
   let subscription: Subscription | null = null;
-  let parsedCreditHealth: CreditHealthFactor[] = [];
+  let parsedMonthlyHealthData: Record<string, any> = {};
 
   try {
     creditData = await getCreditScoreData(userId);
@@ -62,98 +64,21 @@ export default async function CreditScoreDashboard() {
     console.log("Credit Data:", creditData);
     console.log("Subscription:", subscription);
 
-    if (subscription?.creditHealth) {
+    if (subscription?.monthlyHealthData) {
       try {
-        parsedCreditHealth = JSON.parse(subscription.creditHealth);
-        console.log("Parsed Credit Health:", parsedCreditHealth);
+        parsedMonthlyHealthData = JSON.parse(subscription.monthlyHealthData);
+        console.log("Parsed Monthly Health Data:", parsedMonthlyHealthData);
       } catch (error) {
-        console.error("Error parsing creditHealth:", error);
+        console.error("Error parsing monthlyHealthData:", error);
       }
     } else {
-      console.log("No credit health data found in subscription");
+      console.log("No monthly health data found in subscription");
     }
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 
   const score = parseInt(creditData?.creditScore || "0");
-
-  const creditHealthFactors: CreditHealthFactor[] = [
-    {
-      name: "Credit Utilization",
-      score:
-        parsedCreditHealth.find((f) => f.name === "Credit Utilization")
-          ?.score || 0,
-    },
-    {
-      name: "Payment History",
-      score:
-        parsedCreditHealth.find((f) => f.name === "Payment History")?.score ||
-        (score > 0 ? 100 : 0),
-    },
-    {
-      name: "Credit Age",
-      score:
-        parsedCreditHealth.find((f) => f.name === "Credit Age")?.score || 0,
-      details: parsedCreditHealth.find((f) => f.name === "Credit Age")
-        ?.details || { years: 0, months: 0, days: 0 },
-    },
-    {
-      name: "Credit Mix",
-      score:
-        parsedCreditHealth.find((f) => f.name === "Credit Mix")?.score || 0,
-    },
-    {
-      name: "Total Active Accounts",
-      score:
-        parsedCreditHealth.find((f) => f.name === "Total Active Accounts")
-          ?.score || 0,
-      details: parsedCreditHealth.find(
-        (f) => f.name === "Total Active Accounts"
-      )?.details || { count: 0, lenders: "" },
-    },
-    {
-      name: "Delay History",
-      score:
-        parsedCreditHealth.find((f) => f.name === "Delay History")?.score || 0,
-      details: parsedCreditHealth.find((f) => f.name === "Delay History")
-        ?.details || { count: 0, lenders: "" },
-    },
-    {
-      name: "No. of Inquiries",
-      score:
-        parsedCreditHealth.find((f) => f.name === "No. of Inquiries")?.score ||
-        0,
-      details: parsedCreditHealth.find((f) => f.name === "No. of Inquiries")
-        ?.details || { count: 0, lenders: "" },
-    },
-    {
-      name: "Overdue Accounts",
-      score:
-        parsedCreditHealth.find((f) => f.name === "Overdue Accounts")?.score ||
-        0,
-      details: parsedCreditHealth.find((f) => f.name === "Overdue Accounts")
-        ?.details || { count: 0, lenders: "" },
-    },
-    {
-      name: "Scoring Factors",
-      score: 0,
-      details: {
-        factors:
-          parsedCreditHealth.find((f) => f.name === "Scoring Factors")?.details
-            ?.factors || "",
-      },
-    },
-    {
-      name: "Our Recommendation",
-      score: 0,
-      details: {
-        recommendation:
-          parsedCreditHealth.find((f) => f.name === "Our Recommendation")
-            ?.details?.recommendation || "",
-      },
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 md:p-8">
@@ -199,9 +124,17 @@ export default async function CreditScoreDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {creditHealthFactors.map((factor: CreditHealthFactor) => (
-                <CreditFactorCard key={factor.name} factor={factor} />
-              ))}
+              {subscription && (
+                <MonthlyCreditFactors
+                  monthlyHealthData={parsedMonthlyHealthData}
+                  startDate={new Date(subscription.createdAt)}
+                  expiryDate={
+                    subscription.expiryDate
+                      ? new Date(subscription.expiryDate)
+                      : null
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </div>

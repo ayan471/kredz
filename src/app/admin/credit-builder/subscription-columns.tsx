@@ -23,14 +23,28 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CreditBuilderSubscription } from "@prisma/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { useRouter } from "next/navigation";
-import { updateCreditHealth } from "@/actions/formActions";
+import { updateMonthlyCreditHealth } from "@/actions/formActions";
 
 interface CreditFactor {
   name: string;
   score: number;
   details?: any;
+}
+
+interface CreditHealthFactor extends CreditFactor {
+  details?: {
+    factors?: string;
+    recommendation?: string;
+  };
 }
 
 interface CreditFactors {
@@ -44,6 +58,12 @@ interface CreditFactors {
   overdueAccounts: { count: number; lenders: string };
   scoringFactors: string;
   recommendation: string;
+}
+
+interface MonthlyHealthData {
+  year: number;
+  month: number;
+  creditHealth: string;
 }
 
 export const columns: ColumnDef<CreditBuilderSubscription>[] = [
@@ -112,6 +132,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
     cell: ({ row }) => {
       const subscription = row.original;
       const [isUpdating, setIsUpdating] = useState(false);
+      const [selectedMonth, setSelectedMonth] = useState<string>("");
       const [creditFactors, setCreditFactors] = useState<CreditFactors>({
         creditUtilization: 0,
         paymentHistory: 0,
@@ -128,74 +149,71 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
       const router = useRouter();
 
       useEffect(() => {
-        if (subscription.creditHealth) {
+        if (subscription.monthlyHealthData) {
           try {
-            const parsedCreditHealth: CreditFactor[] = JSON.parse(
-              subscription.creditHealth
+            const parsedMonthlyHealthData = JSON.parse(
+              subscription.monthlyHealthData
             );
-            setCreditFactors({
-              creditUtilization:
-                parsedCreditHealth.find(
-                  (f: CreditFactor) => f.name === "Credit Utilization"
-                )?.score || 0,
-              paymentHistory:
-                parsedCreditHealth.find(
-                  (f: CreditFactor) => f.name === "Payment History"
-                )?.score || 0,
-              creditAge: parsedCreditHealth.find(
-                (f: CreditFactor) => f.name === "Credit Age"
-              )?.details || { years: 0, months: 0, days: 0 },
-              creditMix:
-                parsedCreditHealth.find(
-                  (f: CreditFactor) => f.name === "Credit Mix"
-                )?.score || 0,
-              totalActiveAccounts: parsedCreditHealth.find(
-                (f: CreditFactor) => f.name === "Total Active Accounts"
-              )?.details || { count: 0, lenders: "" },
-              delayHistory: parsedCreditHealth.find(
-                (f: CreditFactor) => f.name === "Delay History"
-              )?.details || { count: 0, lenders: "" },
-              inquiries: parsedCreditHealth.find(
-                (f: CreditFactor) => f.name === "No. of Inquiries"
-              )?.details || { count: 0, lenders: "" },
-              overdueAccounts: parsedCreditHealth.find(
-                (f: CreditFactor) => f.name === "Overdue Accounts"
-              )?.details || { count: 0, lenders: "" },
-              scoringFactors:
-                parsedCreditHealth.find(
-                  (f: CreditFactor) => f.name === "Scoring Factors"
-                )?.details?.factors || "",
-              recommendation:
-                parsedCreditHealth.find(
-                  (f: CreditFactor) => f.name === "Our Recommendation"
-                )?.details?.recommendation || "",
-            });
+            if (selectedMonth && parsedMonthlyHealthData[selectedMonth]) {
+              setCreditFactors(parsedMonthlyHealthData[selectedMonth]);
+            }
           } catch (error) {
-            console.error("Error parsing creditHealth:", error);
+            console.error("Error parsing monthlyHealthData:", error);
           }
         }
-      }, [subscription.creditHealth]);
+      }, [subscription.monthlyHealthData, selectedMonth]);
 
       const handleUpdateCreditHealth = async () => {
         setIsUpdating(true);
         try {
-          const result = await updateCreditHealth(
+          const [year, month] = selectedMonth.split("-").map(Number);
+          const result = await updateMonthlyCreditHealth(
             subscription.id,
+            month,
+            year,
             creditFactors
           );
           if (result.success) {
-            console.log("Credit health updated successfully");
+            console.log("Monthly credit health updated successfully");
             router.refresh();
             setIsOpen(false);
           } else {
-            console.error("Failed to update credit health:", result.error);
+            console.error(
+              "Failed to update monthly credit health:",
+              result.error
+            );
           }
         } catch (error) {
-          console.error("Error updating credit health:", error);
+          console.error("Error updating monthly credit health:", error);
         } finally {
           setIsUpdating(false);
         }
       };
+
+      const getMonthOptions = () => {
+        const options = [];
+        const startDate = new Date(subscription.createdAt);
+        const endDate = subscription.expiryDate
+          ? new Date(subscription.expiryDate)
+          : new Date();
+        const currentDate = new Date(startDate);
+
+        while (currentDate <= endDate) {
+          const monthKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}`;
+          options.push({
+            value: monthKey,
+            label: currentDate.toLocaleString("default", {
+              month: "long",
+              year: "numeric",
+            }),
+          });
+          currentDate.setMonth(currentDate.getMonth() + 1);
+        }
+
+        return options;
+      };
+
+      const monthOptions = getMonthOptions();
 
       return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -206,336 +224,356 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
           </DialogTrigger>
           <DialogContent className="max-w-3xl">
             <DialogHeader>
-              <DialogTitle>Update Credit Health</DialogTitle>
+              <DialogTitle>Update Monthly Credit Health</DialogTitle>
             </DialogHeader>
             <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-              <div>
-                <label
-                  htmlFor="creditUtilization"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Credit Utilization
-                </label>
-                <Input
-                  id="creditUtilization"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={creditFactors.creditUtilization}
-                  onChange={(e) =>
-                    setCreditFactors({
-                      ...creditFactors,
-                      creditUtilization: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="paymentHistory"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Payment History
-                </label>
-                <Input
-                  id="paymentHistory"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={creditFactors.paymentHistory}
-                  onChange={(e) =>
-                    setCreditFactors({
-                      ...creditFactors,
-                      paymentHistory: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="creditAge"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Age of Credit
-                </label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="creditAgeYears"
-                    type="number"
-                    min="0"
-                    placeholder="Years"
-                    value={creditFactors.creditAge.years}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        creditAge: {
-                          ...creditFactors.creditAge,
-                          years: parseInt(e.target.value),
-                        },
-                      })
-                    }
-                  />
-                  <Input
-                    id="creditAgeMonths"
-                    type="number"
-                    min="0"
-                    max="11"
-                    placeholder="Months"
-                    value={creditFactors.creditAge.months}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        creditAge: {
-                          ...creditFactors.creditAge,
-                          months: parseInt(e.target.value),
-                        },
-                      })
-                    }
-                  />
-                  <Input
-                    id="creditAgeDays"
-                    type="number"
-                    min="0"
-                    max="30"
-                    placeholder="Days"
-                    value={creditFactors.creditAge.days}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        creditAge: {
-                          ...creditFactors.creditAge,
-                          days: parseInt(e.target.value),
-                        },
-                      })
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  htmlFor="creditMix"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Credit Mix
-                </label>
-                <Input
-                  id="creditMix"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={creditFactors.creditMix}
-                  onChange={(e) =>
-                    setCreditFactors({
-                      ...creditFactors,
-                      creditMix: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="totalActiveAccounts"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Total Active Accounts
-                </label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="totalActiveAccountsCount"
-                    type="number"
-                    min="0"
-                    placeholder="Count"
-                    value={creditFactors.totalActiveAccounts.count}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        totalActiveAccounts: {
-                          ...creditFactors.totalActiveAccounts,
-                          count: parseInt(e.target.value),
-                        },
-                      })
-                    }
-                  />
-                  <Textarea
-                    id="totalActiveAccountsLenders"
-                    placeholder="Lenders (comma-separated)"
-                    value={creditFactors.totalActiveAccounts.lenders}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        totalActiveAccounts: {
-                          ...creditFactors.totalActiveAccounts,
-                          lenders: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  htmlFor="delayHistory"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Delay History
-                </label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="delayHistoryCount"
-                    type="number"
-                    min="0"
-                    placeholder="Count"
-                    value={creditFactors.delayHistory.count}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        delayHistory: {
-                          ...creditFactors.delayHistory,
-                          count: parseInt(e.target.value),
-                        },
-                      })
-                    }
-                  />
-                  <Textarea
-                    id="delayHistoryLenders"
-                    placeholder="Lenders (comma-separated)"
-                    value={creditFactors.delayHistory.lenders}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        delayHistory: {
-                          ...creditFactors.delayHistory,
-                          lenders: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  htmlFor="inquiries"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  No. of Inquiries
-                </label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="inquiriesCount"
-                    type="number"
-                    min="0"
-                    placeholder="Count"
-                    value={creditFactors.inquiries.count}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        inquiries: {
-                          ...creditFactors.inquiries,
-                          count: parseInt(e.target.value),
-                        },
-                      })
-                    }
-                  />
-                  <Textarea
-                    id="inquiriesLenders"
-                    placeholder="Lenders (comma-separated)"
-                    value={creditFactors.inquiries.lenders}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        inquiries: {
-                          ...creditFactors.inquiries,
-                          lenders: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  htmlFor="overdueAccounts"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Overdue Accounts
-                </label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="overdueAccountsCount"
-                    type="number"
-                    min="0"
-                    placeholder="Count"
-                    value={creditFactors.overdueAccounts.count}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        overdueAccounts: {
-                          ...creditFactors.overdueAccounts,
-                          count: parseInt(e.target.value),
-                        },
-                      })
-                    }
-                  />
-                  <Textarea
-                    id="overdueAccountsLenders"
-                    placeholder="Lenders (comma-separated)"
-                    value={creditFactors.overdueAccounts.lenders}
-                    onChange={(e) =>
-                      setCreditFactors({
-                        ...creditFactors,
-                        overdueAccounts: {
-                          ...creditFactors.overdueAccounts,
-                          lenders: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  htmlFor="scoringFactors"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Scoring Factors
-                </label>
-                <Textarea
-                  id="scoringFactors"
-                  placeholder="Enter scoring factors"
-                  value={creditFactors.scoringFactors}
-                  onChange={(e) =>
-                    setCreditFactors({
-                      ...creditFactors,
-                      scoringFactors: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="recommendation"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Our Recommendation
-                </label>
-                <Textarea
-                  id="recommendation"
-                  placeholder="Enter recommendation"
-                  value={creditFactors.recommendation}
-                  onChange={(e) =>
-                    setCreditFactors({
-                      ...creditFactors,
-                      recommendation: e.target.value,
-                    })
-                  }
-                />
-              </div>
+              <Select onValueChange={setSelectedMonth} value={selectedMonth}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {selectedMonth && (
+                <>
+                  <div>
+                    <label
+                      htmlFor="creditUtilization"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Credit Utilization
+                    </label>
+                    <Input
+                      id="creditUtilization"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={creditFactors.creditUtilization}
+                      onChange={(e) =>
+                        setCreditFactors({
+                          ...creditFactors,
+                          creditUtilization: parseInt(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="paymentHistory"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Payment History
+                    </label>
+                    <Input
+                      id="paymentHistory"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={creditFactors.paymentHistory}
+                      onChange={(e) =>
+                        setCreditFactors({
+                          ...creditFactors,
+                          paymentHistory: parseInt(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="creditAge"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Age of Credit
+                    </label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="creditAgeYears"
+                        type="number"
+                        min="0"
+                        placeholder="Years"
+                        value={creditFactors.creditAge.years}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            creditAge: {
+                              ...creditFactors.creditAge,
+                              years: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                      />
+                      <Input
+                        id="creditAgeMonths"
+                        type="number"
+                        min="0"
+                        max="11"
+                        placeholder="Months"
+                        value={creditFactors.creditAge.months}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            creditAge: {
+                              ...creditFactors.creditAge,
+                              months: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                      />
+                      <Input
+                        id="creditAgeDays"
+                        type="number"
+                        min="0"
+                        max="30"
+                        placeholder="Days"
+                        value={creditFactors.creditAge.days}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            creditAge: {
+                              ...creditFactors.creditAge,
+                              days: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="creditMix"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Credit Mix
+                    </label>
+                    <Input
+                      id="creditMix"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={creditFactors.creditMix}
+                      onChange={(e) =>
+                        setCreditFactors({
+                          ...creditFactors,
+                          creditMix: parseInt(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="totalActiveAccounts"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Total Active Accounts
+                    </label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="totalActiveAccountsCount"
+                        type="number"
+                        min="0"
+                        placeholder="Count"
+                        value={creditFactors.totalActiveAccounts.count}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            totalActiveAccounts: {
+                              ...creditFactors.totalActiveAccounts,
+                              count: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                      />
+                      <Textarea
+                        id="totalActiveAccountsLenders"
+                        placeholder="Lenders (comma-separated)"
+                        value={creditFactors.totalActiveAccounts.lenders}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            totalActiveAccounts: {
+                              ...creditFactors.totalActiveAccounts,
+                              lenders: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="delayHistory"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Delay History
+                    </label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="delayHistoryCount"
+                        type="number"
+                        min="0"
+                        placeholder="Count"
+                        value={creditFactors.delayHistory.count}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            delayHistory: {
+                              ...creditFactors.delayHistory,
+                              count: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                      />
+                      <Textarea
+                        id="delayHistoryLenders"
+                        placeholder="Lenders (comma-separated)"
+                        value={creditFactors.delayHistory.lenders}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            delayHistory: {
+                              ...creditFactors.delayHistory,
+                              lenders: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="inquiries"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      No. of Inquiries
+                    </label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="inquiriesCount"
+                        type="number"
+                        min="0"
+                        placeholder="Count"
+                        value={creditFactors.inquiries.count}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            inquiries: {
+                              ...creditFactors.inquiries,
+                              count: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                      />
+                      <Textarea
+                        id="inquiriesLenders"
+                        placeholder="Lenders (comma-separated)"
+                        value={creditFactors.inquiries.lenders}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            inquiries: {
+                              ...creditFactors.inquiries,
+                              lenders: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="overdueAccounts"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Overdue Accounts
+                    </label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="overdueAccountsCount"
+                        type="number"
+                        min="0"
+                        placeholder="Count"
+                        value={creditFactors.overdueAccounts.count}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            overdueAccounts: {
+                              ...creditFactors.overdueAccounts,
+                              count: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                      />
+                      <Textarea
+                        id="overdueAccountsLenders"
+                        placeholder="Lenders (comma-separated)"
+                        value={creditFactors.overdueAccounts.lenders}
+                        onChange={(e) =>
+                          setCreditFactors({
+                            ...creditFactors,
+                            overdueAccounts: {
+                              ...creditFactors.overdueAccounts,
+                              lenders: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="scoringFactors"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Scoring Factors
+                    </label>
+                    <Textarea
+                      id="scoringFactors"
+                      placeholder="Enter scoring factors"
+                      value={creditFactors.scoringFactors}
+                      onChange={(e) =>
+                        setCreditFactors({
+                          ...creditFactors,
+                          scoringFactors: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="recommendation"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Our Recommendation
+                    </label>
+                    <Textarea
+                      id="recommendation"
+                      placeholder="Enter recommendation"
+                      value={creditFactors.recommendation}
+                      onChange={(e) =>
+                        setCreditFactors({
+                          ...creditFactors,
+                          recommendation: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setIsOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleUpdateCreditHealth} disabled={isUpdating}>
+              <Button
+                onClick={handleUpdateCreditHealth}
+                disabled={isUpdating || !selectedMonth}
+              >
                 {isUpdating ? "Updating..." : "Confirm Update"}
               </Button>
             </div>

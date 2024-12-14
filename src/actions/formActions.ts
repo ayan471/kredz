@@ -8,6 +8,19 @@ import { addMonths } from "date-fns";
 
 const prisma = new PrismaClient();
 
+interface CreditFactors {
+  creditUtilization: number;
+  paymentHistory: number;
+  creditAge: { years: number; months: number; days: number };
+  creditMix: number;
+  totalActiveAccounts: { count: number; lenders: string };
+  delayHistory: { count: number; lenders: string };
+  inquiries: { count: number; lenders: string };
+  overdueAccounts: { count: number; lenders: string };
+  scoringFactors: string;
+  recommendation: string;
+}
+
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -120,22 +133,10 @@ export async function getCreditBuilderData(userId: string) {
   }
 }
 
-interface CreditHealthFactors {
-  creditUtilization: number;
-  paymentHistory: number;
-  creditAge: { years: number; months: number; days: number };
-  creditMix: number;
-  totalActiveAccounts: { count: number; lenders: string };
-  delayHistory: { count: number; lenders: string };
-  inquiries: { count: number; lenders: string };
-  overdueAccounts: { count: number; lenders: string };
-  scoringFactors: string;
-  recommendation: string;
-}
-
 export async function updateCreditHealth(
   subscriptionId: string,
-  creditFactors: CreditHealthFactors
+  creditFactors: CreditFactors,
+  month: string
 ) {
   try {
     const subscription = await prisma.creditBuilderSubscription.findUnique({
@@ -146,14 +147,14 @@ export async function updateCreditHealth(
       throw new Error("Subscription not found");
     }
 
-    const updatedCards = [
+    let creditHealth = subscription.creditHealth
+      ? JSON.parse(subscription.creditHealth)
+      : {};
+
+    creditHealth[month] = [
       { name: "Credit Utilization", score: creditFactors.creditUtilization },
       { name: "Payment History", score: creditFactors.paymentHistory },
-      {
-        name: "Credit Age",
-        score: 0, // You may want to calculate a score based on years, months, and days
-        details: creditFactors.creditAge,
-      },
+      { name: "Credit Age", score: 0, details: creditFactors.creditAge },
       { name: "Credit Mix", score: creditFactors.creditMix },
       {
         name: "Total Active Accounts",
@@ -177,12 +178,12 @@ export async function updateCreditHealth(
       },
       {
         name: "Scoring Factors",
-        score: 0, // You may want to calculate a score based on the factors
+        score: 0,
         details: { factors: creditFactors.scoringFactors },
       },
       {
         name: "Our Recommendation",
-        score: 0, // Recommendations typically don't have a score
+        score: 0,
         details: { recommendation: creditFactors.recommendation },
       },
     ];
@@ -190,20 +191,56 @@ export async function updateCreditHealth(
     const updatedSubscription = await prisma.creditBuilderSubscription.update({
       where: { id: subscriptionId },
       data: {
-        creditHealth: JSON.stringify(updatedCards),
+        creditHealth: JSON.stringify(creditHealth),
       },
     });
 
     revalidatePath("/admin/credit-builder");
     revalidatePath("/dashboard/credit-health");
 
-    return { success: true, data: updatedCards };
+    return { success: true, data: updatedSubscription };
   } catch (error) {
     console.error("Error updating credit health:", error);
     return { success: false, error: "Failed to update credit health" };
   }
 }
 
+export async function updateMonthlyCreditHealth(
+  subscriptionId: string,
+  month: number,
+  year: number,
+  creditFactors: CreditFactors
+) {
+  try {
+    const subscription = await prisma.creditBuilderSubscription.findUnique({
+      where: { id: subscriptionId },
+    });
+
+    if (!subscription) {
+      throw new Error("Subscription not found");
+    }
+
+    let monthlyHealthData = subscription.monthlyHealthData
+      ? JSON.parse(subscription.monthlyHealthData)
+      : {};
+    monthlyHealthData[`${year}-${month}`] = creditFactors;
+
+    const updatedSubscription = await prisma.creditBuilderSubscription.update({
+      where: { id: subscriptionId },
+      data: {
+        monthlyHealthData: JSON.stringify(monthlyHealthData),
+      },
+    });
+
+    revalidatePath("/admin/credit-builder");
+    revalidatePath("/dashboard/credit-health");
+
+    return { success: true, data: updatedSubscription };
+  } catch (error) {
+    console.error("Error updating monthly credit health:", error);
+    return { success: false, error: "Failed to update monthly credit health" };
+  }
+}
 export async function getUserSubscription(userId: string) {
   try {
     const subscription = await prisma.creditBuilderSubscription.findFirst({
@@ -211,28 +248,18 @@ export async function getUserSubscription(userId: string) {
       orderBy: { createdAt: "desc" },
     });
 
-    if (!subscription) {
-      console.log(`No subscription found for user ${userId}`);
-      return null;
+    if (subscription) {
+      const now = new Date();
+      const isExpired =
+        subscription.expiryDate && subscription.expiryDate < now;
+
+      return {
+        ...subscription,
+        isActive: !isExpired,
+      };
     }
 
-    if (subscription && !subscription.expiryDate) {
-      // If expiryDate is null, calculate it based on the plan and createdAt date
-      const durationInMonths = parseInt(subscription.plan.split(" ")[0]);
-      subscription.expiryDate = addMonths(
-        subscription.createdAt,
-        durationInMonths
-      );
-
-      // Update the subscription in the database
-      await prisma.creditBuilderSubscription.update({
-        where: { id: subscription.id },
-        data: { expiryDate: subscription.expiryDate },
-      });
-    }
-
-    console.log(`Subscription for user ${userId}:`, subscription);
-    return subscription;
+    return null;
   } catch (error) {
     console.error("Error fetching user subscription:", error);
     return null;
@@ -277,6 +304,23 @@ export async function submitCreditBuilderSubscription(data: {
   }
 }
 
+export async function getAllSubscriptions() {
+  try {
+    const subscriptions = await prisma.creditBuilderSubscription.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+
+    return subscriptions.map((subscription) => ({
+      ...subscription,
+      isActive: subscription.expiryDate
+        ? new Date(subscription.expiryDate) > new Date()
+        : false,
+    }));
+  } catch (error) {
+    console.error("Error fetching all subscriptions:", error);
+    return [];
+  }
+}
 export async function getAdminDashboardData() {
   const user = await currentUser();
   if (!user) {
