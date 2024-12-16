@@ -42,6 +42,7 @@ async function getUserData(userId: string) {
     aadharImgBackUrl: string | null;
     aadharNo: string;
     status: string;
+    approvedAmount?: string;
   } | null;
 
   const creditBuilderSubscription =
@@ -89,10 +90,16 @@ export default async function DashboardPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Amount Requested:
+                      {loanApplication.status === "Approved"
+                        ? "Approved Amount:"
+                        : "Amount Requested:"}
                     </span>
                     <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      ₹{loanApplication.amtRequired}
+                      ₹
+                      {loanApplication.status === "Approved"
+                        ? loanApplication.approvedAmount ||
+                          loanApplication.amtRequired
+                        : loanApplication.amtRequired}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">

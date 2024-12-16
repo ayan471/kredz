@@ -90,6 +90,16 @@ export function ApprovalModal({
   }, [approvedAmount, rateOfInterest, tenure, setValue]);
 
   useEffect(() => {
+    const amount = parseFloat(approvedAmount) || 0;
+    const fees = parseFloat(processingFees) || 0;
+    const gstAmount = parseFloat(calculateGST(processingFees)) || 0;
+    const others = parseFloat(watch("otherCharges")) || 0;
+
+    const netDisbursement = amount - (fees + gstAmount + others);
+    setValue("netDisbursement", netDisbursement.toFixed(2));
+  }, [approvedAmount, processingFees, watch("otherCharges"), setValue]);
+
+  useEffect(() => {
     if (!isOpen) {
       reset();
     }
@@ -224,18 +234,17 @@ export function ApprovalModal({
             <Input
               id="netDisbursement"
               className="col-span-3"
-              {...register("netDisbursement", {
-                required: "Net disbursement is required",
-              })}
+              {...register("netDisbursement")}
+              readOnly
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="disbursementAccount" className="text-right">
               Disbursement Account
             </Label>
-            <Input
+            <textarea
               id="disbursementAccount"
-              className="col-span-3"
+              className="col-span-3 h-20 px-3 py-2 text-sm rounded-md border border-input bg-transparent"
               {...register("disbursementAccount", {
                 required: "Disbursement account is required",
               })}
