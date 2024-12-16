@@ -26,74 +26,84 @@ interface PlanOption {
   value: string;
   label: string;
   duration: number;
-  price: number;
+  discountedPrice: number;
+  originalPrice: number;
   popular?: boolean;
   color: string;
 }
 
 const planOptions: PlanOption[] = [
   {
-    value: "1 month: ₹300 including GST",
+    value: "1 month",
     label: "Starter",
     duration: 1,
-    price: 300,
+    discountedPrice: 189,
+    originalPrice: 300,
     color: "from-blue-400 to-blue-600",
   },
   {
-    value: "3 months: ₹900 including GST",
+    value: "3 months",
     label: "Basic",
     duration: 3,
-    price: 900,
+    discountedPrice: 299,
+    originalPrice: 900,
     color: "from-green-400 to-green-600",
   },
   {
-    value: "6 month: ₹1800 including GST",
+    value: "6 months",
     label: "Standard",
     duration: 6,
-    price: 1800,
+    discountedPrice: 526,
+    originalPrice: 1800,
     popular: true,
     color: "from-purple-400 to-purple-600",
   },
   {
-    value: "9 month: ₹2700 including GST",
+    value: "9 months",
     label: "Advanced",
     duration: 9,
-    price: 2700,
+    discountedPrice: 779,
+    originalPrice: 2700,
     color: "from-yellow-400 to-yellow-600",
   },
   {
-    value: "12 month: ₹3600 including GST",
+    value: "12 months",
     label: "Pro",
     duration: 12,
-    price: 3600,
+    discountedPrice: 1015,
+    originalPrice: 3600,
     color: "from-orange-400 to-orange-600",
   },
   {
-    value: "15 month: ₹4500 including GST",
+    value: "15 months",
     label: "Elite",
     duration: 15,
-    price: 4500,
+    discountedPrice: 1265,
+    originalPrice: 4500,
     color: "from-red-400 to-red-600",
   },
   {
-    value: "18 month: ₹5400 including GST",
+    value: "18 months",
     label: "Premium",
     duration: 18,
-    price: 5400,
+    discountedPrice: 1518,
+    originalPrice: 5400,
     color: "from-pink-400 to-pink-600",
   },
   {
-    value: "21 month: ₹6300 including GST",
+    value: "21 months",
     label: "Platinum",
     duration: 21,
-    price: 6300,
+    discountedPrice: 1768,
+    originalPrice: 6300,
     color: "from-indigo-400 to-indigo-600",
   },
   {
-    value: "24 month: ₹7200 including GST",
+    value: "24 months",
     label: "Ultimate",
     duration: 24,
-    price: 7200,
+    discountedPrice: 2018,
+    originalPrice: 7200,
     color: "from-teal-400 to-teal-600",
   },
 ];
@@ -226,20 +236,23 @@ const CbStepTwo: React.FC = () => {
                 <h3 className="text-2xl font-bold mb-2 text-white">
                   {plan.label}
                 </h3>
-                <div className="flex items-baseline mb-4">
+                <div className="flex flex-col items-baseline mb-4">
                   <span className="text-3xl font-extrabold text-white">
-                    ₹{plan.price}
+                    ₹{plan.discountedPrice}
                   </span>
-                  <span className="text-lg text-white ml-2">
-                    / {plan.duration} {plan.duration === 1 ? "month" : "months"}
-                  </span>
+                  <div className="flex items-center">
+                    <span className="text-lg text-white mr-2">+ GST</span>
+                    <span className="text-sm text-white line-through">
+                      ₹{plan.originalPrice}
+                    </span>
+                  </div>
                 </div>
                 <div className="space-y-2 mb-6">
                   <div className="flex items-center text-white">
                     <Clock className="w-4 h-4 mr-2" />
                     <span className="text-sm">
                       {plan.duration} {plan.duration === 1 ? "month" : "months"}{" "}
-                      duration
+                      plan
                     </span>
                   </div>
                   <div className="flex items-center text-white">

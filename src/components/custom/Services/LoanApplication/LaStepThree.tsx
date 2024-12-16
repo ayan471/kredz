@@ -35,9 +35,10 @@ const LaStepThree = () => {
   const [eligiblePlan, setEligiblePlan] = useState<string>("");
   const [planDetails, setPlanDetails] = useState<{
     name: string;
-    price: number;
+    discountedPrice: number;
+    realPrice: number;
     features: string[];
-  }>({ name: "", price: 0, features: [] });
+  }>({ name: "", discountedPrice: 0, realPrice: 0, features: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -61,12 +62,22 @@ const LaStepThree = () => {
           // Set plan details (replace with actual data)
           setPlanDetails({
             name: membershipPlan,
-            price:
-              membershipPlan === "Gold"
-                ? 900
+            discountedPrice:
+              membershipPlan === "Bronze"
+                ? 179
+                : membershipPlan === "Silver"
+                  ? 289
+                  : membershipPlan === "Gold"
+                    ? 389
+                    : 479,
+            realPrice:
+              membershipPlan === "Bronze"
+                ? 300
                 : membershipPlan === "Silver"
                   ? 600
-                  : 1200,
+                  : membershipPlan === "Gold"
+                    ? 900
+                    : 1200,
             features: [
               "Pre-approved loan offer",
               "Instant processing",
@@ -103,7 +114,7 @@ const LaStepThree = () => {
         });
 
         const paymentResult = await initiatePhonePePayment({
-          amount: planDetails.price,
+          amount: planDetails.discountedPrice,
           orderId: id,
           customerName: data.fullName,
           customerPhone: data.phoneNo,
@@ -171,9 +182,14 @@ const LaStepThree = () => {
         >
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">{planDetails.name} Plan</h2>
-            <div className="flex items-center">
-              <Star className="w-6 h-6 fill-current text-yellow-400 mr-2" />
-              <span className="text-3xl font-bold">₹{planDetails.price}</span>
+            <div className="flex items-center flex-col">
+              <span className="text-3xl font-bold">
+                ₹{planDetails.discountedPrice}
+              </span>
+              <span className="text-sm">+ GST</span>
+              <span className="text-sm line-through text-gray-300">
+                ₹{planDetails.realPrice}
+              </span>
             </div>
           </div>
           <ul className="mt-4 space-y-2">
