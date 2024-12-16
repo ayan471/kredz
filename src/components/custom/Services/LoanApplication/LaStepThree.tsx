@@ -15,6 +15,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Star, Check } from "lucide-react";
+import { initiatePhonePePayment } from "@/components/lib/phonePe";
 
 type FormValues = {
   fullName: string;
@@ -37,6 +38,7 @@ const LaStepThree = () => {
     price: number;
     features: string[];
   }>({ name: "", price: 0, features: [] });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,10 +63,10 @@ const LaStepThree = () => {
             name: membershipPlan,
             price:
               membershipPlan === "Gold"
-                ? 999
+                ? 900
                 : membershipPlan === "Silver"
-                  ? 499
-                  : 299,
+                  ? 600
+                  : 1200,
             features: [
               "Pre-approved loan offer",
               "Instant processing",
@@ -79,6 +81,7 @@ const LaStepThree = () => {
   }, [searchParams, setValue, form]);
 
   const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
     const id = searchParams.get("id");
     if (!id) {
       toast({
@@ -86,24 +89,55 @@ const LaStepThree = () => {
         description: "Application ID not found",
         variant: "destructive",
       });
+      setIsSubmitting(false);
       return;
     }
 
-    const result = await updateLoanApplicationData(id, { ...data, step: 3 });
+    try {
+      const result = await updateLoanApplicationData(id, { ...data, step: 3 });
 
-    if (result.success) {
-      toast({
-        title: "Membership Submitted!",
-        description: "Your loan membership has been processed.",
-      });
-      router.push(`/loan-application/success?id=${id}`);
-    } else {
+      if (result.success) {
+        toast({
+          title: "Membership Submitted!",
+          description: "Initiating payment...",
+        });
+
+        const paymentResult = await initiatePhonePePayment({
+          amount: planDetails.price,
+          orderId: id,
+          customerName: data.fullName,
+          customerPhone: data.phoneNo,
+          customerEmail: data.emailID,
+        });
+
+        if (paymentResult.success && paymentResult.paymentUrl) {
+          window.location.href = paymentResult.paymentUrl;
+        } else {
+          console.error("Payment initiation failed:", paymentResult.error);
+          toast({
+            title: "Payment Error",
+            description:
+              paymentResult.error ||
+              "Failed to initiate payment. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        throw new Error(result.error || "Failed to submit Loan membership");
+      }
+    } catch (error) {
+      console.error("Error in form submission:", error);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       toast({
         title: "Error",
-        description:
-          result.error || "Failed to submit Loan membership. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -203,8 +237,9 @@ const LaStepThree = () => {
           <Button
             type="submit"
             className="w-full text-md py-6 text-lg font-semibold"
+            disabled={isSubmitting}
           >
-            Proceed to Payment
+            {isSubmitting ? "Processing..." : "Proceed to Payment"}
           </Button>
         </motion.div>
       </form>
