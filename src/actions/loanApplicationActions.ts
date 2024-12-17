@@ -311,37 +311,28 @@ export async function approveLoanWithDetails(
   }
 ) {
   try {
-    const approvedAmount = parseFloat(data.approvedAmount);
-    const processingFees = parseFloat(data.processingFees);
-    const gst = parseFloat(data.gst);
-    const otherCharges = parseFloat(data.otherCharges);
-    const rateOfInterest = parseFloat(data.rateOfInterest);
-    const tenure = parseInt(data.tenure);
-    const netDisbursement = parseFloat(data.netDisbursement);
-    const emi = parseFloat(data.emi);
-
     const updatedLoan = await prisma.loanApplication.update({
       where: { id: applicationId },
       data: {
         status: "Approved",
-        approvedAmount,
-        processingFees,
-        gst,
-        otherCharges,
-        rateOfInterest,
-        tenure,
-        netDisbursement,
+        approvedAmount: parseFloat(data.approvedAmount),
+        processingFees: parseFloat(data.processingFees),
+        gst: parseFloat(data.gst),
+        otherCharges: parseFloat(data.otherCharges),
+        rateOfInterest: parseFloat(data.rateOfInterest),
+        tenure: parseInt(data.tenure),
+        netDisbursement: parseFloat(data.netDisbursement),
         disbursementAccount: data.disbursementAccount,
         disbursementDate: new Date(data.disbursementDate),
         lender: data.lender,
-        emi,
+        emi: parseFloat(data.emi),
       },
     });
 
-    return { success: true, id: updatedLoan.id };
+    return { success: true, loan: updatedLoan };
   } catch (error) {
-    console.error("Error approving loan application:", error);
-    return { success: false, error: "Failed to approve loan application" };
+    console.error("Error approving loan:", error);
+    return { success: false, error: "Failed to approve loan" };
   }
 }
 
@@ -514,11 +505,27 @@ export async function payEMI(loanId: string, amount: number) {
       throw new Error("All EMIs have been paid for this loan");
     }
 
+    if (!loan.emiPaymentLink) {
+      throw new Error("EMI payment link not available");
+    }
+
+    // Here, you would typically integrate with your payment gateway
+    // using the emiPaymentLink. For this example, we'll simulate a successful payment.
+
     const payment = await prisma.eMIPayment.create({
       data: {
         loanId,
         amount,
         paymentDate: new Date(),
+      },
+    });
+
+    // After successful payment, you might want to update the emiPaymentLink
+    // for the next payment or mark it as used.
+    await prisma.loanApplication.update({
+      where: { id: loanId },
+      data: {
+        emiPaymentLink: null, // or generate a new link for the next payment
       },
     });
 
@@ -528,5 +535,22 @@ export async function payEMI(loanId: string, amount: number) {
   } catch (error) {
     console.error("Error processing EMI payment:", error);
     return { success: false, error: "Failed to process EMI payment" };
+  }
+}
+
+export async function updateEMIPaymentLink(
+  loanId: string,
+  emiPaymentLink: string
+) {
+  try {
+    const updatedLoan = await prisma.loanApplication.update({
+      where: { id: loanId },
+      data: { emiPaymentLink },
+    });
+
+    return { success: true, loan: updatedLoan };
+  } catch (error) {
+    console.error("Error updating EMI payment link:", error);
+    return { success: false, error: "Failed to update EMI payment link" };
   }
 }

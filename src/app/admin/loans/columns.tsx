@@ -9,6 +9,7 @@ import {
   CheckCircle,
   XCircle,
   UserCheck,
+  CreditCard,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -25,6 +26,7 @@ import {
   rejectLoan,
 } from "@/actions/loanApplicationActions";
 import { ApprovalModal } from "./components/approval-modal";
+import { EMIModal } from "./components/emi-modal";
 
 export type LoanApplication = {
   id: string;
@@ -34,7 +36,9 @@ export type LoanApplication = {
   amtRequired: string;
   approvedAmount: number | null;
   createdAt: Date;
+  updatedAt: Date; // Add this line
   status: string | null;
+  tenure: number | null; // Add this line
 };
 
 export const columns: ColumnDef<LoanApplication>[] = [
@@ -154,6 +158,7 @@ export const columns: ColumnDef<LoanApplication>[] = [
     cell: ({ row }) => {
       const application = row.original;
       const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+      const [isEMIModalOpen, setIsEMIModalOpen] = useState(false);
 
       return (
         <>
@@ -177,26 +182,50 @@ export const columns: ColumnDef<LoanApplication>[] = [
                   View details
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsApprovalModalOpen(true)}>
-                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                Approve application
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => rejectLoan(application.id)}>
-                <XCircle className="mr-2 h-4 w-4 text-red-600" />
-                Reject application
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => makeUserEligible(application.id)}
-              >
-                <UserCheck className="mr-2 h-4 w-4 text-yellow-600" />
-                Make eligible
-              </DropdownMenuItem>
+              {application.status === "Approved" ? (
+                <>
+                  <DropdownMenuItem onClick={() => setIsEMIModalOpen(true)}>
+                    <CreditCard className="mr-2 h-4 w-4 text-blue-600" />
+                    Manage EMI
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => makeUserEligible(application.id)}
+                  >
+                    <UserCheck className="mr-2 h-4 w-4 text-yellow-600" />
+                    Make Eligible Again
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => setIsApprovalModalOpen(true)}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                    Approve application
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => rejectLoan(application.id)}>
+                    <XCircle className="mr-2 h-4 w-4 text-red-600" />
+                    Reject application
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => makeUserEligible(application.id)}
+                  >
+                    <UserCheck className="mr-2 h-4 w-4 text-yellow-600" />
+                    Make eligible
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
           <ApprovalModal
             isOpen={isApprovalModalOpen}
             onClose={() => setIsApprovalModalOpen(false)}
             applicationId={application.id}
+          />
+          <EMIModal
+            isOpen={isEMIModalOpen}
+            onClose={() => setIsEMIModalOpen(false)}
+            application={application}
           />
         </>
       );

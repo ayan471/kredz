@@ -35,7 +35,10 @@ async function getLoanDetails(id: string, userId: string) {
       id,
       userId,
     },
-    include: { eligibility: true, emiPayments: true },
+    include: {
+      eligibility: true,
+      emiPayments: true,
+    },
   });
 
   if (!loan) {
@@ -244,7 +247,11 @@ export default async function LoanDetailsPage({
               <p className="mb-4">
                 Your next EMI payment is due. Please pay to avoid late fees.
               </p>
-              <EMIPayButton loanId={loan.id} emiAmount={loan.emi || 0} />
+              <EMIPayButton
+                loanId={loan.id}
+                emiAmount={loan.emi || 0}
+                emiPaymentLink={loan.emiPaymentLink}
+              />
             </CardContent>
           </Card>
         )}

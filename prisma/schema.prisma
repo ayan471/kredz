@@ -89,6 +89,7 @@ model LoanApplication {
   membershipPlan      String?
   emi                 Float?
   emiPayments         EMIPayment[]
+  emiPaymentLink      String?
 }
 
 model EMIPayment {

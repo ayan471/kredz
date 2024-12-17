@@ -8,15 +8,34 @@ import { payEMI } from "@/actions/loanApplicationActions";
 interface EMIPayButtonProps {
   loanId: string;
   emiAmount: number;
+  emiPaymentLink: string | null;
 }
 
-export default function EMIPayButton({ loanId, emiAmount }: EMIPayButtonProps) {
+export default function EMIPayButton({
+  loanId,
+  emiAmount,
+  emiPaymentLink,
+}: EMIPayButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handlePayEMI = async () => {
+    if (!emiPaymentLink) {
+      toast({
+        title: "Payment Link Unavailable",
+        description:
+          "The EMI payment link is not available. Please contact support.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
+      // Open the payment link in a new window
+      window.open(emiPaymentLink, "_blank");
+
+      // Process the EMI payment
       const result = await payEMI(loanId, emiAmount);
       if (result.success) {
         toast({
@@ -40,10 +59,12 @@ export default function EMIPayButton({ loanId, emiAmount }: EMIPayButtonProps) {
   };
 
   return (
-    <Button onClick={handlePayEMI} disabled={isLoading}>
+    <Button onClick={handlePayEMI} disabled={isLoading || !emiPaymentLink}>
       {isLoading
         ? "Processing..."
-        : `Pay EMI (₹${emiAmount.toLocaleString("en-IN")})`}
+        : emiPaymentLink
+          ? `Pay EMI (₹${emiAmount.toLocaleString("en-IN")})`
+          : "Payment Link Unavailable"}
     </Button>
   );
 }

@@ -153,12 +153,9 @@ export function ApprovalModal({
             <Input
               id="approvedAmount"
               className="col-span-3"
-              {...register("approvedAmount", {
-                required: "Approved amount is required",
-              })}
+              {...register("approvedAmount", { required: true })}
             />
           </div>
-
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="processingFees" className="text-right">
               Processing Fees
@@ -166,14 +163,12 @@ export function ApprovalModal({
             <Input
               id="processingFees"
               className="col-span-3"
-              {...register("processingFees", {
-                required: "Processing fees is required",
-              })}
+              {...register("processingFees", { required: true })}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="gst" className="text-right">
-              GST (18%)
+              GST
             </Label>
             <Input
               id="gst"
@@ -189,9 +184,7 @@ export function ApprovalModal({
             <Input
               id="otherCharges"
               className="col-span-3"
-              {...register("otherCharges", {
-                required: "Other charges is required",
-              })}
+              {...register("otherCharges")}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -201,30 +194,17 @@ export function ApprovalModal({
             <Input
               id="rateOfInterest"
               className="col-span-3"
-              {...register("rateOfInterest", {
-                required: "Rate of interest is required",
-              })}
+              {...register("rateOfInterest", { required: true })}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="tenure" className="text-right">
-              Tenure (months)
+              Tenure (in months)
             </Label>
             <Input
               id="tenure"
               className="col-span-3"
-              {...register("tenure", { required: "Tenure is required" })}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="emi" className="text-right">
-              EMI
-            </Label>
-            <Input
-              id="emi"
-              className="col-span-3"
-              {...register("emi")}
-              readOnly
+              {...register("tenure", { required: true })}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -242,12 +222,10 @@ export function ApprovalModal({
             <Label htmlFor="disbursementAccount" className="text-right">
               Disbursement Account
             </Label>
-            <textarea
+            <Input
               id="disbursementAccount"
-              className="col-span-3 h-20 px-3 py-2 text-sm rounded-md border border-input bg-transparent"
-              {...register("disbursementAccount", {
-                required: "Disbursement account is required",
-              })}
+              className="col-span-3"
+              {...register("disbursementAccount", { required: true })}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -258,9 +236,7 @@ export function ApprovalModal({
               id="disbursementDate"
               type="date"
               className="col-span-3"
-              {...register("disbursementDate", {
-                required: "Disbursement date is required",
-              })}
+              {...register("disbursementDate", { required: true })}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -270,7 +246,18 @@ export function ApprovalModal({
             <Input
               id="lender"
               className="col-span-3"
-              {...register("lender", { required: "Lender is required" })}
+              {...register("lender", { required: true })}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="emi" className="text-right">
+              EMI
+            </Label>
+            <Input
+              id="emi"
+              className="col-span-3"
+              {...register("emi")}
+              readOnly
             />
           </div>
           <Button type="submit" disabled={isSubmitting}>
