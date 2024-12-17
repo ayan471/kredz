@@ -41,18 +41,36 @@ export function EMIModal({ isOpen, onClose, application }: EMIModalProps) {
   const [remainingTenure, setRemainingTenure] = useState(0);
 
   useEffect(() => {
+    console.log("EMIModal - Application data:", application);
     if (
       application.status === "Approved" &&
       application.approvedAmount &&
       application.updatedAt &&
-      application.tenure
+      application.tenure !== null &&
+      application.tenure !== undefined
     ) {
       const currentDate = new Date();
       const loanStartDate = new Date(application.updatedAt);
       const monthsPassed =
         (currentDate.getFullYear() - loanStartDate.getFullYear()) * 12 +
-        (currentDate.getMonth() - loanStartDate.getMonth());
-      setRemainingTenure(Math.max(0, application.tenure - monthsPassed));
+        (currentDate.getMonth() - loanStartDate.getMonth()) +
+        (currentDate.getDate() >= loanStartDate.getDate() ? 0 : -1);
+      const remaining = Math.max(0, application.tenure - monthsPassed);
+      setRemainingTenure(remaining);
+      console.log("Debug EMI Modal:", {
+        currentDate,
+        loanStartDate,
+        tenure: application.tenure,
+        monthsPassed,
+        remainingTenure: remaining,
+      });
+    } else {
+      console.log("EMIModal - Conditions not met:", {
+        status: application.status,
+        approvedAmount: application.approvedAmount,
+        updatedAt: application.updatedAt,
+        tenure: application.tenure,
+      });
     }
   }, [application]);
 
@@ -132,13 +150,32 @@ export function EMIModal({ isOpen, onClose, application }: EMIModalProps) {
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="totalTenure" className="text-right">
+              Total Tenure
+            </Label>
+            <Input
+              id="totalTenure"
+              className="col-span-3"
+              value={
+                application.tenure !== null && application.tenure !== undefined
+                  ? `${application.tenure} months`
+                  : "N/A"
+              }
+              readOnly
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="remainingTenure" className="text-right">
               Remaining Tenure
             </Label>
             <Input
               id="remainingTenure"
               className="col-span-3"
-              value={`${remainingTenure} months`}
+              value={
+                remainingTenure !== null && remainingTenure !== undefined
+                  ? `${remainingTenure} months`
+                  : "N/A"
+              }
               readOnly
             />
           </div>

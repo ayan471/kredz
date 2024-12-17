@@ -329,6 +329,7 @@ export async function approveLoanWithDetails(
       },
     });
 
+    console.log("Updated loan in database:", updatedLoan);
     return { success: true, loan: updatedLoan };
   } catch (error) {
     console.error("Error approving loan:", error);
@@ -548,6 +549,7 @@ export async function updateEMIPaymentLink(
       data: { emiPaymentLink },
     });
 
+    console.log("Updated EMI payment link:", updatedLoan);
     return { success: true, loan: updatedLoan };
   } catch (error) {
     console.error("Error updating EMI payment link:", error);

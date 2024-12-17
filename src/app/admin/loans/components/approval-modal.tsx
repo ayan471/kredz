@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { approveLoanWithDetails } from "@/actions/loanApplicationActions";
+import { Textarea } from "@/components/ui/textarea";
 
 type ApprovalFormData = {
   approvedAmount: string;
@@ -108,8 +109,10 @@ export function ApprovalModal({
   const onSubmit = async (data: ApprovalFormData) => {
     setIsSubmitting(true);
     try {
+      console.log("Submitting approval data:", data);
       const result = await approveLoanWithDetails(applicationId, data);
       if (result.success) {
+        console.log("Loan approved successfully:", result.loan);
         toast({
           title: "Loan Approved",
           description:
@@ -204,7 +207,13 @@ export function ApprovalModal({
             <Input
               id="tenure"
               className="col-span-3"
-              {...register("tenure", { required: true })}
+              {...register("tenure", {
+                required: true,
+                valueAsNumber: true,
+                validate: (value) =>
+                  (typeof value === "number" && value > 0) ||
+                  "Tenure must be greater than 0",
+              })}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -222,7 +231,7 @@ export function ApprovalModal({
             <Label htmlFor="disbursementAccount" className="text-right">
               Disbursement Account
             </Label>
-            <Input
+            <Textarea
               id="disbursementAccount"
               className="col-span-3"
               {...register("disbursementAccount", { required: true })}

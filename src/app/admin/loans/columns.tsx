@@ -36,9 +36,9 @@ export type LoanApplication = {
   amtRequired: string;
   approvedAmount: number | null;
   createdAt: Date;
-  updatedAt: Date; // Add this line
+  updatedAt: Date;
   status: string | null;
-  tenure: number | null; // Add this line
+  tenure: number | null;
 };
 
 export const columns: ColumnDef<LoanApplication>[] = [
@@ -225,7 +225,10 @@ export const columns: ColumnDef<LoanApplication>[] = [
           <EMIModal
             isOpen={isEMIModalOpen}
             onClose={() => setIsEMIModalOpen(false)}
-            application={application}
+            application={{
+              ...application,
+              tenure: application.tenure || 0,
+            }}
           />
         </>
       );
