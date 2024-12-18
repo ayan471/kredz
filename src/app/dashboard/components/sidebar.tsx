@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, UserButton } from "@clerk/nextjs";
 import {
   Home,
   CreditCard,
@@ -15,6 +15,7 @@ import {
   Users,
   Menu,
   X,
+  ArrowLeft,
 } from "lucide-react";
 import { CreditBuilderSubscription } from "@prisma/client";
 
@@ -49,6 +50,7 @@ export function Sidebar({ subscription }: SidebarProps) {
       : true;
 
   const navigation = [
+    { href: "/", icon: ArrowLeft, label: "Back to Home" },
     { href: "/dashboard", icon: Home, label: "Dashboard" },
     { href: "/dashboard/account", icon: User, label: "My Account" },
     { href: "/dashboard/loans", icon: FileText, label: "My Loans" },
@@ -125,6 +127,9 @@ export function Sidebar({ subscription }: SidebarProps) {
             ))}
           </ul>
         </nav>
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <UserButton afterSignOutUrl="/" />
+        </div>
       </div>
       {isOpen && (
         <div
