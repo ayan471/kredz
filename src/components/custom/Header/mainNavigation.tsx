@@ -22,7 +22,7 @@ const locations: {
   comingSoon: string;
 }[] = [
   {
-    title: "Loan Application",
+    title: "Personal Consultancy",
     href: "/loan-application",
     description: "",
     comingSoon: "no",
