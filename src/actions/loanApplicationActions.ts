@@ -291,7 +291,7 @@ export async function determineMembershipPlan(salary: number): Promise<string> {
   if (salary <= 15000) return "Bronze";
   if (salary <= 25000) return "Silver";
   if (salary <= 35000) return "Gold";
-  return "Platinum";
+  return "Diamond";
 }
 
 export async function approveLoanWithDetails(
