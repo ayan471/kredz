@@ -17,15 +17,15 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+            <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-6">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
                 Apka Apne Financial Buddy
               </span>{" "}
-              Kredz is here for all your financial needs!
+              <p className="md:text-6xl text-4xl  mt-1">
+                Kredz is here for all your financial needs!
+              </p>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-8">
-              Kredz Hai Sabse Best!
-            </p>
+
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
               {isLoggedIn ? (
                 <>
