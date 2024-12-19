@@ -19,13 +19,12 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
           >
             <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                Sabse Best
+                Apka Apne Financial Buddy
               </span>{" "}
-              Financial Consultation & Service
+              Kredz is here for all your financial needs!
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-8">
-              Optimize and streamline your finances with beneficial subscription
-              plans.
+              Kredz Hai Sabse Best!
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
               {isLoggedIn ? (
