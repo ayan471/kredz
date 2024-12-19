@@ -137,7 +137,7 @@ const LaStepOne = () => {
           title: "Application Submitted!",
           description: "Your loan application has been received.",
         });
-        router.push(`/loan-application/eligible?id=${result.id}`);
+        router.push(`/consultancy-application/eligible?id=${result.id}`);
       } else {
         throw new Error(result.error || "Failed to submit application");
       }

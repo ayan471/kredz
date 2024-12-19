@@ -23,7 +23,7 @@ const locations: {
 }[] = [
   {
     title: "Personal Consultancy",
-    href: "/loan-application",
+    href: "/consultancy-application",
     description: "",
     comingSoon: "no",
   },
@@ -39,12 +39,12 @@ const locations: {
     description: "",
     comingSoon: "yes",
   },
-  {
-    title: "Loan Consultancy",
-    href: "",
-    description: "",
-    comingSoon: "yes",
-  },
+  // {
+  //   title: "Loan Consultancy",
+  //   href: "",
+  //   description: "",
+  //   comingSoon: "yes",
+  // },
 ];
 
 const experiences: { title: string; href: string; description: string }[] = [

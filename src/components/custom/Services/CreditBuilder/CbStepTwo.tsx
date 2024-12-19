@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
   getCreditBuilderData,
+  initiateCashfreePayment,
   submitCreditBuilderSubscription,
 } from "@/actions/formActions";
 import { Card, CardContent } from "@/components/ui/card";
@@ -169,22 +170,27 @@ const CbStepTwo: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const result = await submitCreditBuilderSubscription(data);
-      if (result.success) {
-        toast({
-          title: "Subscription Submitted!",
-          description: "We've received your credit builder subscription.",
-        });
-        router.push("/credit-builder/subscription/success");
-      } else {
-        throw new Error(result.error || "Failed to submit subscription");
+      const selectedPlanOption = planOptions.find(
+        (option) => option.value === data.plan
+      );
+      if (!selectedPlanOption) {
+        throw new Error("Invalid plan selected");
       }
+
+      const amount = selectedPlanOption.discountedPrice;
+      const orderId = `CB-${Date.now()}-${user.id}`;
+
+      // Initiate Cashfree payment
+      const paymentData = await initiateCashfreePayment(amount, orderId);
+
+      // Redirect to Cashfree payment page
+      window.location.href = `https://sandbox.cashfree.com/pg/view/checkout?payment_session_id=${paymentData.payment_session_id}`;
     } catch (error) {
-      console.error("Error submitting subscription:", error);
+      console.error("Error initiating payment:", error);
       toast({
-        title: "Submission Failed",
+        title: "Payment Initiation Failed",
         description:
-          "There was an error submitting your subscription. Please try again.",
+          "There was an error initiating your payment. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -300,10 +306,10 @@ const CbStepTwo: React.FC = () => {
           {isLoading ? (
             <>
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-              Processing...
+              Processing Payment...
             </>
           ) : (
-            "Activate Your Plan Now"
+            "Proceed to Payment"
           )}
         </Button>
       </form>

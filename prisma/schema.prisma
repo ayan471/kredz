@@ -39,6 +39,7 @@ model CreditBuilderApplicationData {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   userId      String   @unique
   fullName    String?
+  email       String?
   phoneNo     String?
   aadharNo    String?
   panNo       String?

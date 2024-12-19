@@ -21,6 +21,12 @@ interface CreditFactors {
   recommendation: string;
 }
 
+interface PaymentOrderResponse {
+  cf_order_id: string;
+  order_id: string;
+  payment_session_id: string;
+}
+
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -348,4 +354,56 @@ export async function getAdminDashboardData() {
     console.error("Error fetching admin dashboard data:", error);
     return { success: false, error: "Failed to fetch admin dashboard data" };
   }
+}
+
+export async function initiateCashfreePayment(
+  amount: number,
+  orderId: string
+): Promise<PaymentOrderResponse> {
+  const { userId } = auth();
+
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
+
+  const user = await prisma.creditBuilderApplicationData.findUnique({
+    where: { userId },
+  });
+
+  if (!user) {
+    throw new Error("User data not found");
+  }
+
+  const payload = {
+    order_id: orderId,
+    order_amount: amount,
+    order_currency: "INR",
+    customer_details: {
+      customer_id: userId,
+      customer_name: user.fullName || "",
+      customer_email: user.email || "", // Use empty string as fallback
+      customer_phone: user.phoneNo || "",
+    },
+    order_meta: {
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/credit-builder/subscription/payment-status?order_id={order_id}`,
+    },
+  };
+
+  const response = await fetch("https://sandbox.cashfree.com/pg/orders", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-client-id": process.env.CASHFREE_APP_ID!,
+      "x-client-secret": process.env.CASHFREE_SECRET_KEY!,
+      "x-api-version": "2022-09-01",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to initiate payment");
+  }
+
+  const data: PaymentOrderResponse = await response.json();
+  return data;
 }

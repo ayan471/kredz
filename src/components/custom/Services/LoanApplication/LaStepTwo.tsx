@@ -94,7 +94,7 @@ const LaStepTwo = () => {
         title: "Eligibility Submitted!",
         description: "Your loan eligibility has been determined.",
       });
-      router.push(`/loan-application/membership?id=${id}`);
+      router.push(`/consultancy-application/membership?id=${id}`);
     } else {
       toast({
         title: "Error",
