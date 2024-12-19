@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { Home, Users, CreditCard, FileText, Wallet } from "lucide-react";
+import {
+  Home,
+  Users,
+  CreditCard,
+  FileText,
+  Wallet,
+  MessageSquare,
+} from "lucide-react";
 
 export function Sidebar() {
   return (
@@ -40,6 +47,17 @@ export function Sidebar() {
               <FileText />
             </span>
             <span className="text-sm font-medium">Loans</span>
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/admin/contact-submissions"
+            className="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-300 hover:text-white"
+          >
+            <span className="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400">
+              <MessageSquare />
+            </span>
+            <span className="text-sm font-medium">Contact Submissions</span>
           </Link>
         </li>
         <li>

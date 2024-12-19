@@ -4,22 +4,16 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
-
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 
 const MainContactUs = () => {
-
-
-
-  const { toast } = useToast()
-const [fullName, setFullName] = useState<string>("");
+  const { toast } = useToast();
+  const [fullName, setFullName] = useState<string>("");
   const [phoneNo, setPhoneNo] = useState<string>("");
   const [emailId, setEmailId] = useState<string>("");
   const [message, setMessage] = useState<string>("");
-
- 
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,14 +25,13 @@ const [fullName, setFullName] = useState<string>("");
       message,
     };
 
-    if(fullName === "" || phoneNo === "" || emailId=== "" || message ==="") {
+    if (fullName === "" || phoneNo === "" || emailId === "" || message === "") {
       toast({
         variant: "destructive",
         title: "Some details are missing!",
         description: "Please enter all the details.",
-      })
-    }
-    else{
+      });
+    } else {
       try {
         const response = await fetch("/api/newmessage", {
           method: "POST",
@@ -55,13 +48,11 @@ const [fullName, setFullName] = useState<string>("");
 
         console.log("Form submitted successfully");
 
-
         toast({
           title: "Message Sent!",
-          description: "We've received your message. We'll reply via email in the next 24 hours.",
-        })
-
-
+          description:
+            "We've received your message. We'll reply via email in the next 24 hours.",
+        });
 
         // Handle success (e.g., clear form, show success message, etc.)
       } catch (error) {
@@ -69,7 +60,6 @@ const [fullName, setFullName] = useState<string>("");
       }
     }
   };
-
 
   return (
     <div className="p-4 md:p-8">
@@ -108,22 +98,21 @@ const [fullName, setFullName] = useState<string>("");
         </div>
 
         <div className="grid w-full gap-3">
-            <Label htmlFor="message">Your message</Label>
-            <Textarea 
+          <Label htmlFor="message">Your message</Label>
+          <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type your message here." 
-            id="message" />
+            placeholder="Type your message here."
+            id="message"
+          />
         </div>
 
-
-        <Button className="max-w-min mx-auto sm:mx-0" type="submit">Submit</Button>
+        <Button className="max-w-min mx-auto sm:mx-0" type="submit">
+          Submit
+        </Button>
       </form>
     </div>
   );
+};
 
-  
-  
-}
-
-export default MainContactUs
+export default MainContactUs;
