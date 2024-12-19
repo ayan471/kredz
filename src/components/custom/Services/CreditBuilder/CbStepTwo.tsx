@@ -180,15 +180,15 @@ const CbStepTwo: React.FC = () => {
       const amount = selectedPlanOption.discountedPrice;
       const orderId = `CB-${Date.now()}-${user.id}`;
 
-      // Initiate Cashfree payment
-      const paymentData = await initiateCashfreePayment(amount, orderId);
-
       // Create subscription entry
       await submitCreditBuilderSubscription({
         fullName: data.fullName,
         phoneNo: data.phoneNo,
         plan: selectedPlanOption.label,
       });
+
+      // Initiate Cashfree payment
+      const paymentData = await initiateCashfreePayment(amount, orderId);
 
       // Redirect to Cashfree payment page
       window.location.href = paymentData.payment_link;
