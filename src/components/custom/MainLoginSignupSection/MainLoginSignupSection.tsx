@@ -58,20 +58,21 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
           </motion.div>
 
           <motion.div
-            className="flex-1 relative"
+            className="flex-1 relative w-full max-w-md mx-auto md:max-w-none mt-12 md:mt-0"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="relative w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
               <Image
                 src={
                   isLoggedIn
                     ? "/global/collage-24.jpg"
                     : "/global/banners/random-2.jpg"
                 }
-                layout="fill"
-                objectFit="cover"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                style={{ objectFit: "cover" }}
                 alt="Hero Image"
                 className="transition-transform duration-300 hover:scale-105"
               />
