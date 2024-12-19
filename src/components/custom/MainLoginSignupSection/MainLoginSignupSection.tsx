@@ -30,12 +30,12 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
               {isLoggedIn ? (
                 <>
                   <Link href="/loan-application">
-                    <Button className="text-lg px-8 py-4 bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
-                      Loan Application
+                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
+                      Apply Now
                     </Button>
                   </Link>
                   <Link href="/credit-builder">
-                    <Button className="text-lg px-8 py-4 bg-purple-600 hover:bg-purple-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
+                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-purple-600 hover:bg-purple-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
                       Credit Builder
                     </Button>
                   </Link>
@@ -43,12 +43,12 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
               ) : (
                 <>
                   <Link href="/sign-up">
-                    <Button className="text-lg px-8 py-4 bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
-                      Loan Application
+                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
+                      Apply Now
                     </Button>
                   </Link>
                   <Link href="/sign-up">
-                    <Button className="text-lg px-8 py-4 bg-purple-600 hover:bg-purple-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
+                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-purple-600 hover:bg-purple-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
                       Credit Builder
                     </Button>
                   </Link>
