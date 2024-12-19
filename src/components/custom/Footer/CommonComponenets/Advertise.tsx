@@ -11,7 +11,7 @@ const Advertise = () => {
             className=" flex flex-row gap-2 justify-start align-middle"
           >
             <PhoneIcon className="h-4 w-4 mt-1" />
-            +91 88227 88557
+            +91 8240561547
           </Link>
         </li>
 
@@ -21,7 +21,7 @@ const Advertise = () => {
             className=" flex flex-row gap-2 justify-start align-middle"
           >
             <PhoneIcon className="h-4 w-4 mt-1" />
-            +91 66227 88545
+            +91 6290914689
           </Link>
         </li>
 
@@ -31,7 +31,7 @@ const Advertise = () => {
             className=" flex flex-row gap-2 justify-start align-middle"
           >
             <MailIcon className="h-4 w-4 mt-1" />
-            contact@kredz.com
+            support@kredz.in
           </Link>
         </li>
       </ul>

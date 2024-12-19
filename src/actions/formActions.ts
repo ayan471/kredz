@@ -21,11 +21,25 @@ interface CreditFactors {
   recommendation: string;
 }
 
-interface PaymentOrderResponse {
+type PaymentOrderResponse = {
   cf_order_id: string;
   order_id: string;
+  entity: string;
+  order_currency: string;
+  order_amount: number;
+  order_expiry_time: string;
+  customer_details: {
+    customer_id: string;
+    customer_name: string;
+    customer_email: string;
+    customer_phone: string;
+  };
+  order_meta: {
+    return_url: string;
+  };
   payment_session_id: string;
-}
+  payment_link: string;
+};
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -356,54 +370,91 @@ export async function getAdminDashboardData() {
   }
 }
 
-export async function initiateCashfreePayment(
-  amount: number,
-  orderId: string
-): Promise<PaymentOrderResponse> {
-  const { userId } = auth();
+export async function initiateCashfreePayment(amount: number, orderId: string) {
+  try {
+    const { userId } = auth();
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
 
-  if (!userId) {
-    throw new Error("User not authenticated");
+    console.log(
+      `Initiating Cashfree payment for user ${userId} and order ${orderId}`
+    );
+
+    // Fetch user data from Clerk
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+      throw new Error("Unable to fetch user data from Clerk");
+    }
+
+    // Fetch user data from your database
+    const dbUser = await prisma.creditBuilderApplicationData.findUnique({
+      where: { userId: userId },
+    });
+
+    // Combine Clerk and database user data
+    const user = {
+      fullName:
+        dbUser?.fullName ||
+        `${clerkUser.firstName} ${clerkUser.lastName}`.trim(),
+      email: clerkUser.emailAddresses[0]?.emailAddress,
+      phoneNo: dbUser?.phoneNo || clerkUser.phoneNumbers[0]?.phoneNumber,
+    };
+
+    if (!user.fullName || !user.email || !user.phoneNo) {
+      console.error(`Incomplete user data for userId: ${userId}`);
+      throw new Error("Incomplete user data");
+    }
+
+    const payload = {
+      order_id: orderId,
+      order_amount: amount,
+      order_currency: "INR",
+      customer_details: {
+        customer_id: userId,
+        customer_email: user.email,
+        customer_phone: user.phoneNo,
+        customer_name: user.fullName,
+      },
+      order_meta: {
+        return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/cashfree-callback?order_id={order_id}`,
+      },
+    };
+
+    console.log(
+      "Cashfree API request payload:",
+      JSON.stringify(payload, null, 2)
+    );
+
+    const response = await fetch(`${process.env.CASHFREE_API_URL}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-client-id": process.env.CASHFREE_APP_ID!,
+        "x-client-secret": process.env.CASHFREE_SECRET_KEY!,
+        "x-api-version": "2022-09-01",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(
+        "Cashfree API error response:",
+        JSON.stringify(errorData, null, 2)
+      );
+      throw new Error(`Failed to initiate payment: ${response.statusText}`);
+    }
+
+    const data: PaymentOrderResponse = await response.json();
+    console.log(
+      "Cashfree API success response:",
+      JSON.stringify(data, null, 2)
+    );
+
+    return data;
+  } catch (error) {
+    console.error("Error in initiateCashfreePayment:", error);
+    throw error;
   }
-
-  const user = await prisma.creditBuilderApplicationData.findUnique({
-    where: { userId },
-  });
-
-  if (!user) {
-    throw new Error("User data not found");
-  }
-
-  const payload = {
-    order_id: orderId,
-    order_amount: amount,
-    order_currency: "INR",
-    customer_details: {
-      customer_id: userId,
-      customer_name: user.fullName || "",
-      customer_email: user.email || "", // Use empty string as fallback
-      customer_phone: user.phoneNo || "",
-    },
-    order_meta: {
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/credit-builder/subscription/payment-status?order_id={order_id}`,
-    },
-  };
-
-  const response = await fetch("https://sandbox.cashfree.com/pg/orders", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-client-id": process.env.CASHFREE_APP_ID!,
-      "x-client-secret": process.env.CASHFREE_SECRET_KEY!,
-      "x-api-version": "2022-09-01",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to initiate payment");
-  }
-
-  const data: PaymentOrderResponse = await response.json();
-  return data;
 }
