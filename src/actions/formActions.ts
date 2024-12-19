@@ -41,12 +41,6 @@ type PaymentOrderResponse = {
   payment_link: string;
 };
 
-interface SubscriptionData {
-  fullName: string;
-  phoneNo: string;
-  plan: string;
-}
-
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -292,51 +286,41 @@ export async function getUserSubscription(userId: string) {
   }
 }
 
-export async function submitCreditBuilderSubscription(data: SubscriptionData) {
+export async function submitCreditBuilderSubscription(data: {
+  fullName: string;
+  phoneNo: string;
+  plan: string;
+}) {
+  const { userId } = auth();
+
+  if (!userId) {
+    return { success: false, error: "User not authenticated" };
+  }
+
   try {
-    const { userId } = auth();
-    if (!userId) {
-      throw new Error("User not authenticated");
+    // Validate required fields
+    if (!data.fullName || !data.phoneNo || !data.plan) {
+      return { success: false, error: "All fields are required" };
     }
 
-    // Define a mapping of plan names to their durations in months
-    const planDurations: { [key: string]: number } = {
-      Starter: 1,
-      Basic: 3,
-      Standard: 6,
-      Advanced: 9,
-      Pro: 12,
-      Elite: 15,
-      Premium: 18,
-      Platinum: 21,
-      Ultimate: 24,
-    };
+    const durationInMonths = parseInt(data.plan.split(" ")[0]);
+    const expiryDate = addMonths(new Date(), durationInMonths);
 
-    // Get the duration for the selected plan
-    const duration = planDurations[data.plan];
-    if (!duration) {
-      throw new Error(`Invalid plan selected: ${data.plan}`);
-    }
-
-    // Calculate the expiry date
-    const expiryDate = new Date();
-    expiryDate.setMonth(expiryDate.getMonth() + duration);
-
-    // Create the subscription
     const subscription = await prisma.creditBuilderSubscription.create({
       data: {
         userId,
         fullName: data.fullName,
         phoneNo: data.phoneNo,
         plan: data.plan,
-        expiryDate: expiryDate,
+        expiryDate,
       },
     });
 
-    return subscription;
+    revalidatePath("/credit-builder/subscription");
+    return { success: true, data: subscription };
   } catch (error) {
     console.error("Error submitting credit builder subscription:", error);
-    throw error;
+    return { success: false, error: "Failed to submit subscription" };
   }
 }
 
@@ -433,7 +417,7 @@ export async function initiateCashfreePayment(amount: number, orderId: string) {
         customer_name: user.fullName,
       },
       order_meta: {
-        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/cashfree-callback?order_id={order_id}`,
+        return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/cashfree-callback?order_id={order_id}`,
       },
     };
 

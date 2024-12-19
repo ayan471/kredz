@@ -180,18 +180,11 @@ const CbStepTwo: React.FC = () => {
       const amount = selectedPlanOption.discountedPrice;
       const orderId = `CB-${Date.now()}-${user.id}`;
 
-      // Create subscription entry
-      await submitCreditBuilderSubscription({
-        fullName: data.fullName,
-        phoneNo: data.phoneNo,
-        plan: selectedPlanOption.label,
-      });
-
       // Initiate Cashfree payment
       const paymentData = await initiateCashfreePayment(amount, orderId);
 
       // Redirect to Cashfree payment page
-      window.location.href = paymentData.payment_link;
+      window.location.href = `https://sandbox.cashfree.com/pg/view/checkout?payment_session_id=${paymentData.payment_session_id}`;
     } catch (error) {
       console.error("Error initiating payment:", error);
       toast({
