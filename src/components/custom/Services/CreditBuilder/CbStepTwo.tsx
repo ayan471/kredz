@@ -11,11 +11,12 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
   getCreditBuilderData,
-  initiateCashfreePayment,
   submitCreditBuilderSubscription,
 } from "@/actions/formActions";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Clock, CreditCard, Zap } from "lucide-react";
+import { initiatePhonePePayment } from "@/components/lib/phonePe";
 
 type FormValues = {
   fullName: string;
@@ -149,6 +150,16 @@ const CbStepTwo: React.FC = () => {
     fetchData();
   }, [user, setValue, toast]);
 
+  const calculateTotalAmount = (baseAmount: number) => {
+    const gstAmount = baseAmount * 0.18;
+    const totalAmount = baseAmount + gstAmount;
+    return {
+      baseAmount: baseAmount.toFixed(2),
+      gstAmount: gstAmount.toFixed(2),
+      totalAmount: totalAmount.toFixed(2),
+    };
+  };
+
   const onSubmit = async (data: FormValues) => {
     if (!user) {
       toast({
@@ -177,34 +188,44 @@ const CbStepTwo: React.FC = () => {
         throw new Error("Invalid plan selected");
       }
 
-      const amount = selectedPlanOption.discountedPrice;
-      const orderId = `CB-${Date.now()}-${user.id}`;
+      const { totalAmount } = calculateTotalAmount(
+        selectedPlanOption.discountedPrice
+      );
+      const orderId =
+        `CB${Date.now().toString().slice(-8)}${user.id.slice(-4)}`.slice(0, 38);
 
       // Save subscription data first
-      await submitCreditBuilderSubscription({
-        fullName: data.fullName,
-        phoneNo: data.phoneNo,
-        plan: data.plan,
-      });
-
-      // Initiate Cashfree payment
-      const paymentData = await initiateCashfreePayment(amount, orderId);
-
-      if (!paymentData?.payment_link) {
-        throw new Error("Payment link not received from Cashfree");
+      const subscriptionResult = await submitCreditBuilderSubscription(data);
+      if (!subscriptionResult.success) {
+        throw new Error(
+          subscriptionResult.error || "Failed to submit subscription"
+        );
       }
 
-      // Redirect to Cashfree checkout page
-      window.location.href = paymentData.payment_link;
+      // Initiate PhonePe payment
+      const paymentResult = await initiatePhonePePayment({
+        amount: parseFloat(totalAmount),
+        orderId,
+        customerName: data.fullName,
+        customerPhone: data.phoneNo,
+        customerEmail: user.primaryEmailAddress?.emailAddress || "",
+      });
+
+      if (paymentResult.success && paymentResult.paymentUrl) {
+        window.location.href = paymentResult.paymentUrl;
+      } else {
+        throw new Error(paymentResult.error || "Failed to initiate payment");
+      }
     } catch (error) {
-      console.error("Error initiating payment:", error);
+      console.error("Error in subscription process:", error);
       toast({
-        title: "Payment Initiation Failed",
+        title: "Error",
         description:
-          "There was an error initiating your payment. Please try again.",
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
         variant: "destructive",
       });
-      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
@@ -233,81 +254,91 @@ const CbStepTwo: React.FC = () => {
           onValueChange={(value) => setValue("plan", value)}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {planOptions.map((plan) => (
-            <Card
-              key={plan.value}
-              className={`relative overflow-hidden transition-all duration-300 transform ${
-                selectedPlan === plan.value
-                  ? "ring-4 ring-orange-400 shadow-xl scale-105"
-                  : "hover:shadow-lg hover:scale-102"
-              }`}
-            >
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${plan.color} opacity-75`}
-              ></div>
-              <CardContent className="relative z-10 p-6">
-                {plan.popular && (
-                  <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-extrabold px-3 py-1 rounded-bl-lg">
-                    MOST POPULAR
-                  </div>
-                )}
-                <h3 className="text-2xl font-bold mb-2 text-white">
-                  {plan.label}
-                </h3>
-                <div className="flex flex-col items-baseline mb-4">
-                  <span className="text-3xl font-extrabold text-white">
-                    ₹{plan.discountedPrice}
-                  </span>
-                  <div className="flex items-center">
-                    <span className="text-lg text-white mr-2">+ GST</span>
+          {planOptions.map((plan) => {
+            const { baseAmount, gstAmount, totalAmount } = calculateTotalAmount(
+              plan.discountedPrice
+            );
+            return (
+              <Card
+                key={plan.value}
+                className={`relative overflow-hidden transition-all duration-300 transform ${
+                  selectedPlan === plan.value
+                    ? "ring-4 ring-orange-400 shadow-xl scale-105"
+                    : "hover:shadow-lg hover:scale-102"
+                }`}
+              >
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${plan.color} opacity-75`}
+                ></div>
+                <CardContent className="relative z-10 p-6">
+                  {plan.popular && (
+                    <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-extrabold px-3 py-1 rounded-bl-lg">
+                      MOST POPULAR
+                    </div>
+                  )}
+                  <h3 className="text-2xl font-bold mb-2 text-white">
+                    {plan.label}
+                  </h3>
+                  <div className="flex flex-col items-baseline mb-4">
+                    <span className="text-3xl font-extrabold text-white">
+                      ₹{baseAmount}
+                    </span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm text-white">
+                        + ₹{gstAmount} GST
+                      </span>
+                      <span className="text-lg font-semibold text-white">
+                        Total: ₹{totalAmount}
+                      </span>
+                    </div>
                     <span className="text-sm text-white line-through">
                       ₹{plan.originalPrice}
                     </span>
                   </div>
-                </div>
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center text-white">
-                    <Clock className="w-4 h-4 mr-2" />
-                    <span className="text-sm">
-                      {plan.duration} {plan.duration === 1 ? "month" : "months"}{" "}
-                      plan
-                    </span>
+                  <div className="space-y-2 mb-6">
+                    <div className="flex items-center text-white">
+                      <Clock className="w-4 h-4 mr-2" />
+                      <span className="text-sm">
+                        {plan.duration}{" "}
+                        {plan.duration === 1 ? "month" : "months"} plan
+                      </span>
+                    </div>
+                    <div className="flex items-center text-white">
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      <span className="text-sm">Includes GST</span>
+                    </div>
+                    <div className="flex items-center text-white">
+                      <Zap className="w-4 h-4 mr-2" />
+                      <span className="text-sm">Instant activation</span>
+                    </div>
                   </div>
-                  <div className="flex items-center text-white">
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    <span className="text-sm">Includes GST</span>
-                  </div>
-                  <div className="flex items-center text-white">
-                    <Zap className="w-4 h-4 mr-2" />
-                    <span className="text-sm">Instant activation</span>
-                  </div>
-                </div>
-                <RadioGroupItem
-                  value={plan.value}
-                  id={plan.value}
-                  className="sr-only"
-                  {...register("plan")}
-                />
-                <Label
-                  htmlFor={plan.value}
-                  className={`flex items-center justify-center w-full py-2 rounded-md cursor-pointer transition-colors duration-300 ${
-                    selectedPlan === plan.value
-                      ? "bg-white text-gray-800 font-bold"
-                      : "bg-white/20 text-white hover:bg-white/30"
-                  }`}
-                >
-                  {selectedPlan === plan.value ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Selected
-                    </>
-                  ) : (
-                    "Choose Plan"
-                  )}
-                </Label>
-              </CardContent>
-            </Card>
-          ))}
+                  <RadioGroupItem
+                    value={plan.value}
+                    id={plan.value}
+                    className="sr-only"
+                    {...register("plan")}
+                  />
+                  <Label
+                    htmlFor={plan.value}
+                    className={`flex items-center justify-center w-full py-2 rounded-md cursor-pointer transition-colors duration-300 ${
+                      selectedPlan === plan.value
+                        ? "bg-white text-gray-800 font-bold"
+                        : "bg-white/20 text-white hover:bg-white/30"
+                    }`}
+                  >
+                    {selectedPlan === plan.value ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Selected
+                      </>
+                    ) : (
+                      "Choose Plan"
+                    )}
+                  </Label>
+                </CardContent>
+              </Card>
+            );
+          })}
         </RadioGroup>
 
         <Button
@@ -318,10 +349,10 @@ const CbStepTwo: React.FC = () => {
           {isLoading ? (
             <>
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-              Processing Payment...
+              Initiating PhonePe Payment...
             </>
           ) : (
-            "Proceed to Payment"
+            "Activate Plan with PhonePe"
           )}
         </Button>
       </form>

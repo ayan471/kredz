@@ -26,6 +26,16 @@ type FormValues = {
   membershipPlan: string;
 };
 
+const calculateAmounts = (basePrice: number) => {
+  const gstAmount = basePrice * 0.18;
+  const totalAmount = basePrice + gstAmount;
+  return {
+    basePrice: basePrice.toFixed(2),
+    gstAmount: gstAmount.toFixed(2),
+    totalAmount: totalAmount.toFixed(2),
+  };
+};
+
 const LaStepThree = () => {
   const { toast } = useToast();
   const router = useRouter();
@@ -114,7 +124,9 @@ const LaStepThree = () => {
         });
 
         const paymentResult = await initiatePhonePePayment({
-          amount: planDetails.discountedPrice,
+          amount: parseFloat(
+            calculateAmounts(planDetails.discountedPrice).totalAmount
+          ),
           orderId: id,
           customerName: data.fullName,
           customerPhone: data.phoneNo,
@@ -163,6 +175,16 @@ const LaStepThree = () => {
         Membership Plan
       </motion.h1>
 
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="text-xl mb-8 text-center"
+      >
+        Buy Membership Plan & Get Your upto 3X of monthly income. Pre-Approved
+        Loan Offer Processed Instantly.
+      </motion.p>
+
       <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -174,9 +196,15 @@ const LaStepThree = () => {
             <h2 className="text-2xl font-bold">{planDetails.name} Plan</h2>
             <div className="flex items-center flex-col">
               <span className="text-3xl font-bold">
-                ₹{planDetails.discountedPrice}
+                ₹{calculateAmounts(planDetails.discountedPrice).basePrice}
               </span>
-              <span className="text-sm">+ GST</span>
+              <span className="text-sm">
+                + ₹{calculateAmounts(planDetails.discountedPrice).gstAmount} GST
+              </span>
+              <span className="text-lg font-semibold">
+                Total: ₹
+                {calculateAmounts(planDetails.discountedPrice).totalAmount}
+              </span>
               <span className="text-sm line-through text-gray-300">
                 ₹{planDetails.realPrice}
               </span>
