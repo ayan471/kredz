@@ -28,20 +28,14 @@ const MobileNavigation = () => {
           <AccordionTrigger>Services</AccordionTrigger>
           <AccordionContent>
             <ul className="text-md flex flex-col gap-4 text-slate-800 font-semibold">
-              <Link href="/loan-application">
-                <li>Loan Application</li>
+              <Link href="/consultancy-application">
+                <li>Personal Consultancy</li>
               </Link>
               <Link href="/credit-builder">
                 <li>Credit Builder Plans</li>
               </Link>
               <li>
                 Channel Partner
-                <span className="text-xs border rounded-full px-2 py-1 ml-2">
-                  Coming Soon
-                </span>
-              </li>
-              <li>
-                Loan Consultancy
                 <span className="text-xs border rounded-full px-2 py-1 ml-2">
                   Coming Soon
                 </span>

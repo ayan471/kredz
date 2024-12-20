@@ -71,8 +71,11 @@ const Header = async () => {
                 <SheetHeader className="mb-8">
                   <SheetTitle className="text-left mt-4">Kredz</SheetTitle>
                   <SheetDescription className="text-left mb-8">
-                    We are dedicated microfinance institution empowering small
-                    businesses and promoting financial inclusion for all.
+                    At Kredz, we combine expert loan consulting, innovative
+                    credit-building services, and strategic partnerships to help
+                    you achieve your financial goals. We partner with
+                    RBI-registered Banks and NBFCs to offer the best loan
+                    options and tailored credit improvement strategies.
                   </SheetDescription>
                 </SheetHeader>
 
