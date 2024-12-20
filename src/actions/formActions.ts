@@ -81,7 +81,6 @@ export async function submitCreditBuilderApplication(formData: FormData) {
         aadharNo: data.aadharNo,
         panNo: data.panNo,
         creditScore: data.creditScore,
-        currEmis: data.currEmis,
       },
     });
     return { success: true, data: application };
@@ -97,7 +96,6 @@ export async function saveCreditBuilderData(data: {
   aadharNo: string;
   panNo: string;
   creditScore: string;
-  currEmis: string;
 }) {
   const user = await currentUser();
   if (!user) {

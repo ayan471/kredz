@@ -7,13 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { saveCreditBuilderData } from "@/actions/formActions";
@@ -121,21 +115,6 @@ const CbStepOne: React.FC = () => {
               id="creditScore"
               {...register("creditScore", { required: true })}
             />
-          </div>
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="currEmis">Current EMIs</Label>
-            <Select onValueChange={(value) => setValue("currEmis", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select number of EMIs" />
-              </SelectTrigger>
-              <SelectContent>
-                {[1, 2, 3, 4, "More than 4"].map((num) => (
-                  <SelectItem key={num} value={num.toString()}>
-                    {num}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
