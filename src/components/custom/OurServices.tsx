@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 const services = [
   {
-    title: "Loan Consulting",
+    title: "Personal Consulting",
     description:
       "We help you secure the best loan options through RBI-registered Banks and NBFCs. Our expert team guides you through the loan application process, ensuring you get the financial support you need.",
     icon: Lightbulb,
@@ -76,14 +76,6 @@ export default function OurServices() {
                 </dt>
                 <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
                   <p className="flex-auto">{service.description}</p>
-                  <p className="mt-6">
-                    <a
-                      href="#"
-                      className="text-sm font-semibold leading-6 text-indigo-600"
-                    >
-                      Learn more <span aria-hidden="true">→</span>
-                    </a>
-                  </p>
                 </dd>
               </motion.div>
             ))}

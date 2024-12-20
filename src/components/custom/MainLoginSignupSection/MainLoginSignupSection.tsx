@@ -68,7 +68,7 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
                 src={
                   isLoggedIn
                     ? "/global/collage-24.jpg"
-                    : "/global/banners/random-2.jpg"
+                    : "/global/banners/hand-holding-phone-mockup.png"
                 }
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
