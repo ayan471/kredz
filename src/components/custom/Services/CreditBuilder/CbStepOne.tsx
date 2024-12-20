@@ -18,7 +18,6 @@ type FormValues = {
   aadharNo: string;
   panNo: string;
   creditScore: string;
-  currEmis: string;
 };
 
 const CbStepOne: React.FC = () => {

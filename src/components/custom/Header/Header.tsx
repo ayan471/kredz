@@ -18,6 +18,7 @@ import MobileNavigation from "./MobileNavigation";
 import HeaderAccountDetails from "./HeaderAccountDetails";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { UserButton, UserProfile } from "@clerk/nextjs";
+import { LayoutDashboard } from "lucide-react";
 
 const Header = async () => {
   const user = await currentUser();
@@ -46,7 +47,15 @@ const Header = async () => {
           <div className="flex gap-4 flex-row align-middle justify-center">
             {user ? (
               <div className="max-h-[40px] my-auto">
-                <UserButton />
+                <UserButton>
+                  <UserButton.MenuItems>
+                    <UserButton.Link
+                      label="Dashboard"
+                      labelIcon={<LayoutDashboard className="size-4" />}
+                      href="/dashboard"
+                    />
+                  </UserButton.MenuItems>
+                </UserButton>
               </div>
             ) : (
               <Button asChild className="text-xl">

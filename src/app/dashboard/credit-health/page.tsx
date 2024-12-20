@@ -31,7 +31,6 @@ interface CreditData {
   panNo: string | null;
   aadharNo: string | null;
   creditScore: string | null;
-  currEmis: string | null;
 }
 
 interface Subscription {
