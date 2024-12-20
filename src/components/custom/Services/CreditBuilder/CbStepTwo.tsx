@@ -180,11 +180,22 @@ const CbStepTwo: React.FC = () => {
       const amount = selectedPlanOption.discountedPrice;
       const orderId = `CB-${Date.now()}-${user.id}`;
 
+      // Save subscription data first
+      await submitCreditBuilderSubscription({
+        fullName: data.fullName,
+        phoneNo: data.phoneNo,
+        plan: data.plan,
+      });
+
       // Initiate Cashfree payment
       const paymentData = await initiateCashfreePayment(amount, orderId);
 
-      // Redirect to Cashfree payment page
-      window.location.href = `https://sandbox.cashfree.com/pg/view/checkout?payment_session_id=${paymentData.payment_session_id}`;
+      if (!paymentData?.payment_link) {
+        throw new Error("Payment link not received from Cashfree");
+      }
+
+      // Redirect to Cashfree checkout page
+      window.location.href = paymentData.payment_link;
     } catch (error) {
       console.error("Error initiating payment:", error);
       toast({
@@ -193,6 +204,7 @@ const CbStepTwo: React.FC = () => {
           "There was an error initiating your payment. Please try again.",
         variant: "destructive",
       });
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }

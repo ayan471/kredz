@@ -446,13 +446,19 @@ export async function initiateCashfreePayment(amount: number, orderId: string) {
       throw new Error(`Failed to initiate payment: ${response.statusText}`);
     }
 
-    const data: PaymentOrderResponse = await response.json();
+    const data = await response.json();
     console.log(
       "Cashfree API success response:",
       JSON.stringify(data, null, 2)
     );
 
-    return data;
+    // Create payment link using payment_session_id
+    const paymentLink = `https://payments.cashfree.com/order/#${data.payment_session_id}`;
+
+    return {
+      ...data,
+      payment_link: paymentLink,
+    };
   } catch (error) {
     console.error("Error in initiateCashfreePayment:", error);
     throw error;
