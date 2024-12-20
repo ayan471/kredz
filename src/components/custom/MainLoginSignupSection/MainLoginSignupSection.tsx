@@ -29,7 +29,7 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
               {isLoggedIn ? (
                 <>
-                  <Link href="/loan-application">
+                  <Link href="/consultancy-application">
                     <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
                       Apply Now
                     </Button>
