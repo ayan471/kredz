@@ -338,11 +338,13 @@ const renderSectionContent = (id: string) => {
             </li>
             <li className="flex items-center">
               <Phone className="w-5 h-5 mr-2 text-indigo-600" />
-              Phone: +91 1234567890
+              Phone: +91 8240561547
             </li>
             <li className="flex items-center">
               <MapPin className="w-5 h-5 mr-2 text-indigo-600" />
-              Address: 123 Financial Street, Mumbai, Maharashtra 400001, India
+              No 656A, ElcotSez, Zsurvey, Behind Accenture Company, Old
+              Mahablipuram Road, RajivGandhi Salai Sholinganallur - 600119
+              TamilNadu, India
             </li>
             <li className="flex items-center">
               <Globe className="w-5 h-5 mr-2 text-indigo-600" />

@@ -9,25 +9,25 @@ const testimonials = [
     name: "Deepak Sahoo",
     quote:
       "A good credit score has changed my ability to access credit. I now have unsecured cards from Kotak bank. I also got a low interest cost on my auto loan from Mahindra finance.",
-    image: "/testimonials/deepak.jpg",
+    image: "/global/Deepak.jpg",
   },
   {
     name: "Gondesh Reddy",
     quote:
       "A good score is essential today to get a loan. I would like to get to an 800 score and be able to get a 3-5L business loan at cheap rates. I can already get higher loan amounts because of a better score.",
-    image: "/testimonials/gondesh.jpg",
+    image: "/global/Gondesh.jpg",
   },
   {
     name: "Sachin Kumar",
     quote:
       "I have a good salary so want to get to 750 score. Want to buy a house/flat by end '24/beginning '25 which will not be possible with a low score.",
-    image: "/testimonials/sachin.jpg",
+    image: "/global/Sachin.jpg",
   },
   {
     name: "Sashibhushan Maharaj",
     quote:
       "Poor score will mean more rejections and even if approved will mean much lower sanctioned amount. I want to get to an 800 score to apply for a business loan of about 1L with a longer tenure of 6-12 mos. This will reduce the burden on my business.",
-    image: "/testimonials/sashibhushan.jpg",
+    image: "/global/Sashibhushan.jpg",
   },
 ];
 

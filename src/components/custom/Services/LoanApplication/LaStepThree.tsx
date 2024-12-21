@@ -48,7 +48,8 @@ const LaStepThree = () => {
     discountedPrice: number;
     realPrice: number;
     features: string[];
-  }>({ name: "", discountedPrice: 0, realPrice: 0, features: [] });
+    tenure: number;
+  }>({ name: "", discountedPrice: 0, realPrice: 0, features: [], tenure: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -94,6 +95,14 @@ const LaStepThree = () => {
               "Exclusive interest rates",
               "24/7 customer support",
             ],
+            tenure:
+              membershipPlan === "Bronze"
+                ? 3
+                : membershipPlan === "Silver"
+                  ? 6
+                  : membershipPlan === "Gold"
+                    ? 9
+                    : 12,
           });
         }
       }
@@ -197,6 +206,9 @@ const LaStepThree = () => {
               </span>
               <span className="text-sm line-through text-gray-300">
                 ₹{planDetails.realPrice}
+              </span>
+              <span className="text-sm mt-2">
+                Tenure: {planDetails.tenure} months
               </span>
             </div>
           </div>

@@ -124,7 +124,7 @@ const TermsAndConditions = () => {
           <ul className="list-none mt-2">
             <li className="flex items-center mb-2">
               <Phone className="mr-2 text-indigo-600" size={18} />
-              <span>+91 1234567890</span>
+              <span>+91 8240561547</span>
             </li>
             <li className="flex items-center mb-2">
               <Mail className="mr-2 text-indigo-600" size={18} />
@@ -133,7 +133,9 @@ const TermsAndConditions = () => {
             <li className="flex items-center">
               <MapPin className="mr-2 text-indigo-600" size={18} />
               <span>
-                123 Financial Street, Mumbai, Maharashtra 400001, India
+                No 656A, ElcotSez, Zsurvey, Behind Accenture Company, Old
+                Mahablipuram Road, RajivGandhi Salai Sholinganallur - 600119
+                TamilNadu, India
               </span>
             </li>
           </ul>

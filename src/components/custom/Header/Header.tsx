@@ -30,7 +30,7 @@ const Header = async () => {
           className="xl:min-w-[200px] flex flex-col align-start justify-center"
         >
           <Image
-            src="/global/credit-samdhan-logo.png"
+            src="/global/kredz-logo.png"
             width="600"
             height="420"
             alt="logo"

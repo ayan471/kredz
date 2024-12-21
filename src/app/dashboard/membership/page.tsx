@@ -16,7 +16,8 @@ import {
   Briefcase,
   PieChart,
   ArrowRight,
-  type LucideIcon,
+  TypeIcon as type,
+  LucideIcon,
 } from "lucide-react";
 import { getUserMembership } from "@/actions/loanApplicationActions";
 
@@ -35,6 +36,7 @@ interface LoanApplication {
   monIncome: string;
   EmpOthers?: string;
   status: string;
+  expiryDate: string;
 }
 
 interface InfoItemProps {
@@ -53,6 +55,33 @@ function InfoItem({ icon: Icon, label, value }: InfoItemProps) {
       </div>
     </div>
   );
+}
+
+function calculateExpiryDate(startDate: string, plan: string): Date {
+  const start = new Date(startDate);
+  const monthsToAdd =
+    plan === "Bronze"
+      ? 3
+      : plan === "Silver"
+        ? 6
+        : plan === "Gold"
+          ? 9
+          : plan === "Platinum"
+            ? 12
+            : 0;
+
+  return new Date(start.setMonth(start.getMonth() + monthsToAdd));
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Invalid Date";
+
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Months are 0-indexed
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
 }
 
 export default async function MembershipPage() {
@@ -89,9 +118,21 @@ export default async function MembershipPage() {
                   <InfoItem
                     icon={Calendar}
                     label="Start Date"
-                    value={new Date(
-                      loanApplication.createdAt
-                    ).toLocaleDateString()}
+                    value={formatDate(loanApplication.createdAt)}
+                  />
+                  <InfoItem
+                    icon={Calendar}
+                    label="Expiry Date"
+                    value={
+                      loanApplication.expiryDate
+                        ? formatDate(loanApplication.expiryDate)
+                        : formatDate(
+                            calculateExpiryDate(
+                              loanApplication.createdAt,
+                              loanApplication.membershipPlan
+                            ).toISOString()
+                          )
+                    }
                   />
                   <InfoItem
                     icon={User}
