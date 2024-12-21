@@ -77,7 +77,23 @@ export default async function CreditScoreDashboard() {
     console.error("Error fetching data:", error);
   }
 
-  const score = parseInt(creditData?.creditScore || "0");
+  const getLatestData = () => {
+    if (Object.keys(parsedMonthlyHealthData).length > 0) {
+      const latestMonth = Object.keys(parsedMonthlyHealthData).sort().pop();
+      const latestData = parsedMonthlyHealthData[latestMonth ?? ""];
+      return {
+        score:
+          latestData?.creditScore ?? parseInt(creditData?.creditScore || "0"),
+        poweredBy: latestData?.poweredBy ?? "CRIF",
+      };
+    }
+    return {
+      score: parseInt(creditData?.creditScore || "0"),
+      poweredBy: "CRIF",
+    };
+  };
+
+  const { score, poweredBy } = getLatestData();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 md:p-8">
@@ -91,8 +107,8 @@ export default async function CreditScoreDashboard() {
           )}
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="col-span-1 lg:col-span-2 bg-slate-800 border-slate-700">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
               <CardTitle className="text-2xl font-semibold text-slate-200">
                 Your Credit Score
@@ -116,7 +132,7 @@ export default async function CreditScoreDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="col-span-1 bg-slate-800 border-slate-700">
+          <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
               <CardTitle className="text-2xl font-semibold text-slate-200">
                 Credit Factors
@@ -138,8 +154,8 @@ export default async function CreditScoreDashboard() {
           </Card>
         </div>
 
-        <footer className="text-center text-slate-500 text-sm">
-          <p>Powered by CRIF</p>
+        <footer className="text-center text-slate-500 text-sm mt-8">
+          <p>Powered by {poweredBy}</p>
         </footer>
       </div>
     </div>

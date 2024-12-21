@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import CreditFactorCard from "./CreditFactorCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CreditHealthFactor {
   name: string;
@@ -39,12 +40,16 @@ export default function MonthlyCreditFactors({
   const [currentFactors, setCurrentFactors] = useState<CreditHealthFactor[]>(
     []
   );
+  const [creditScores, setCreditScores] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    console.log("Monthly Health Data:", monthlyHealthData);
-    console.log("Selected Month:", selectedMonth);
+    const scores: Record<string, number> = {};
+    Object.entries(monthlyHealthData).forEach(([month, data]) => {
+      scores[month] = data.creditScore || 0;
+    });
+    setCreditScores(scores);
+
     if (selectedMonth && monthlyHealthData[selectedMonth]) {
-      console.log("Data for selected month:", monthlyHealthData[selectedMonth]);
       const factors = transformDataToFactors(monthlyHealthData[selectedMonth]);
       setCurrentFactors(factors);
     }
@@ -54,8 +59,8 @@ export default function MonthlyCreditFactors({
     if (Array.isArray(data)) {
       return data;
     }
-    // If it's not an array, we assume it's an object with the structure we defined in formActions.ts
     return [
+      { name: "Credit Score", score: data.creditScore },
       { name: "Credit Utilization", score: data.creditUtilization },
       { name: "Payment History", score: data.paymentHistory },
       { name: "Credit Age", score: 0, details: data.creditAge },
@@ -99,7 +104,7 @@ export default function MonthlyCreditFactors({
     const endDate = expiryDate || new Date();
 
     while (currentDate <= endDate) {
-      const monthKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}`;
+      const monthKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
       options.push({
         value: monthKey,
         label: currentDate.toLocaleString("default", {
@@ -110,7 +115,7 @@ export default function MonthlyCreditFactors({
       currentDate.setMonth(currentDate.getMonth() + 1);
     }
 
-    return options;
+    return options.reverse(); // Show most recent month first
   };
 
   const monthOptions = getMonthOptions();
