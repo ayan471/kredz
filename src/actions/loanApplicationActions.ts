@@ -1,10 +1,14 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { v2 as cloudinary } from "cloudinary";
-import { LoanApplication, LoanApplicationData } from "@/types";
+import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
+import {
+  EditableLoanApplication,
+  LoanApplication,
+  LoanApplicationData,
+} from "@/types";
 
 const prisma = new PrismaClient();
 
@@ -281,6 +285,66 @@ export async function updateLoanApplicationData(
   } catch (error) {
     console.error("Error updating loan application data:", error);
     return { success: false, error: "Failed to update application data" };
+  }
+}
+
+async function uploadImage(
+  image: string | File,
+  folder: string
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const uploadCallback = (
+      error: any,
+      result: UploadApiResponse | undefined
+    ) => {
+      if (error) reject(error);
+      else if (result) resolve(result.secure_url);
+      else reject(new Error("Upload failed"));
+    };
+
+    if (typeof image === "string") {
+      cloudinary.uploader.upload(image, { folder }, uploadCallback);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target && typeof e.target.result === "string") {
+          cloudinary.uploader.upload(
+            e.target.result,
+            { folder },
+            uploadCallback
+          );
+        } else {
+          reject(new Error("Failed to read file"));
+        }
+      };
+      reader.readAsDataURL(image);
+    }
+  });
+}
+
+export async function updateLoanApplication(
+  id: string,
+  data: EditableLoanApplication
+) {
+  try {
+    const updatedLoan = await prisma.loanApplication.update({
+      where: { id },
+      data: {
+        ...data,
+        amtRequired: data.amtRequired,
+        monIncome: data.monIncome,
+        currEmis: data.currEmis || null,
+        eligibleAmount:
+          data.eligibleAmount !== undefined
+            ? Number(data.eligibleAmount)
+            : null,
+      },
+    });
+    revalidatePath(`/admin/loans/${id}`);
+    return { success: true, loan: updatedLoan };
+  } catch (error) {
+    console.error("Error updating loan application:", error);
+    return { success: false, error: "Failed to update loan application" };
   }
 }
 

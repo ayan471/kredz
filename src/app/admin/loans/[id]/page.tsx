@@ -107,6 +107,9 @@ export default async function LoanApplicationDetailPage({
           >
             {application.status}
           </Badge>
+          <Button variant="outline" asChild>
+            <a href={`/admin/loans/${application.id}/edit`}>Edit</a>
+          </Button>
           <DownloadCSV data={application} />
         </div>
       </div>

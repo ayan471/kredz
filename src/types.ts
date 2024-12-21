@@ -5,23 +5,35 @@ export interface LoanApplication {
   phoneNo: string;
   amtRequired: string;
   prpseOfLoan: string;
-  aadharImgFrontUrl?: string;
-  aadharImgBackUrl?: string;
+  aadharImgFrontUrl: string | null;
+  aadharImgBackUrl: string | null;
   aadharNo: string;
-  panImgFrontUrl?: string;
-  panImgBackUrl?: string;
+  panImgFrontUrl: string | null;
+  panImgBackUrl: string | null;
   panNo: string;
   creditScore: string;
   empType: string;
-  EmpOthers?: string;
+  EmpOthers: string | null;
   monIncome: string;
-  currEmis?: string;
-  selfieImgUrl?: string;
-  bankStatmntImgUrl?: string;
+  currEmis: string | null;
+  selfieImgUrl: string | null;
+  bankStatmntImgUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
-  status?: "In Progress" | "Approved" | "Rejected" | "Eligible";
-  eligibleAmount?: number | null;
+  status: "In Progress" | "Approved" | "Rejected" | "Eligible";
+  eligibleAmount: number | null;
+  approvedAmount: number | null;
+  processingFees: number | null;
+  gst: number | null;
+  otherCharges: number | null;
+  rateOfInterest: number | null;
+  tenure: number | null;
+  netDisbursement: number | null;
+  disbursementAccount: string | null;
+  disbursementDate: Date | null;
+  lender: string | null;
+  emi: number | null;
+  emiPaymentLink: string | null;
 }
 
 export interface LoanApplicationData {
@@ -46,3 +58,8 @@ export interface LoanApplicationData {
   updatedAt: Date;
   eligibleAmount?: number | null;
 }
+
+export type EditableLoanApplication = Omit<
+  LoanApplication,
+  "id" | "userId" | "createdAt" | "updatedAt"
+>;
