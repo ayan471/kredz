@@ -13,6 +13,10 @@ const LastBarLeft = () => {
         <Link href="/refund">
           <div>Refund & Cancellation Policy</div>
         </Link>
+        <Separator orientation="vertical" />
+        <Link href="/disclaimer">
+          <div>Disclaimer</div>
+        </Link>
       </div>
     </div>
   );
