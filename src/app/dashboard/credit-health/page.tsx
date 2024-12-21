@@ -1,36 +1,24 @@
 import { auth } from "@clerk/nextjs/server";
-import { getCreditScoreData, getUserSubscription } from "@/actions/formActions";
-import CreditScoreGauge from "./CreditScoreGauge";
-import CreditFactorCard from "./CreditFactorCard";
+
+import MonthlyScoreSelector from "./MonthlyScoreSelector";
 import MonthlyCreditFactors from "./MonthlyCreditFactors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import WelcomeMessage from "./WelcomeMessage";
+import { getCreditScoreData, getUserSubscription } from "@/actions/formActions";
 
-interface CreditHealthFactor {
-  name: string;
-  score: number;
-  details?: {
-    years?: number;
-    months?: number;
-    days?: number;
-    count?: number;
-    lenders?: string;
-    factors?: string;
-    recommendation?: string;
-  };
-}
-
-interface CreditData {
-  id: string;
-  step: number;
+interface CreditScoreData {
   userId: string;
+  id: string;
   fullName: string | null;
+  email: string | null;
   phoneNo: string | null;
+  aadharNo: string | null;
+  panNo: string | null;
+  creditScore: string | null;
+  step: number;
   createdAt: Date;
   updatedAt: Date;
-  panNo: string | null;
-  aadharNo: string | null;
-  creditScore: string | null;
+  poweredBy: string;
 }
 
 interface Subscription {
@@ -52,15 +40,15 @@ export default async function CreditScoreDashboard() {
     throw new Error("User not authenticated");
   }
 
-  let creditData: CreditData | null = null;
+  let creditScoreData: CreditScoreData | null = null;
   let subscription: Subscription | null = null;
   let parsedMonthlyHealthData: Record<string, any> = {};
 
   try {
-    creditData = await getCreditScoreData(userId);
+    creditScoreData = await getCreditScoreData(userId);
     subscription = await getUserSubscription(userId);
 
-    console.log("Credit Data:", creditData);
+    console.log("Credit Score Data:", creditScoreData);
     console.log("Subscription:", subscription);
 
     if (subscription?.monthlyHealthData) {
@@ -77,7 +65,7 @@ export default async function CreditScoreDashboard() {
     console.error("Error fetching data:", error);
   }
 
-  const score = parseInt(creditData?.creditScore || "0");
+  const score = parseInt(creditScoreData?.creditScore || "0");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 md:p-8">
@@ -86,8 +74,8 @@ export default async function CreditScoreDashboard() {
           <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
             Credit Score Dashboard
           </h1>
-          {creditData?.fullName && (
-            <WelcomeMessage userName={creditData.fullName} />
+          {creditScoreData?.fullName && (
+            <WelcomeMessage userName={creditScoreData.fullName} />
           )}
         </header>
 
@@ -99,27 +87,26 @@ export default async function CreditScoreDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center space-y-6">
-              <div className="w-64 h-64">
-                <CreditScoreGauge score={score} />
-              </div>
-              <p className="text-center text-slate-400 max-w-md">
-                {score > 740
-                  ? "Excellent job! Your credit score is in great shape. Keep up the good work!"
-                  : "There's room for improvement in your credit score. Let's work on boosting it!"}
-              </p>
-              {creditData?.updatedAt && (
-                <p className="text-sm text-slate-500">
-                  Last updated:{" "}
-                  {new Date(creditData.updatedAt).toLocaleDateString()}
-                </p>
-              )}
+              <MonthlyScoreSelector
+                monthlyHealthData={parsedMonthlyHealthData}
+                startDate={
+                  subscription ? new Date(subscription.createdAt) : new Date()
+                }
+                expiryDate={
+                  subscription?.expiryDate
+                    ? new Date(subscription.expiryDate)
+                    : null
+                }
+                currentScore={score}
+                poweredBy={creditScoreData?.poweredBy || ""}
+              />
             </CardContent>
           </Card>
 
           <Card className="col-span-1 bg-slate-800 border-slate-700">
             <CardHeader>
               <CardTitle className="text-2xl font-semibold text-slate-200">
-                Credit Factors
+                Monthly Credit Factors
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -137,10 +124,6 @@ export default async function CreditScoreDashboard() {
             </CardContent>
           </Card>
         </div>
-
-        <footer className="text-center text-slate-500 text-sm">
-          <p>Powered by CRIF</p>
-        </footer>
       </div>
     </div>
   );

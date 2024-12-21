@@ -43,6 +43,21 @@ type PaymentOrderResponse = {
   payment_link: string;
 };
 
+interface CreditScoreData {
+  userId: string;
+  id: string;
+  fullName: string | null;
+  email: string | null;
+  phoneNo: string | null;
+  aadharNo: string | null;
+  panNo: string | null;
+  creditScore: string | null;
+  step: number;
+  createdAt: Date;
+  updatedAt: Date;
+  poweredBy: string;
+}
+
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -122,7 +137,9 @@ export async function saveCreditBuilderData(data: {
   }
 }
 
-export async function getCreditScoreData(userId: string) {
+export async function getCreditScoreData(
+  userId: string
+): Promise<CreditScoreData | null> {
   try {
     const creditData = await prisma.creditBuilderApplicationData.findUnique({
       where: { userId },
@@ -133,14 +150,19 @@ export async function getCreditScoreData(userId: string) {
       return null;
     }
 
-    console.log(`Credit data for user ${userId}:`, creditData);
-    return creditData;
+    // Add the poweredBy property
+    const creditScoreData: CreditScoreData = {
+      ...creditData,
+      poweredBy: "CRIF", // or fetch this from wherever it's coming from
+    };
+
+    console.log(`Credit data for user ${userId}:`, creditScoreData);
+    return creditScoreData;
   } catch (error) {
     console.error("Failed to fetch credit score data:", error);
     throw error;
   }
 }
-
 export async function getCreditBuilderData(userId: string) {
   try {
     const data = await prisma.creditBuilderApplicationData.findUnique({

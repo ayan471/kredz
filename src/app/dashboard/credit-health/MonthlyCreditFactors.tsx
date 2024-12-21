@@ -41,10 +41,7 @@ export default function MonthlyCreditFactors({
   );
 
   useEffect(() => {
-    console.log("Monthly Health Data:", monthlyHealthData);
-    console.log("Selected Month:", selectedMonth);
     if (selectedMonth && monthlyHealthData[selectedMonth]) {
-      console.log("Data for selected month:", monthlyHealthData[selectedMonth]);
       const factors = transformDataToFactors(monthlyHealthData[selectedMonth]);
       setCurrentFactors(factors);
     }
@@ -54,7 +51,6 @@ export default function MonthlyCreditFactors({
     if (Array.isArray(data)) {
       return data;
     }
-    // If it's not an array, we assume it's an object with the structure we defined in formActions.ts
     return [
       { name: "Credit Utilization", score: data.creditUtilization },
       { name: "Payment History", score: data.paymentHistory },
