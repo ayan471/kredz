@@ -18,7 +18,7 @@ async function getLoanApplications(): Promise<LoanApplication[]> {
       approvedAmount: true,
       status: true,
       createdAt: true,
-      updatedAt: true, // Add this line
+      updatedAt: true,
       tenure: true,
     },
     orderBy: {

@@ -35,10 +35,7 @@ async function getLoanDetails(id: string, userId: string) {
       id,
       userId,
     },
-    include: {
-      eligibility: true,
-      emiPayments: true,
-    },
+    include: { eligibility: true, emiPayments: true },
   });
 
   if (!loan) {
@@ -233,6 +230,26 @@ export default async function LoanDetailsPage({
                     </span>
                   </div>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {loan.status === "Rejected" && loan.rejectionReason && (
+          <Card className="overflow-hidden shadow-lg mb-6">
+            <CardHeader className="bg-red-500 text-white p-6">
+              <CardTitle className="text-2xl font-bold">
+                Rejection Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="bg-red-100 rounded-lg p-6 mb-6">
+                <h3 className="text-xl font-semibold mb-2 text-red-800">
+                  Reason for Rejection
+                </h3>
+                <div className="text-lg text-red-600">
+                  {loan.rejectionReason}
+                </div>
               </div>
             </CardContent>
           </Card>

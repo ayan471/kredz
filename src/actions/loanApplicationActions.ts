@@ -420,14 +420,17 @@ export async function approveLoan(id: string) {
   }
 }
 
-export async function rejectLoan(id: string) {
+export async function rejectLoan(id: string, reason: string) {
   try {
     await prisma.loanApplication.update({
       where: { id },
-      data: { status: "Rejected" },
+      data: {
+        status: "Rejected",
+        rejectionReason: reason,
+      },
     });
     revalidatePath("/admin/loans");
-    return { success: false };
+    return { success: true };
   } catch (error) {
     console.error("Failed to reject loan:", error);
     return { success: false, error: "Failed to reject loan" };

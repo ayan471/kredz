@@ -27,6 +27,7 @@ import {
 } from "@/actions/loanApplicationActions";
 import { ApprovalModal } from "./components/approval-modal";
 import { EMIModal } from "./components/emi-modal";
+import { RejectedModal } from "./components/rejected-modal";
 
 export type LoanApplication = {
   id: string;
@@ -158,6 +159,7 @@ export const columns: ColumnDef<LoanApplication>[] = [
     cell: ({ row }) => {
       const application = row.original;
       const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+      const [isRejectedModalOpen, setIsRejectedModalOpen] = useState(false);
       const [isEMIModalOpen, setIsEMIModalOpen] = useState(false);
 
       return (
@@ -203,23 +205,30 @@ export const columns: ColumnDef<LoanApplication>[] = [
                     <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
                     Approve application
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => rejectLoan(application.id)}>
+                  <DropdownMenuItem
+                    onClick={() => setIsRejectedModalOpen(true)}
+                  >
                     <XCircle className="mr-2 h-4 w-4 text-red-600" />
                     Reject application
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => makeUserEligible(application.id)}
-                  >
-                    <UserCheck className="mr-2 h-4 w-4 text-yellow-600" />
-                    Make eligible
-                  </DropdownMenuItem>
                 </>
               )}
+              <DropdownMenuItem
+                onClick={() => makeUserEligible(application.id)}
+              >
+                <UserCheck className="mr-2 h-4 w-4 text-yellow-600" />
+                Make eligible
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <ApprovalModal
             isOpen={isApprovalModalOpen}
             onClose={() => setIsApprovalModalOpen(false)}
+            applicationId={application.id}
+          />
+          <RejectedModal
+            isOpen={isRejectedModalOpen}
+            onClose={() => setIsRejectedModalOpen(false)}
             applicationId={application.id}
           />
           <EMIModal

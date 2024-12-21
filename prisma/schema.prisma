@@ -78,6 +78,7 @@ model LoanApplication {
   loanEligibility     Float?
   loanAmount          Float?
   approvedAmount      Float?
+  rejectionReason     String?
   processingFees      Float?
   gst                 Float?
   otherCharges        Float?
