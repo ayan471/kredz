@@ -4,7 +4,8 @@ import {
   Clock,
   ShieldCheck,
   Users,
-  type LucideIcon,
+  TypeIcon as type,
+  LucideIcon,
 } from "lucide-react";
 
 interface FeatureItemProps {
@@ -57,7 +58,7 @@ const LoanApplicationHero: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="relative bg-orange-800 bg-opacity-75 py-8">
+      <div className="relative bg-orange-800 bg-opacity-75 py-8 hidden sm:block">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <FeatureItem
