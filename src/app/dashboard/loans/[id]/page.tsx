@@ -251,6 +251,11 @@ export default async function LoanDetailsPage({
                   {loan.rejectionReason}
                 </div>
               </div>
+              <div className="mt-4">
+                <Link href="/credit-builder">
+                  <Button className="w-full">Buy Credit Builder Plan</Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         )}
