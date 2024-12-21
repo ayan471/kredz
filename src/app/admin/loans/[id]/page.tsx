@@ -28,12 +28,20 @@ export default async function LoanApplicationDetailPage({
 }) {
   const application = await prisma.loanApplication.findUnique({
     where: { id: params.id },
-    include: { eligibility: true },
+    include: {
+      eligibility: true,
+    },
   });
 
   if (!application) {
     notFound();
   }
+
+  // Fetch the corresponding LoanApplicationData
+  const applicationData = await prisma.loanApplicationData.findFirst({
+    where: { userId: application.userId },
+    orderBy: { createdAt: "desc" },
+  });
 
   const ImageWithDownload = ({
     src,
@@ -75,13 +83,15 @@ export default async function LoanApplicationDetailPage({
   }: {
     icon: React.ReactNode;
     label: string;
-    value: string | number | null;
+    value: string | number | boolean | null | undefined;
   }) => (
     <div className="flex items-center space-x-2">
       {icon}
       <div>
         <p className="text-sm text-gray-500">{label}</p>
-        <p className="font-medium">{value || "N/A"}</p>
+        <p className="font-medium">
+          {value === true ? "Yes" : value === false ? "No" : value || "N/A"}
+        </p>
       </div>
     </div>
   );
@@ -166,6 +176,33 @@ export default async function LoanApplicationDetailPage({
               label="Current EMIs"
               value={application.currEmis}
             />
+            <InfoItem
+              icon={<Bank className="h-5 w-5 text-gray-400" />}
+              label="Account Number"
+              value={
+                applicationData?.accountNumber || application.accountNumber
+              }
+            />
+            <InfoItem
+              icon={<Bank className="h-5 w-5 text-gray-400" />}
+              label="Bank Name"
+              value={applicationData?.bankName || application.bankName}
+            />
+            <InfoItem
+              icon={<Bank className="h-5 w-5 text-gray-400" />}
+              label="IFSC Code"
+              value={applicationData?.ifscCode || application.ifscCode}
+            />
+            <InfoItem
+              icon={<Bank className="h-5 w-5 text-gray-400" />}
+              label="E-Mandate"
+              value={
+                applicationData?.eMandate !== undefined
+                  ? applicationData.eMandate
+                  : application.eMandate
+              }
+            />
+            <Separator />
             <InfoItem
               icon={<Calendar className="h-5 w-5 text-gray-400" />}
               label="Application Date"
