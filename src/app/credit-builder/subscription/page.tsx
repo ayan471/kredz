@@ -51,7 +51,7 @@ const CreditBuilderSubscription = () => {
                 Choose your plan and start your journey to financial success
                 today!
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+              <div className="hidden sm:grid sm:grid-cols-3 gap-6 mb-10">
                 {benefits.map((benefit, index) => (
                   <motion.div
                     key={index}

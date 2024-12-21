@@ -82,7 +82,7 @@ const CreditBuilder = () => {
               </Button>
             </motion.div>
             <motion.div
-              className="relative"
+              className="relative hidden lg:block"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4, duration: 0.8 }}

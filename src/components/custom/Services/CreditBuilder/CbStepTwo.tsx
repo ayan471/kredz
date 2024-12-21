@@ -114,6 +114,7 @@ const CbStepTwo: React.FC = () => {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const form = useForm<FormValues>({
     defaultValues: {
       fullName: "",
@@ -125,6 +126,17 @@ const CbStepTwo: React.FC = () => {
   const { user } = useUser();
 
   const selectedPlan = watch("plan");
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -335,26 +347,37 @@ const CbStepTwo: React.FC = () => {
                       "Choose Plan"
                     )}
                   </Label>
+                  {isMobile && selectedPlan === plan.value && (
+                    <Button
+                      type="submit"
+                      className="mt-4 w-full py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-md transition-colors duration-300"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Processing..." : "Activate Plan"}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             );
           })}
         </RadioGroup>
 
-        <Button
-          type="submit"
-          className="mt-10 text-lg w-full max-w-md mx-auto py-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-              Initiating PhonePe Payment...
-            </>
-          ) : (
-            "Activate Plan with PhonePe"
-          )}
-        </Button>
+        {!isMobile && (
+          <Button
+            type="submit"
+            className="mt-10 text-lg w-full max-w-md mx-auto py-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                Initiating PhonePe Payment...
+              </>
+            ) : (
+              "Activate Plan"
+            )}
+          </Button>
+        )}
       </form>
 
       <DevTool control={control} />
