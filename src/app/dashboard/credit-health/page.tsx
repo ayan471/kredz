@@ -82,7 +82,7 @@ export default async function CreditScoreDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card className="col-span-1 lg:col-span-2 bg-slate-800 border-slate-700">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-slate-200">
+              <CardTitle className="text-2xl font-semibold text-slate-200 text-center">
                 Your Credit Score
               </CardTitle>
             </CardHeader>

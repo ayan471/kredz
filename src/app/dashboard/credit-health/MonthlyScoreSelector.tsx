@@ -68,7 +68,7 @@ export default function MonthlyScoreSelector({
   const monthOptions = getMonthOptions();
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="w-full max-w-md mx-auto space-y-6">
       <Select onValueChange={setSelectedMonth} value={selectedMonth}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select month" />
@@ -82,24 +82,30 @@ export default function MonthlyScoreSelector({
         </SelectContent>
       </Select>
 
-      <div className="w-64 h-64 mx-auto">
-        <CreditScoreGauge
-          score={displayedScore}
-          poweredBy={displayedPoweredBy}
-        />
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <div className="w-64 h-64">
+          <CreditScoreGauge
+            score={displayedScore}
+            poweredBy={displayedPoweredBy}
+          />
+        </div>
+
+        <div className="text-center space-y-2">
+          <p className="text-lg font-semibold text-slate-200">
+            {displayedScore > 740 ? "Excellent job!" : "Room for improvement"}
+          </p>
+          <p className="text-sm text-slate-400 max-w-xs">
+            {displayedScore > 740
+              ? "Your credit score is in great shape. Keep up the good work!"
+              : "Let's work on boosting your credit score!"}
+          </p>
+          <p className="text-xs text-slate-500">
+            {selectedMonth === "current"
+              ? "Current score"
+              : `Score for ${monthOptions.find((o) => o.value === selectedMonth)?.label}`}
+          </p>
+        </div>
       </div>
-
-      <p className="text-center text-slate-400 max-w-md">
-        {displayedScore > 740
-          ? "Excellent job! Your credit score is in great shape. Keep up the good work!"
-          : "There's room for improvement in your credit score. Let's work on boosting it!"}
-      </p>
-
-      <p className="text-sm text-slate-500 text-center">
-        {selectedMonth === "current"
-          ? "Current score"
-          : `Score for ${monthOptions.find((o) => o.value === selectedMonth)?.label}`}
-      </p>
     </div>
   );
 }
