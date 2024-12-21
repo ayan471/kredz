@@ -382,7 +382,7 @@ const LaStepOne = () => {
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="selfieImg">Upload a selfie</Label>
+            <Label htmlFor="selfieImg">Upload your selfie</Label>
             <Input id="selfieImg" type="file" {...register("selfieImg")} />
           </div>
 
