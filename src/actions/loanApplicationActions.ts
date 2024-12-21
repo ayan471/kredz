@@ -265,7 +265,6 @@ export async function updateLoanApplicationData(
   data: Record<string, any>
 ) {
   try {
-    // Create a new object with only the fields that exist in the LoanApplicationData model
     const updateData = {
       fullName: data.fullName,
       phoneNo: data.phoneNo,
@@ -273,8 +272,11 @@ export async function updateLoanApplicationData(
       panNo: data.panNo,
       aadharNo: data.aadharNo,
       emiTenure: data.emiTenure,
-      step: data.step || 1,
-      // Add any other fields that exist in your LoanApplicationData model
+      accountNumber: data.accountNumber,
+      bankName: data.bankName,
+      ifscCode: data.ifscCode,
+      eMandate: data.eMandate,
+      step: data.step || 2,
     };
 
     const updatedData = await prisma.loanApplicationData.update({
@@ -286,40 +288,6 @@ export async function updateLoanApplicationData(
     console.error("Error updating loan application data:", error);
     return { success: false, error: "Failed to update application data" };
   }
-}
-
-async function uploadImage(
-  image: string | File,
-  folder: string
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const uploadCallback = (
-      error: any,
-      result: UploadApiResponse | undefined
-    ) => {
-      if (error) reject(error);
-      else if (result) resolve(result.secure_url);
-      else reject(new Error("Upload failed"));
-    };
-
-    if (typeof image === "string") {
-      cloudinary.uploader.upload(image, { folder }, uploadCallback);
-    } else {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target && typeof e.target.result === "string") {
-          cloudinary.uploader.upload(
-            e.target.result,
-            { folder },
-            uploadCallback
-          );
-        } else {
-          reject(new Error("Failed to read file"));
-        }
-      };
-      reader.readAsDataURL(image);
-    }
-  });
 }
 
 export async function updateLoanApplication(

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import {
   getLoanApplicationData,
@@ -26,6 +27,10 @@ type FormValues = {
   panNo: string;
   aadharNo: string;
   emiTenure: string;
+  accountNumber: string;
+  bankName: string;
+  ifscCode: string;
+  eMandate: boolean;
 };
 
 type EMIDetails = {
@@ -86,7 +91,6 @@ const LaStepTwo = () => {
     const result = await updateLoanApplicationData(id, {
       ...data,
       step: 2,
-      // Remove emiAmount, totalPayment, and totalInterest from here
     });
 
     if (result.success) {
@@ -288,6 +292,56 @@ const LaStepTwo = () => {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+
+        <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
+          <h3 className="text-lg font-semibold">Disbursal Account Details</h3>
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="accountNumber">Account Number</Label>
+            <Input
+              type="text"
+              id="accountNumber"
+              {...register("accountNumber")}
+              required
+            />
+          </div>
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="bankName">Bank Name</Label>
+            <Input
+              type="text"
+              id="bankName"
+              {...register("bankName")}
+              required
+            />
+          </div>
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="ifscCode">IFSC Code</Label>
+            <Input
+              type="text"
+              id="ifscCode"
+              {...register("ifscCode")}
+              required
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Controller
+              name="eMandate"
+              control={control}
+              render={({ field }) => (
+                <Checkbox
+                  id="eMandate"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              )}
+            />
+            <Label
+              htmlFor="eMandate"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              E-mandate/Auto Debit will be activated on the same account
+            </Label>
+          </div>
         </div>
 
         <Button type="submit" className="mt-8 text-md">

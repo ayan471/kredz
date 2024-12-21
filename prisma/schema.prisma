@@ -92,6 +92,10 @@ model LoanApplication {
   emi                 Float?
   emiPayments         EMIPayment[]
   emiPaymentLink      String?
+  accountNumber       Int?
+  bankName            String?
+  ifscCode            String?
+  eMandate            Boolean          @default(false)
 }
 
 model EMIPayment {
@@ -166,6 +170,10 @@ model LoanApplicationData {
   emailID        String?
   emiTenure      String?
   membershipPlan String?
+  accountNumber  String?
+  bankName       String?
+  ifscCode       String?
+  eMandate       Boolean  @default(false)
   step           Int      @default(1)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
