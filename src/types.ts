@@ -9,7 +9,7 @@ export interface LoanApplication {
   aadharImgBackUrl: string | null;
   aadharNo: string;
   panImgFrontUrl: string | null;
-  panImgBackUrl: string | null;
+
   panNo: string;
   creditScore: string;
   empType: string;

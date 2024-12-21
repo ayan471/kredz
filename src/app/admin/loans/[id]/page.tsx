@@ -240,11 +240,6 @@ export default async function LoanApplicationDetailPage({
                   alt="PAN Front"
                   filename="pan_front.jpg"
                 />
-                <ImageWithDownload
-                  src={application.panImgBackUrl}
-                  alt="PAN Back"
-                  filename="pan_back.jpg"
-                />
               </div>
             </div>
             <Separator />

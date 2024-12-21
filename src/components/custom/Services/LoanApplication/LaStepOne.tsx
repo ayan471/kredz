@@ -31,7 +31,7 @@ type FormValues = {
   aadharImgBack: FileList;
   aadharNo: string;
   panImgFront: FileList;
-  panImgBack: FileList;
+
   panNo: string;
   creditScore: string;
   empType: string;
@@ -115,6 +115,8 @@ const LaStepOne = () => {
         formData.append(key, value);
       }
     });
+
+    formData.set("panNo", data.panNo.toUpperCase());
 
     // Ensure monIncome is included
     formData.append("monIncome", data.monIncome);
@@ -269,13 +271,8 @@ const LaStepOne = () => {
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="panImgFront">PAN Card Front Upload</Label>
+            <Label htmlFor="panImgFront">PAN Card Image</Label>
             <Input id="panImgFront" type="file" {...register("panImgFront")} />
-          </div>
-
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="panImgBack">PAN Card Back Upload</Label>
-            <Input id="panImgBack" type="file" {...register("panImgBack")} />
           </div>
 
           <div className="grid w-full items-center gap-1.5">

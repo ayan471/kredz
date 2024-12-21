@@ -51,17 +51,17 @@ model CreditBuilderApplicationData {
 }
 
 model LoanApplication {
-  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
-  userId              String
-  fullName            String
-  phoneNo             String
-  amtRequired         String
-  prpseOfLoan         String
-  aadharImgFrontUrl   String?
-  aadharImgBackUrl    String?
-  aadharNo            String
-  panImgFrontUrl      String?
-  panImgBackUrl       String?
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String
+  fullName          String
+  phoneNo           String
+  amtRequired       String
+  prpseOfLoan       String
+  aadharImgFrontUrl String?
+  aadharImgBackUrl  String?
+  aadharNo          String
+  panImgFrontUrl    String?
+
   panNo               String
   creditScore         String
   empType             String

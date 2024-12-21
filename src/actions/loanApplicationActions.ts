@@ -152,7 +152,7 @@ export async function submitLoanApplicationStep1(formData: FormData) {
         aadharImgBackUrl: data.aadharImgBackUrl,
         aadharNo: data.aadharNo,
         panImgFrontUrl: data.panImgFrontUrl,
-        panImgBackUrl: data.panImgBackUrl,
+
         panNo: data.panNo,
         creditScore: data.creditScore,
         empType: data.empType,
