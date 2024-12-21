@@ -131,7 +131,7 @@ const LaStepTwo = () => {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="text-xl text-white"
               >
-                Your eligible loan amount:
+                You are eligible for pre approved loan amount:
               </motion.p>
               <motion.p
                 initial={{ scale: 0.9 }}
