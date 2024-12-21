@@ -19,6 +19,8 @@ interface CreditFactors {
   overdueAccounts: { count: number; lenders: string };
   scoringFactors: string;
   recommendation: string;
+  creditScore: number;
+  poweredBy: string;
 }
 
 type PaymentOrderResponse = {
@@ -241,7 +243,11 @@ export async function updateMonthlyCreditHealth(
     let monthlyHealthData = subscription.monthlyHealthData
       ? JSON.parse(subscription.monthlyHealthData)
       : {};
-    monthlyHealthData[`${year}-${month}`] = creditFactors;
+    monthlyHealthData[`${year}-${month}`] = {
+      ...creditFactors,
+      creditScore: creditFactors.creditScore,
+      poweredBy: creditFactors.poweredBy,
+    };
 
     const updatedSubscription = await prisma.creditBuilderSubscription.update({
       where: { id: subscriptionId },

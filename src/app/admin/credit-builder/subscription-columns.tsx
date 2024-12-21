@@ -58,6 +58,8 @@ interface CreditFactors {
   overdueAccounts: { count: number; lenders: string };
   scoringFactors: string;
   recommendation: string;
+  creditScore: number;
+  poweredBy: string;
 }
 
 interface MonthlyHealthData {
@@ -144,6 +146,8 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
         overdueAccounts: { count: 0, lenders: "" },
         scoringFactors: "",
         recommendation: "",
+        creditScore: 0,
+        poweredBy: "",
       });
       const [isOpen, setIsOpen] = useState(false);
       const router = useRouter();
@@ -171,7 +175,11 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
             subscription.id,
             month,
             year,
-            creditFactors
+            {
+              ...creditFactors,
+              creditScore: creditFactors.creditScore,
+              poweredBy: creditFactors.poweredBy,
+            }
           );
           if (result.success) {
             console.log("Monthly credit health updated successfully");
@@ -524,6 +532,46 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                         }
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="creditScore"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Credit Score
+                    </label>
+                    <Input
+                      id="creditScore"
+                      type="number"
+                      min="300"
+                      max="900"
+                      value={creditFactors.creditScore}
+                      onChange={(e) =>
+                        setCreditFactors({
+                          ...creditFactors,
+                          creditScore: parseInt(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="poweredBy"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Powered By
+                    </label>
+                    <Input
+                      id="poweredBy"
+                      type="text"
+                      value={creditFactors.poweredBy}
+                      onChange={(e) =>
+                        setCreditFactors({
+                          ...creditFactors,
+                          poweredBy: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                   <div>
                     <label
