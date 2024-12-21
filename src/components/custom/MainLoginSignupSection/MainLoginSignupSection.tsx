@@ -67,7 +67,7 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
               <Image
                 src={
                   isLoggedIn
-                    ? "/global/collage-24.jpg"
+                    ? "/global/banners/hand-holding-phone-mockup.png"
                     : "/global/banners/hand-holding-phone-mockup.png"
                 }
                 fill
