@@ -98,7 +98,7 @@ export default async function CreditScoreDashboard() {
                     : null
                 }
                 currentScore={score}
-                poweredBy={creditScoreData?.poweredBy || ""}
+                currentPoweredBy={creditScoreData?.poweredBy || ""}
               />
             </CardContent>
           </Card>

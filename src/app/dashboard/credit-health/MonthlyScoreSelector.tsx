@@ -10,12 +10,17 @@ import {
 } from "@/components/ui/select";
 import CreditScoreGauge from "./CreditScoreGauge";
 
+interface MonthlyHealthData {
+  creditScore: number;
+  poweredBy: string;
+}
+
 interface MonthlyScoreSelectorProps {
-  monthlyHealthData: Record<string, any>;
+  monthlyHealthData: Record<string, MonthlyHealthData>;
   startDate: Date;
   expiryDate: Date | null;
   currentScore: number;
-  poweredBy: string;
+  currentPoweredBy: string;
 }
 
 export default function MonthlyScoreSelector({
@@ -23,18 +28,22 @@ export default function MonthlyScoreSelector({
   startDate,
   expiryDate,
   currentScore,
-  poweredBy,
+  currentPoweredBy,
 }: MonthlyScoreSelectorProps) {
   const [selectedMonth, setSelectedMonth] = useState<string>("current");
   const [displayedScore, setDisplayedScore] = useState<number>(currentScore);
+  const [displayedPoweredBy, setDisplayedPoweredBy] =
+    useState<string>(currentPoweredBy);
 
   useEffect(() => {
     if (selectedMonth === "current") {
       setDisplayedScore(currentScore);
+      setDisplayedPoweredBy(currentPoweredBy);
     } else if (monthlyHealthData[selectedMonth]) {
-      setDisplayedScore(monthlyHealthData[selectedMonth].creditScore || 0);
+      setDisplayedScore(monthlyHealthData[selectedMonth].creditScore);
+      setDisplayedPoweredBy(monthlyHealthData[selectedMonth].poweredBy);
     }
-  }, [selectedMonth, currentScore, monthlyHealthData]);
+  }, [selectedMonth, currentScore, currentPoweredBy, monthlyHealthData]);
 
   const getMonthOptions = () => {
     const options = [{ value: "current", label: "Current Score" }];
@@ -74,7 +83,10 @@ export default function MonthlyScoreSelector({
       </Select>
 
       <div className="w-64 h-64 mx-auto">
-        <CreditScoreGauge score={displayedScore} poweredBy={poweredBy} />
+        <CreditScoreGauge
+          score={displayedScore}
+          poweredBy={displayedPoweredBy}
+        />
       </div>
 
       <p className="text-center text-slate-400 max-w-md">
