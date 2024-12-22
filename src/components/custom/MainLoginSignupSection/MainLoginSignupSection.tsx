@@ -66,9 +66,7 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
             <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
               <Image
                 src={
-                  isLoggedIn
-                    ? "/global/banners/hand-holding-phone-mockup.png"
-                    : "/global/banners/hand-holding-phone-mockup.png"
+                  isLoggedIn ? "/global/LoggedIn.jpg" : "/global/LoggedOut.jpg"
                 }
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
