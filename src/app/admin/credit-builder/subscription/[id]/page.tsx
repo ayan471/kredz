@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
+import { DownloadCSV } from "./download-csv";
 
 const prisma = new PrismaClient();
 
@@ -24,7 +25,10 @@ export default async function SubscriptionDetailPage({
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-8">Subscription Details</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Subscription Details</h1>
+        <DownloadCSV data={subscription} />
+      </div>
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
         <div className="px-4 py-5 sm:px-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
