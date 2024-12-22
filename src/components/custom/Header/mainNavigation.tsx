@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 
 import { cn } from "@/components/lib/utils";
 
@@ -39,12 +40,6 @@ const locations: {
     description: "",
     comingSoon: "yes",
   },
-  // {
-  //   title: "Loan Consultancy",
-  //   href: "",
-  //   description: "",
-  //   comingSoon: "yes",
-  // },
 ];
 
 const experiences: { title: string; href: string; description: string }[] = [
@@ -66,6 +61,8 @@ const experiences: { title: string; href: string; description: string }[] = [
 ];
 
 export default function NavigationMenuDemo() {
+  const { isSignedIn } = useAuth();
+
   return (
     <>
       <NavigationMenu>
@@ -85,8 +82,12 @@ export default function NavigationMenuDemo() {
             <NavigationMenuContent>
               <ul className=" grid w-[400px] gap-3 p-4 md:w-[330px] md:grid-cols-1 lg:w-[330px] ">
                 {locations.map((location) => (
-                  <Link href={location.href} className="flex flex-row">
-                    <ListItem key={location.title} title={location.title}>
+                  <Link
+                    key={location.title}
+                    href={location.href}
+                    className="flex flex-row"
+                  >
+                    <ListItem title={location.title}>
                       {location.description}
                     </ListItem>
                     {location.comingSoon == "yes" && (
@@ -107,6 +108,16 @@ export default function NavigationMenuDemo() {
               </NavigationMenuLink>
             </Link>
           </NavigationMenuItem>
+
+          {isSignedIn && (
+            <NavigationMenuItem>
+              <Link href="/dashboard" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <p className="uppercase tracking-wider">Dashboard</p>
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+          )}
         </NavigationMenuList>
       </NavigationMenu>
     </>
