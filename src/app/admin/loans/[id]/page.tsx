@@ -18,6 +18,7 @@ import {
   Camera,
   BanknoteIcon as Bank,
 } from "lucide-react";
+import { EditableInfoItem } from "./EditableInfoItem";
 
 const prisma = new PrismaClient();
 
@@ -176,22 +177,41 @@ export default async function LoanApplicationDetailPage({
               label="Current EMIs"
               value={application.currEmis}
             />
-            <InfoItem
+
+            {/* @ts-ignore */}
+            <EditableInfoItem
               icon={<Bank className="h-5 w-5 text-gray-400" />}
               label="Account Number"
               value={
-                applicationData?.accountNumber || application.accountNumber
+                applicationData?.accountNumber ||
+                application.accountNumber ||
+                ""
+              }
+              field="accountNumber"
+              loanId={applicationData?.id || application.id}
+              modelType={
+                applicationData ? "LoanApplicationData" : "LoanApplication"
               }
             />
-            <InfoItem
+            <EditableInfoItem
               icon={<Bank className="h-5 w-5 text-gray-400" />}
               label="Bank Name"
-              value={applicationData?.bankName || application.bankName}
+              value={applicationData?.bankName || application.bankName || ""}
+              field="bankName"
+              loanId={applicationData?.id || application.id}
+              modelType={
+                applicationData ? "LoanApplicationData" : "LoanApplication"
+              }
             />
-            <InfoItem
+            <EditableInfoItem
               icon={<Bank className="h-5 w-5 text-gray-400" />}
               label="IFSC Code"
-              value={applicationData?.ifscCode || application.ifscCode}
+              value={applicationData?.ifscCode || application.ifscCode || ""}
+              field="ifscCode"
+              loanId={applicationData?.id || application.id}
+              modelType={
+                applicationData ? "LoanApplicationData" : "LoanApplication"
+              }
             />
             <InfoItem
               icon={<Bank className="h-5 w-5 text-gray-400" />}

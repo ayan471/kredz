@@ -262,31 +262,22 @@ async function calculateEligibleAmount(salary: number): Promise<number> {
 
 export async function updateLoanApplicationData(
   id: string,
-  data: Record<string, any>
+  data: Partial<LoanApplicationData>
 ) {
   try {
-    const updateData = {
-      fullName: data.fullName,
-      phoneNo: data.phoneNo,
-      emailID: data.emailID,
-      panNo: data.panNo,
-      aadharNo: data.aadharNo,
-      emiTenure: data.emiTenure,
-      accountNumber: data.accountNumber,
-      bankName: data.bankName,
-      ifscCode: data.ifscCode,
-      eMandate: data.eMandate,
-      step: data.step || 2,
-    };
-
     const updatedData = await prisma.loanApplicationData.update({
       where: { id },
-      data: updateData,
+      data: {
+        accountNumber: data.accountNumber,
+        bankName: data.bankName,
+        ifscCode: data.ifscCode,
+      },
     });
-    return { success: true, id: updatedData.id };
+    revalidatePath(`/admin/loans/${id}`);
+    return { success: true, data: updatedData };
   } catch (error) {
     console.error("Error updating loan application data:", error);
-    return { success: false, error: "Failed to update application data" };
+    return { success: false, error: "Failed to update loan application data" };
   }
 }
 
@@ -306,6 +297,9 @@ export async function updateLoanApplication(
           data.eligibleAmount !== undefined
             ? Number(data.eligibleAmount)
             : null,
+        accountNumber: data.accountNumber,
+        bankName: data.bankName,
+        ifscCode: data.ifscCode,
       },
     });
     revalidatePath(`/admin/loans/${id}`);
@@ -315,7 +309,6 @@ export async function updateLoanApplication(
     return { success: false, error: "Failed to update loan application" };
   }
 }
-
 export async function determineMembershipPlan(salary: number): Promise<string> {
   // Simulating an async operation
   await new Promise((resolve) => setTimeout(resolve, 100));

@@ -9,7 +9,6 @@ export interface LoanApplication {
   aadharImgBackUrl: string | null;
   aadharNo: string;
   panImgFrontUrl: string | null;
-
   panNo: string;
   creditScore: string;
   empType: string;
@@ -34,6 +33,9 @@ export interface LoanApplication {
   lender: string | null;
   emi: number | null;
   emiPaymentLink: string | null;
+  accountNumber: number | null;
+  bankName: string | null;
+  ifscCode: string | null;
 }
 
 export interface LoanApplicationData {
@@ -57,9 +59,12 @@ export interface LoanApplicationData {
   createdAt: Date;
   updatedAt: Date;
   eligibleAmount?: number | null;
+  accountNumber: string | null; // Changed from number | null to string | null
+  bankName: string | null;
+  ifscCode: string | null;
+  eMandate: boolean; // Added this field
 }
 
-export type EditableLoanApplication = Omit<
-  LoanApplication,
-  "id" | "userId" | "createdAt" | "updatedAt"
+export type EditableLoanApplication = Partial<
+  Omit<LoanApplication, "id" | "userId" | "createdAt" | "updatedAt">
 >;
