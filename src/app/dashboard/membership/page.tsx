@@ -259,7 +259,7 @@ export default async function MembershipPage() {
                 </p>
                 <Button asChild size="lg" className="w-full">
                   <Link
-                    href="/apply-loan"
+                    href="/consultancy-application"
                     className="flex items-center justify-center space-x-2"
                   >
                     <span>Apply for Loan</span>

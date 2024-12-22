@@ -86,9 +86,7 @@ export default async function SubscriptionPage() {
                   premium features.
                 </p>
                 <Button asChild className="w-full">
-                  <Link href="/purchase-subscription">
-                    Purchase Subscription
-                  </Link>
+                  <Link href="/credit-builder">Purchase Subscription</Link>
                 </Button>
               </div>
             )}

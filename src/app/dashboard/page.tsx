@@ -10,6 +10,7 @@ import {
   TrendingUp,
   AlertCircle,
 } from "lucide-react";
+import Link from "next/link";
 
 const prisma = new PrismaClient();
 
@@ -134,9 +135,11 @@ export default async function DashboardPage() {
                   <p className="text-gray-600 dark:text-gray-400">
                     No completed loan application found
                   </p>
-                  <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
-                    Start Application
-                  </button>
+                  <Link href={"/consultancy-application"}>
+                    <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+                      Start Application
+                    </button>
+                  </Link>
                 </div>
               )}
             </CardContent>
@@ -198,9 +201,11 @@ export default async function DashboardPage() {
                   <p className="text-gray-600 dark:text-gray-400">
                     No active subscription found
                   </p>
-                  <button className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors">
-                    Explore Plans
-                  </button>
+                  <Link href={"/credit-builder"}>
+                    <button className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors">
+                      Explore Plans
+                    </button>
+                  </Link>
                 </div>
               )}
             </CardContent>

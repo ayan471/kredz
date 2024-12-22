@@ -1,4 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
@@ -6,17 +8,42 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/contact",
   "/about-us",
-  "/privacy-policy",
   "/terms-of-use",
-  "/refund",
+  "/privacy-policy",
   "/disclaimer",
+  "/refund",
   "/faq",
 ]);
 
-export default clerkMiddleware((auth, request) => {
-  if (!isPublicRoute(request)) {
-    auth().protect();
+const adminUserIds = [
+  "user_2qa96Ptiod6AXaQk2ucR89kZ6Td",
+  "user_2qa8rrNJeL0qiZsJDSIWpRfX0Er",
+  "user_2qa8Z81zJnpeajwEFOzc7GNYIsl",
+];
+
+export default clerkMiddleware((auth, request: NextRequest) => {
+  if (isPublicRoute(request)) {
+    return NextResponse.next();
   }
+
+  const { userId } = auth();
+
+  // If the user is not signed in and is trying to access a protected route, redirect them to sign-in
+  if (!userId) {
+    return NextResponse.redirect(new URL("/sign-in", request.url));
+  }
+
+  // If the user is trying to access the admin route
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    // Check if the user's ID is in the adminUserIds array
+    if (!adminUserIds.includes(userId)) {
+      // If not, redirect them to the unauthorized page
+      return NextResponse.redirect(new URL("/unauthorized", request.url));
+    }
+  }
+
+  // For all other protected routes, allow access
+  return NextResponse.next();
 });
 
 export const config = {
