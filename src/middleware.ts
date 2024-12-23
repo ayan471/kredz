@@ -13,10 +13,10 @@ const isPublicRoute = createRouteMatcher([
   "/disclaimer",
   "/refund",
   "/faq",
-  "/payment-callback",
-  "/api/payment-callback",
-  "/api/phonepe-callback",
-  "/api/initiate-phonepe-payment",
+  "/payment-callback(.*)",
+  "/api/phonepe-callback(.*)",
+  "/api/phonepe-callback(.*)",
+  "/api/initiate-phonepe-payment(.*)",
 ]);
 
 const adminUserIds = [
@@ -31,14 +31,9 @@ export default clerkMiddleware((auth, request: NextRequest) => {
   if (request.nextUrl.pathname === "/payment-callback") {
     const { userId } = auth();
     if (!userId) {
-      const signInUrl = new URL("/sign-in", request.url);
-      const currentUrl = new URL(request.url);
-      // Preserve all query parameters
-      currentUrl.searchParams.forEach((value, key) => {
-        signInUrl.searchParams.append(key, value);
-      });
-      signInUrl.searchParams.set("redirect_url", currentUrl.toString());
-      return NextResponse.redirect(signInUrl);
+      // Instead of redirecting, allow the request to proceed
+      // The client-side component will handle the authentication
+      return NextResponse.next();
     }
   }
 
