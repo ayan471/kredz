@@ -43,17 +43,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    // Generate a state parameter
-    const state = crypto.randomBytes(16).toString("hex");
-
     const payload = {
       merchantId: PHONEPE_MERCHANT_ID,
       merchantTransactionId: orderId,
-      merchantUserId: customerPhone,
+      merchantUserId: userId || customerPhone,
       amount: Math.round(amount * 100),
-      redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-callback?state=${state}`,
+      redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-callback`,
       redirectMode: "POST",
-      callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/phonepe-callback`,
+      callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/phonepe-webhook`,
       mobileNumber: customerPhone,
       paymentInstrument: {
         type: "PAY_PAGE",
@@ -96,13 +93,9 @@ export async function POST(request: Request) {
     console.log("PhonePe API response:", responseData);
 
     if (responseData.success) {
-      // Store the state in your database or cache, associated with the userId
-      // For example: await storeState(userId, state);
-
       return NextResponse.json({
         success: true,
         paymentUrl: responseData.data.instrumentResponse.redirectInfo.url,
-        state: state,
       });
     } else {
       console.error("PhonePe API error:", responseData);

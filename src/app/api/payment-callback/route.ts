@@ -12,41 +12,42 @@ export async function GET(request: Request) {
       searchParams: Object.fromEntries(searchParams.entries()),
     });
 
-    const state = searchParams.get("state");
     const status = searchParams.get("status");
     const transactionId = searchParams.get("transactionId");
     const merchantId = searchParams.get("merchantId");
 
-    // Verify the state parameter
-    // For example: const isValidState = await verifyState(userId, state);
-    // if (!isValidState) {
-    //   return NextResponse.json({ success: false, error: "Invalid state" }, { status: 400 });
-    // }
-
     console.log("Payment details:", { status, transactionId, merchantId });
 
-    if (status === "SUCCESS") {
-      // Process successful payment
-      // For example: await processSuccessfulPayment(userId, transactionId);
+    if (!userId) {
+      const signInUrl = new URL("/sign-in", request.url);
+      signInUrl.searchParams.set(
+        "redirect_url",
+        `/payment-result?status=${status}&transactionId=${transactionId}`
+      );
+      return NextResponse.redirect(signInUrl);
+    }
 
-      return NextResponse.json({
-        success: true,
-        message: "Payment successful",
-        redirectUrl: `/dashboard?payment=success&txnId=${transactionId || ""}`,
-      });
+    // Note: The actual payment status should be verified through the webhook
+    // This redirect is mainly for user experience
+    if (status === "SUCCESS") {
+      return NextResponse.redirect(
+        new URL(
+          `/dashboard?payment=pending&txnId=${transactionId || ""}`,
+          request.url
+        )
+      );
     } else {
-      return NextResponse.json({
-        success: false,
-        message: "Payment failed",
-        redirectUrl: `/error?message=payment-failed&txnId=${transactionId || ""}`,
-      });
+      return NextResponse.redirect(
+        new URL(
+          `/error?message=payment-failed&txnId=${transactionId || ""}`,
+          request.url
+        )
+      );
     }
   } catch (error) {
     console.error("Payment callback error:", error);
-    return NextResponse.json({
-      success: false,
-      message: "Payment callback failed",
-      redirectUrl: "/error?message=payment-callback-failed",
-    });
+    return NextResponse.redirect(
+      new URL("/error?message=payment-callback-failed", request.url)
+    );
   }
 }

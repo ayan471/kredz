@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
+  "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
-  "/",
   "/contact",
   "/about-us",
   "/terms-of-use",
@@ -17,6 +17,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/payment-callback",
   "/api/phonepe-callback",
   "/api/initiate-phonepe-payment",
+  "/api/phonepe-webhook",
 ]);
 
 const adminUserIds = [
