@@ -4,6 +4,7 @@ import crypto from "crypto";
 const PHONEPE_API_KEY = process.env.PHONEPE_API_KEY;
 const PHONEPE_MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID;
 const PHONEPE_API_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+const PHONEPE_SALT_INDEX = "1"; // Make sure this matches your PhonePe settings
 
 interface PhonePePaymentParams {
   amount: number;
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
       merchantId: PHONEPE_MERCHANT_ID,
       merchantTransactionId: orderId,
       merchantUserId: customerPhone,
-      amount: amount * 100, // PhonePe expects amount in paise
+      amount: Math.round(amount * 100), // Ensure integer value for paise
       redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-callback`,
       redirectMode: "POST",
       callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/phonepe-callback`,
@@ -78,24 +79,35 @@ export async function POST(request: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-VERIFY": `${checksum}###1`,
+        "X-VERIFY": `${checksum}###${PHONEPE_SALT_INDEX}`,
       },
       body: JSON.stringify({
         request: base64Payload,
       }),
     });
 
+    if (!phonePeResponse.ok) {
+      const errorText = await phonePeResponse.text();
+      console.error("PhonePe API error response:", errorText);
+      return NextResponse.json(
+        { error: "Failed to initiate payment with PhonePe" },
+        { status: phonePeResponse.status }
+      );
+    }
+
     const responseData = await phonePeResponse.json();
     console.log("PhonePe API response:", responseData);
 
     if (responseData.success) {
       return NextResponse.json({
+        success: true,
         paymentUrl: responseData.data.instrumentResponse.redirectInfo.url,
       });
     } else {
       console.error("PhonePe API error:", responseData);
       return NextResponse.json(
         {
+          success: false,
           error:
             responseData.message || "Failed to initiate payment with PhonePe",
         },
@@ -108,6 +120,9 @@ export async function POST(request: Request) {
     if (error instanceof Error) {
       errorMessage = error.message;
     }
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: errorMessage },
+      { status: 500 }
+    );
   }
 }
