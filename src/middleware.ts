@@ -14,6 +14,9 @@ const isPublicRoute = createRouteMatcher([
   "/refund",
   "/faq",
   "/payment-callback",
+  "/api/payment-callback",
+  "/api/phonepe-callback",
+  "/api/initiate-phonepe-payment",
 ]);
 
 const adminUserIds = [
@@ -24,35 +27,45 @@ const adminUserIds = [
 ];
 
 export default clerkMiddleware((auth, request: NextRequest) => {
+  // Special handling for payment callback
+  if (request.nextUrl.pathname === "/payment-callback") {
+    const { userId } = auth();
+    if (!userId) {
+      const signInUrl = new URL("/sign-in", request.url);
+      const currentUrl = new URL(request.url);
+      // Preserve all query parameters
+      currentUrl.searchParams.forEach((value, key) => {
+        signInUrl.searchParams.append(key, value);
+      });
+      signInUrl.searchParams.set("redirect_url", currentUrl.toString());
+      return NextResponse.redirect(signInUrl);
+    }
+  }
+
   if (isPublicRoute(request)) {
     return NextResponse.next();
   }
 
   const { userId } = auth();
 
-  // If the user is not signed in and is trying to access a protected route, redirect them to sign-in
   if (!userId) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    const signInUrl = new URL("/sign-in", request.url);
+    signInUrl.searchParams.set("redirect_url", request.url);
+    return NextResponse.redirect(signInUrl);
   }
 
-  // If the user is trying to access the admin route
   if (request.nextUrl.pathname.startsWith("/admin")) {
-    // Check if the user's ID is in the adminUserIds array
     if (!adminUserIds.includes(userId)) {
-      // If not, redirect them to the unauthorized page
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   }
 
-  // For all other protected routes, allow access
   return NextResponse.next();
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };
