@@ -1,3 +1,5 @@
+import DecorativeBackground from "@/components/counter/AnimatedBackground";
+import AnimatedCounterSection from "@/components/counter/AnimatedCounterSection";
 import MainLoginSignupSection from "@/components/custom/MainLoginSignupSection/MainLoginSignupSection";
 import OurServices from "@/components/custom/OurServices";
 import Testimonials from "@/components/custom/Testimonials";
@@ -13,6 +15,10 @@ export default async function Home() {
       <MainLoginSignupSection isLoggedIn={isLoggedIn} />
       <OurServices />
       <WhyChooseKredz />
+      <DecorativeBackground />
+      <div className="relative z-10">
+        <AnimatedCounterSection />
+      </div>
       <Testimonials />
     </main>
   );
