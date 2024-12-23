@@ -19,6 +19,7 @@ const adminUserIds = [
   "user_2qa96Ptiod6AXaQk2ucR89kZ6Td",
   "user_2qa8rrNJeL0qiZsJDSIWpRfX0Er",
   "user_2qa8Z81zJnpeajwEFOzc7GNYIsl",
+  "user_2qbTYLpoXpl48krDyFr0Hob9pnF",
 ];
 
 export default clerkMiddleware((auth, request: NextRequest) => {
