@@ -74,7 +74,7 @@ const LaStepThree = () => {
             name: membershipPlan,
             discountedPrice:
               membershipPlan === "Bronze"
-                ? 179
+                ? 1
                 : membershipPlan === "Silver"
                   ? 289
                   : membershipPlan === "Gold"
@@ -84,7 +84,7 @@ const LaStepThree = () => {
                       : 0,
             realPrice:
               membershipPlan === "Bronze"
-                ? 300
+                ? 2
                 : membershipPlan === "Silver"
                   ? 600
                   : membershipPlan === "Gold"

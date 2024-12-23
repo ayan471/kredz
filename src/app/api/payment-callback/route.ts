@@ -12,26 +12,23 @@ export async function GET(request: Request) {
       searchParams: Object.fromEntries(searchParams.entries()),
     });
 
-    // If no user is authenticated, redirect to sign-in with return URL
-    if (!userId) {
-      const signInUrl = new URL("/sign-in", request.url);
-      // Preserve all query parameters
-      searchParams.forEach((value, key) => {
-        signInUrl.searchParams.append(key, value);
-      });
-      signInUrl.searchParams.set("redirect_url", "/payment-callback");
-      console.log("Redirecting to sign-in:", signInUrl.toString());
-      return NextResponse.redirect(signInUrl);
-    }
-
+    const state = searchParams.get("state");
     const status = searchParams.get("status");
     const transactionId = searchParams.get("transactionId");
     const merchantId = searchParams.get("merchantId");
 
+    // Verify the state parameter
+    // For example: const isValidState = await verifyState(userId, state);
+    // if (!isValidState) {
+    //   return NextResponse.json({ success: false, error: "Invalid state" }, { status: 400 });
+    // }
+
     console.log("Payment details:", { status, transactionId, merchantId });
 
-    // Instead of redirecting, return JSON response
     if (status === "SUCCESS") {
+      // Process successful payment
+      // For example: await processSuccessfulPayment(userId, transactionId);
+
       return NextResponse.json({
         success: true,
         message: "Payment successful",

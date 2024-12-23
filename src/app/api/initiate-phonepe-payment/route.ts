@@ -1,22 +1,16 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+import { auth } from "@clerk/nextjs/server";
 
 const PHONEPE_API_KEY = process.env.PHONEPE_API_KEY;
 const PHONEPE_MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID;
 const PHONEPE_API_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
-const PHONEPE_SALT_INDEX = "1"; // Make sure this matches your PhonePe settings
-
-interface PhonePePaymentParams {
-  amount: number;
-  orderId: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string;
-}
+const PHONEPE_SALT_INDEX = "1";
 
 export async function POST(request: Request) {
   try {
-    const body: PhonePePaymentParams = await request.json();
+    const { userId } = auth();
+    const body = await request.json();
     console.log("Received request body:", body);
 
     if (!PHONEPE_API_KEY || !PHONEPE_MERCHANT_ID) {
@@ -49,12 +43,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
+    // Generate a state parameter
+    const state = crypto.randomBytes(16).toString("hex");
+
     const payload = {
       merchantId: PHONEPE_MERCHANT_ID,
       merchantTransactionId: orderId,
       merchantUserId: customerPhone,
-      amount: Math.round(amount * 100), // Ensure integer value for paise
-      redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-callback`,
+      amount: Math.round(amount * 100),
+      redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-callback?state=${state}`,
       redirectMode: "POST",
       callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/phonepe-callback`,
       mobileNumber: customerPhone,
@@ -99,9 +96,13 @@ export async function POST(request: Request) {
     console.log("PhonePe API response:", responseData);
 
     if (responseData.success) {
+      // Store the state in your database or cache, associated with the userId
+      // For example: await storeState(userId, state);
+
       return NextResponse.json({
         success: true,
         paymentUrl: responseData.data.instrumentResponse.redirectInfo.url,
+        state: state,
       });
     } else {
       console.error("PhonePe API error:", responseData);
