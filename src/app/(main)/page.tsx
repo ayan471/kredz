@@ -15,10 +15,9 @@ export default async function Home() {
       <MainLoginSignupSection isLoggedIn={isLoggedIn} />
       <OurServices />
       <WhyChooseKredz />
-      <DecorativeBackground />
-      <div className="relative z-10">
-        <AnimatedCounterSection />
-      </div>
+
+      <AnimatedCounterSection />
+
       <Testimonials />
     </main>
   );

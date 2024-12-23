@@ -342,6 +342,9 @@ const LaStepTwo = () => {
               E-mandate/Auto Debit will be activated on the same account
             </Label>
           </div>
+          <p className="text-sm text-red-500">
+            some charges may be applicable for this procedure
+          </p>
         </div>
 
         <Button type="submit" className="mt-8 text-md">

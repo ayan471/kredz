@@ -1,7 +1,6 @@
 import React from "react";
 import Image from "next/image";
 import MainNavigation from "./mainNavigation";
-import AlgoliaBlueButton from "@/components/animata/text/button/algolia-blue-button";
 import Link from "next/link";
 import {
   Sheet,
@@ -15,12 +14,12 @@ import HamburgerIcon from "./hamburger.webp";
 
 import { Button } from "@/components/ui/button";
 import MobileNavigation from "./MobileNavigation";
-import HeaderAccountDetails from "./HeaderAccountDetails";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { UserButton, UserProfile } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 
 const Header = async () => {
   const user = await currentUser();
+  const isLoggedIn = !!user;
 
   return (
     <div className="max-w-[1920px] border-t-[10px] border-slate-400 fixed top-0 z-50 w-full bg-white min-h-[80px]">
@@ -44,7 +43,7 @@ const Header = async () => {
 
         <div className="flex flex-row gap-8 xl:min-w-[200px] justify-end">
           <div className="flex gap-4 flex-row align-middle justify-center">
-            {user ? (
+            {isLoggedIn ? (
               <div className="max-h-[40px] my-auto">
                 <UserButton />
               </div>
@@ -57,7 +56,7 @@ const Header = async () => {
             )}
           </div>
 
-          <div className="flex xl:hidden flex-col  align-middle justify-center">
+          <div className="flex xl:hidden flex-col align-middle justify-center">
             <Sheet>
               <SheetTrigger>
                 <Image
@@ -81,7 +80,7 @@ const Header = async () => {
 
                 <div className="mb-4"></div>
 
-                <MobileNavigation />
+                <MobileNavigation isLoggedIn={isLoggedIn} />
               </SheetContent>
             </Sheet>
           </div>
