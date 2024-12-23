@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-import { CalendarDays, CheckCircle, XCircle } from "lucide-react";
+import { CalendarDays, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { getUserSubscription } from "@/actions/formActions";
 import SubscriptionStatus from "./SubscriptionStatuus";
 import { formatDate } from "@/components/lib/utils";
 
-export default async function SubscriptionPage() {
+const SubscriptionPage = async () => {
   const { userId } = auth();
+
   if (!userId) {
     redirect("/sign-in");
   }
@@ -32,10 +33,14 @@ export default async function SubscriptionPage() {
             {subscription ? (
               <div className="space-y-6">
                 <SubscriptionStatus
-                  isActive={
+                  isActive={subscription.isActive}
+                  isPending={
+                    !subscription.isActive && !subscription.activationDate
+                  }
+                  expiryDate={
                     subscription.expiryDate
-                      ? new Date(subscription.expiryDate) > new Date()
-                      : false
+                      ? new Date(subscription.expiryDate)
+                      : null
                   }
                 />
                 <div className="grid grid-cols-2 gap-4">
@@ -46,11 +51,10 @@ export default async function SubscriptionPage() {
                   <div>
                     <p className="text-sm text-gray-500">Status</p>
                     <p className="text-lg font-semibold">
-                      {subscription.expiryDate &&
-                      new Date(subscription.expiryDate) > new Date() ? (
+                      {subscription.isActive ? (
                         <span className="text-green-600">Active</span>
                       ) : (
-                        <span className="text-red-600">Expired</span>
+                        <span className="text-red-600">Inactive</span>
                       )}
                     </p>
                   </div>
@@ -65,10 +69,37 @@ export default async function SubscriptionPage() {
                     <p className="text-sm text-gray-500">Expiry Date</p>
                     <p className="text-lg font-semibold flex items-center">
                       <CalendarDays className="w-4 h-4 mr-2 text-indigo-600" />
-                      {formatDate(subscription.expiryDate)}
+                      {subscription.expiryDate
+                        ? formatDate(subscription.expiryDate)
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Activation Date</p>
+                    <p className="text-lg font-semibold flex items-center">
+                      {subscription.activationDate ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+                          {formatDate(subscription.activationDate)}
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-4 h-4 mr-2 text-yellow-600" />
+                          Pending Activation
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
+                {!subscription.isActive &&
+                  subscription.activationDate === null && (
+                    <div className="mt-4 p-4 bg-yellow-100 rounded-md">
+                      <p className="text-yellow-800">
+                        Your subscription is pending activation. Please complete
+                        the payment process to activate your subscription.
+                      </p>
+                    </div>
+                  )}
                 <div className="mt-6">
                   <Button asChild className="w-full">
                     <Link href="/dashboard/credit-health">
@@ -78,15 +109,10 @@ export default async function SubscriptionPage() {
                 </div>
               </div>
             ) : (
-              <div className="text-center space-y-4">
-                <XCircle className="w-16 h-16 text-red-500 mx-auto" />
-                <p className="text-xl font-semibold">No Active Subscription</p>
-                <p className="text-gray-600">
-                  You don't have an active subscription. Purchase one to access
-                  premium features.
-                </p>
-                <Button asChild className="w-full">
-                  <Link href="/credit-builder">Purchase Subscription</Link>
+              <div className="py-6 text-center">
+                <p className="text-gray-600">No active subscription.</p>
+                <Button asChild>
+                  <Link href="/pricing">Subscribe Now</Link>
                 </Button>
               </div>
             )}
@@ -95,4 +121,6 @@ export default async function SubscriptionPage() {
       </div>
     </div>
   );
-}
+};
+
+export default SubscriptionPage;

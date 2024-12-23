@@ -203,8 +203,10 @@ const CbStepTwo: React.FC = () => {
       const { totalAmount } = calculateTotalAmount(
         selectedPlanOption.discountedPrice
       );
-      const orderId =
-        `CB${Date.now().toString().slice(-8)}${user.id.slice(-4)}`.slice(0, 38);
+      const orderId = `CB-${user.id}-${Date.now().toString().slice(-8)}`.slice(
+        0,
+        38
+      );
 
       // Save subscription data first
       const subscriptionResult = await submitCreditBuilderSubscription(data);

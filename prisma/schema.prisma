@@ -31,6 +31,8 @@ model CreditBuilderSubscription {
   updatedAt         DateTime  @updatedAt
   creditHealth      String?
   monthlyHealthData String?
+  isActive          Boolean   @default(false)
+  activationDate    DateTime?
 
   @@index([userId])
 }
@@ -62,40 +64,42 @@ model LoanApplication {
   aadharNo          String
   panImgFrontUrl    String?
 
-  panNo               String
-  creditScore         String
-  empType             String
-  EmpOthers           String?
-  monIncome           String
-  currEmis            String?
-  selfieImgUrl        String?
-  bankStatmntImgUrl   String?
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  status              String?          @default("In Progress")
-  eligibility         LoanEligibility?
-  eligibleAmount      Float?
-  loanEligibility     Float?
-  loanAmount          Float?
-  approvedAmount      Float?
-  rejectionReason     String?
-  processingFees      Float?
-  gst                 Float?
-  otherCharges        Float?
-  rateOfInterest      Float?
-  tenure              Int?
-  netDisbursement     Float?
-  disbursementAccount String?
-  disbursementDate    DateTime?
-  lender              String?
-  membershipPlan      String?
-  emi                 Float?
-  emiPayments         EMIPayment[]
-  emiPaymentLink      String?
-  accountNumber       Int?
-  bankName            String?
-  ifscCode            String?
-  eMandate            Boolean          @default(false)
+  panNo                    String
+  creditScore              String
+  empType                  String
+  EmpOthers                String?
+  monIncome                String
+  currEmis                 String?
+  selfieImgUrl             String?
+  bankStatmntImgUrl        String?
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+  status                   String?          @default("In Progress")
+  eligibility              LoanEligibility?
+  eligibleAmount           Float?
+  loanEligibility          Float?
+  loanAmount               Float?
+  approvedAmount           Float?
+  rejectionReason          String?
+  processingFees           Float?
+  gst                      Float?
+  otherCharges             Float?
+  rateOfInterest           Float?
+  tenure                   Int?
+  netDisbursement          Float?
+  disbursementAccount      String?
+  disbursementDate         DateTime?
+  lender                   String?
+  membershipPlan           String?
+  emi                      Float?
+  emiPayments              EMIPayment[]
+  emiPaymentLink           String?
+  accountNumber            Int?
+  bankName                 String?
+  ifscCode                 String?
+  eMandate                 Boolean          @default(false)
+  membershipActive         Boolean?         @default(false)
+  membershipActivationDate DateTime?
 }
 
 model EMIPayment {

@@ -312,6 +312,38 @@ export async function getUserSubscription(userId: string) {
   }
 }
 
+export async function activateCreditBuilderSubscription(
+  userId: string,
+  orderId: string
+) {
+  try {
+    const subscription = await prisma.creditBuilderSubscription.findFirst({
+      where: { userId, id: orderId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!subscription) {
+      throw new Error("Subscription not found");
+    }
+
+    const updatedSubscription = await prisma.creditBuilderSubscription.update({
+      where: { id: subscription.id },
+      data: {
+        isActive: true,
+        activationDate: new Date(),
+      },
+    });
+
+    revalidatePath("/credit-builder/subscription");
+    revalidatePath("/dashboard/credit-health");
+
+    return { success: true, data: updatedSubscription };
+  } catch (error) {
+    console.error("Error activating Credit Builder subscription:", error);
+    return { success: false, error: "Failed to activate subscription" };
+  }
+}
+
 export async function submitCreditBuilderSubscription(data: {
   fullName: string;
   phoneNo: string;
@@ -339,6 +371,8 @@ export async function submitCreditBuilderSubscription(data: {
         phoneNo: data.phoneNo,
         plan: data.plan,
         expiryDate,
+        isActive: false,
+        activationDate: null,
       },
     });
 

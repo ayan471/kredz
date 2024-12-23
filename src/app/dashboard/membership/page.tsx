@@ -36,7 +36,8 @@ interface LoanApplication {
   monIncome: string;
   EmpOthers?: string;
   status: string;
-  expiryDate: string;
+  membershipActive: boolean;
+  membershipActivationDate: string | null;
 }
 
 interface InfoItemProps {
@@ -57,32 +58,9 @@ function InfoItem({ icon: Icon, label, value }: InfoItemProps) {
   );
 }
 
-function calculateExpiryDate(startDate: string, plan: string): Date {
-  const start = new Date(startDate);
-  const monthsToAdd =
-    plan === "Bronze"
-      ? 3
-      : plan === "Silver"
-        ? 6
-        : plan === "Gold"
-          ? 9
-          : plan === "Platinum"
-            ? 12
-            : 0;
-
-  return new Date(start.setMonth(start.getMonth() + monthsToAdd));
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "Invalid Date";
-
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Months are 0-indexed
-  const year = date.getFullYear();
-
-  return `${day}/${month}/${year}`;
-}
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString();
+};
 
 export default async function MembershipPage() {
   const { userId } = auth();
@@ -121,20 +99,6 @@ export default async function MembershipPage() {
                     value={formatDate(loanApplication.createdAt)}
                   />
                   <InfoItem
-                    icon={Calendar}
-                    label="Expiry Date"
-                    value={
-                      loanApplication.expiryDate
-                        ? formatDate(loanApplication.expiryDate)
-                        : formatDate(
-                            calculateExpiryDate(
-                              loanApplication.createdAt,
-                              loanApplication.membershipPlan
-                            ).toISOString()
-                          )
-                    }
-                  />
-                  <InfoItem
                     icon={User}
                     label="Full Name"
                     value={loanApplication.fullName}
@@ -154,6 +118,22 @@ export default async function MembershipPage() {
                     label="Aadhar"
                     value={loanApplication.aadharNo}
                   />
+                  <InfoItem
+                    icon={BadgeCheck}
+                    label="Membership Status"
+                    value={
+                      loanApplication.membershipActive ? "Active" : "Inactive"
+                    }
+                  />
+                  {loanApplication.membershipActivationDate && (
+                    <InfoItem
+                      icon={Calendar}
+                      label="Activation Date"
+                      value={formatDate(
+                        loanApplication.membershipActivationDate
+                      )}
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -227,8 +207,15 @@ export default async function MembershipPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Current Status</p>
-                    <Badge variant="outline" className="text-lg font-semibold">
-                      {loanApplication.status}
+                    <Badge
+                      variant={
+                        loanApplication.membershipActive
+                          ? "success"
+                          : "secondary"
+                      }
+                      className="text-lg font-semibold"
+                    >
+                      {loanApplication.membershipActive ? "Active" : "Inactive"}
                     </Badge>
                   </div>
                   <Button asChild>
@@ -240,6 +227,17 @@ export default async function MembershipPage() {
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                   </Button>
+                  {!loanApplication.membershipActive && (
+                    <Button asChild className="mt-4">
+                      <Link
+                        href="/consultancy-application"
+                        className="flex items-center space-x-2"
+                      >
+                        <span>Activate Membership</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

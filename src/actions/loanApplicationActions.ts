@@ -316,7 +316,34 @@ export async function determineMembershipPlan(salary: number): Promise<string> {
   if (salary <= 15000) return "Bronze";
   if (salary <= 25000) return "Silver";
   if (salary <= 35000) return "Gold";
-  return "Diamond";
+  return "Platinum";
+}
+
+export async function activateMembership(userId: string, orderId: string) {
+  try {
+    const loanApplication = await prisma.loanApplication.findFirst({
+      where: { userId, id: orderId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!loanApplication) {
+      throw new Error("Loan application not found");
+    }
+
+    const updatedLoanApplication = await prisma.loanApplication.update({
+      where: { id: loanApplication.id },
+      data: {
+        membershipActive: true,
+        membershipActivationDate: new Date(),
+      },
+    });
+
+    revalidatePath(`/dashboard/loans/${loanApplication.id}`);
+    return { success: true, data: updatedLoanApplication };
+  } catch (error) {
+    console.error("Error activating membership:", error);
+    return { success: false, error: "Failed to activate membership" };
+  }
 }
 
 export async function approveLoanWithDetails(

@@ -48,8 +48,7 @@ const LaStepThree = () => {
     discountedPrice: number;
     realPrice: number;
     features: string[];
-    tenure: number;
-  }>({ name: "", discountedPrice: 0, realPrice: 0, features: [], tenure: 0 });
+  }>({ name: "", discountedPrice: 0, realPrice: 0, features: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -80,7 +79,9 @@ const LaStepThree = () => {
                   ? 289
                   : membershipPlan === "Gold"
                     ? 389
-                    : 479,
+                    : membershipPlan === "Platinum"
+                      ? 479
+                      : 0,
             realPrice:
               membershipPlan === "Bronze"
                 ? 300
@@ -88,21 +89,15 @@ const LaStepThree = () => {
                   ? 600
                   : membershipPlan === "Gold"
                     ? 900
-                    : 1200,
+                    : membershipPlan === "Platinum"
+                      ? 1200
+                      : 0,
             features: [
               "Pre-approved loan offer",
               "Instant processing",
               "Exclusive interest rates",
               "24/7 customer support",
             ],
-            tenure:
-              membershipPlan === "Bronze"
-                ? 3
-                : membershipPlan === "Silver"
-                  ? 6
-                  : membershipPlan === "Gold"
-                    ? 9
-                    : 12,
           });
         }
       }
@@ -143,6 +138,7 @@ const LaStepThree = () => {
         });
 
         if (paymentResult.success && paymentResult.paymentUrl) {
+          // Redirect to the payment URL
           window.location.href = paymentResult.paymentUrl;
         } else {
           console.error("Payment initiation failed:", paymentResult.error);
@@ -184,6 +180,16 @@ const LaStepThree = () => {
         Membership Plan
       </motion.h1>
 
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="text-xl mb-8 text-center"
+      >
+        Buy Membership Plan & Get Your upto 3X of monthly income. Pre-Approved
+        Loan Offer Processed Instantly.
+      </motion.p>
+
       <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -206,9 +212,6 @@ const LaStepThree = () => {
               </span>
               <span className="text-sm line-through text-gray-300">
                 ₹{planDetails.realPrice}
-              </span>
-              <span className="text-sm mt-2">
-                Tenure: {planDetails.tenure} months
               </span>
             </div>
           </div>
