@@ -13,6 +13,7 @@ const isPublicRoute = createRouteMatcher([
   "/disclaimer",
   "/refund",
   "/faq",
+  "/payment-callback",
 ]);
 
 const adminUserIds = [

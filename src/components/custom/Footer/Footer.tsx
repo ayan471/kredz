@@ -6,6 +6,7 @@ import BottomAccordionDesktop from "./BottomAccordionDesktop";
 import BottomAccordionMobile from "./BottomAccordionMobile";
 import LastBarLeft from "./LastBarLeft";
 import LastBarRight from "./LastBarRight";
+import { Youtube } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -28,7 +29,7 @@ const Footer = () => {
 
               <Link
                 target="_blank"
-                href="https://www.facebook.com/"
+                href="https://www.facebook.com/share/187jupHMLF/"
                 className="flex flex-col align-middle justify-center"
               >
                 <Image
@@ -41,7 +42,7 @@ const Footer = () => {
               </Link>
               <Link
                 target="_blank"
-                href="https://www.instagram.com/"
+                href="https://www.instagram.com/kredz.in?igsh=MTdnYTIwd2IyOG5zdQ=="
                 className="flex flex-col align-middle justify-center"
               >
                 <Image
@@ -54,16 +55,10 @@ const Footer = () => {
               </Link>
               <Link
                 target="_blank"
-                href="https://www.linkedin.com/"
+                href="https://youtube.com/@kredzcredit?si=wM5z5v5unh4xxHUg"
                 className="flex flex-col align-middle justify-center"
               >
-                <Image
-                  src="/global/social/linkedin.png"
-                  className="rounded max-w-[32px] sm:max-w-[40px]"
-                  alt="Social"
-                  width="40"
-                  height="40"
-                />
+                <Youtube size={30} />
               </Link>
             </p>
           </div>

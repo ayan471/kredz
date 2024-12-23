@@ -12,6 +12,7 @@ import {
   InstagramIcon,
   LinkedinIcon,
   TwitterIcon,
+  Youtube,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import MainContactUs from "@/components/custom/MainContactUsFields";
@@ -107,28 +108,23 @@ const ContactPage = () => {
                 <p className="mb-4">Stay connected with us on social media:</p>
                 <div className="flex space-x-4">
                   <Link
-                    href=""
+                    href="https://www.facebook.com/share/187jupHMLF/"
                     className="text-indigo-600 hover:text-indigo-800"
                   >
                     <FacebookIcon className="w-6 h-6" />
                   </Link>
                   <Link
-                    href=""
+                    href="https://www.instagram.com/kredz.in?igsh=MTdnYTIwd2IyOG5zdQ=="
                     className="text-indigo-600 hover:text-indigo-800"
                   >
                     <InstagramIcon className="w-6 h-6" />
                   </Link>
+
                   <Link
-                    href=""
+                    href="https://youtube.com/@kredzcredit?si=wM5z5v5unh4xxHUg"
                     className="text-indigo-600 hover:text-indigo-800"
                   >
-                    <LinkedinIcon className="w-6 h-6" />
-                  </Link>
-                  <Link
-                    href=""
-                    className="text-indigo-600 hover:text-indigo-800"
-                  >
-                    <TwitterIcon className="w-6 h-6" />
+                    <Youtube className="w-6 h-6" />
                   </Link>
                 </div>
               </CardContent>
