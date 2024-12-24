@@ -50,8 +50,8 @@ export async function POST(request: Request) {
   console.log(decodedResponse);
   const { code, success, data } = decodedResponse;
 
-  console.log(`${data.transactionId} ${success}`);
-  PAYMENT_DATASTORE.set(data.transactionId, success);
+  console.log(`${data.merchantTransactionId} ${success}`);
+  PAYMENT_DATASTORE.set(data.merchantTransactionId, success);
 
   // console.log(`Payment status for transaction ${transactionId}: ${success}`);
 
