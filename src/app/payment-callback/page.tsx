@@ -27,7 +27,19 @@ export default function PaymentCallback() {
           params.append(key, value);
         });
 
-        console.log("Received params:", Object.fromEntries(params));
+        console.log("Received params in client:", Object.fromEntries(params));
+
+        // If no params are received, try to get them from localStorage
+        if (params.toString() === "") {
+          const storedParams = localStorage.getItem("paymentParams");
+          if (storedParams) {
+            console.log("Using stored params:", storedParams);
+            params.append("storedParams", storedParams);
+          }
+        } else {
+          // Store the params in localStorage
+          localStorage.setItem("paymentParams", params.toString());
+        }
 
         const response = await fetch(
           `/api/check-payment-status?${params.toString()}`

@@ -9,14 +9,26 @@ const PHONEPE_SALT_INDEX = "1";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const code = searchParams.get("code");
-  const merchantId = searchParams.get("merchantId");
-  const merchantTransactionId = searchParams.get("merchantTransactionId");
-  const transactionId = searchParams.get("transactionId");
+  console.log("Received params in server:", Object.fromEntries(searchParams));
 
-  console.log("Received params:", Object.fromEntries(searchParams));
+  let merchantId = searchParams.get("merchantId");
+  let merchantTransactionId = searchParams.get("merchantTransactionId");
+
+  // If the required params are not in the URL, check if they're in the storedParams
+  if (!merchantId || !merchantTransactionId) {
+    const storedParams = searchParams.get("storedParams");
+    if (storedParams) {
+      const parsedParams = new URLSearchParams(storedParams);
+      merchantId = parsedParams.get("merchantId");
+      merchantTransactionId = parsedParams.get("merchantTransactionId");
+    }
+  }
 
   if (!merchantId || !merchantTransactionId) {
+    console.error("Missing required parameters:", {
+      merchantId,
+      merchantTransactionId,
+    });
     return NextResponse.json(
       { success: false, message: "Missing required parameters" },
       { status: 400 }
@@ -44,6 +56,8 @@ export async function GET(request: Request) {
       .createHash("sha256")
       .update(`${base64Payload}/pg/v1/status${PHONEPE_SALT_KEY}`)
       .digest("hex");
+
+    console.log("Sending request to PhonePe:", { payload, checksum });
 
     const phonePeResponse = await fetch(PHONEPE_STATUS_API_URL, {
       method: "POST",
