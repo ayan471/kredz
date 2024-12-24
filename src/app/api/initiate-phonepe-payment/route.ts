@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       amount: Math.round(amount * 100),
       redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-callback`,
       redirectMode: "POST",
-      callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/phonepe-webhook`,
+      callbackUrl: `https://webhook.site/d16a7adc-02af-4655-8423-48a2680e3a77`,
       mobileNumber: customerPhone,
       paymentInstrument: {
         type: "PAY_PAGE",
