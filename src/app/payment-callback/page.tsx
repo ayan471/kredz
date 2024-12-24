@@ -61,13 +61,15 @@ export default function PaymentCallback() {
     //     setMessage("An error occurred while checking payment status");
     //   }
     // };
-    let interval: NodeJS.Timeout;
+    const interval = setInterval(
+      async () => await retreivePaymentStatus(),
+      5000
+    );
 
     const retreivePaymentStatus = async () => {
       try {
-        interval = setInterval(() => retreivePaymentStatus(), 5000);
         const response = await fetch(
-          `/api/phonepe-webhook?transactionId=${searchParams.get("transactionId") ?? "mock-transaction-id"}`
+          `/api/phonepe-webhook?transactionId=${searchParams.get("transactionId") ?? "676ac03a8bd29abab0de8f85"}`
         );
         const data = await response.json();
 
@@ -76,17 +78,15 @@ export default function PaymentCallback() {
         }
 
         clearInterval(interval);
-        if (data.status) {
-          router.push("/payment-success");
-        }
-        router.push("/payment-failure");
+        if (data.status) router.push("/payment-success");
+        else router.push("/payment-failure");
       } catch (error) {
         clearInterval(interval);
       }
     };
 
     retreivePaymentStatus();
-  }, [searchParams]);
+  }, []);
 
   return (
     <div className="container mx-auto p-4">
