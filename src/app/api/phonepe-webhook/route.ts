@@ -46,9 +46,10 @@ export async function POST(request: Request) {
   const { merchantId, merchantTransactionId, transactionId, amount, success } =
     payload;
 
+  console.log(`${transactionId} ${success}`);
   PAYMENT_DATASTORE.set(transactionId, success);
 
-  console.log(`Payment status for transaction ${transactionId}: ${success}`);
+  // console.log(`Payment status for transaction ${transactionId}: ${success}`);
 
   // Respond to PhonePe
   return NextResponse.json({ status: "OK" });
