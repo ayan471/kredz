@@ -52,7 +52,7 @@ export default function AnimatedCounterSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <StatCard title="Loan disbursal" value="6.5cr+" icon={Banknote} />
           <StatCard
-            title="Credit Report dispute"
+            title="Credit Report dispute resolved"
             value="3463+"
             icon={CreditCard}
           />
