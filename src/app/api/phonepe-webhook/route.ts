@@ -10,6 +10,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const xVerify = request.headers.get("X-VERIFY");
+    console.log(body);
 
     if (!xVerify || !PHONEPE_SALT_KEY) {
       console.error("Missing X-VERIFY header or PHONEPE_SALT_KEY");

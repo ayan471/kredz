@@ -57,9 +57,9 @@ export async function POST(request: Request) {
       merchantTransactionId: orderId,
       merchantUserId: userId || customerPhone,
       amount: Math.round(amount * 100),
-      // Update redirectUrl to include state parameter
-      redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment-callback?state=${stateParam}`,
-      redirectMode: "POST",
+
+      // redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/phonepe-webhook`,
+      // redirectMode: "POST",
       callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/phonepe-webhook`,
       mobileNumber: customerPhone,
       paymentInstrument: {
@@ -98,7 +98,8 @@ export async function POST(request: Request) {
     }
 
     const responseData = await phonePeResponse.json();
-    console.log("PhonePe API response:", responseData);
+    // console.log("PhonePe API response:", responseData);
+    console.log(JSON.stringify(responseData));
 
     if (responseData.success) {
       return NextResponse.json({
