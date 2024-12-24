@@ -1,53 +1,31 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   try {
-    const { userId } = auth();
     const url = new URL(request.url);
-    const searchParams = new URLSearchParams(url.search);
+    const stateParam = url.searchParams.get("state");
 
-    console.log("Payment callback received:", {
-      userId,
-      searchParams: Object.fromEntries(searchParams.entries()),
-    });
-
-    const status = searchParams.get("status");
-    const transactionId = searchParams.get("transactionId");
-    const merchantId = searchParams.get("merchantId");
-
-    console.log("Payment details:", { status, transactionId, merchantId });
-
-    if (!userId) {
-      const signInUrl = new URL("/sign-in", request.url);
-      signInUrl.searchParams.set(
-        "redirect_url",
-        `/payment-result?status=${status}&transactionId=${transactionId}`
+    if (!stateParam) {
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/payment-error`
       );
-      return NextResponse.redirect(signInUrl);
     }
 
-    // Note: The actual payment status should be verified through the webhook
-    // This redirect is mainly for user experience
-    if (status === "SUCCESS") {
-      return NextResponse.redirect(
-        new URL(
-          `/dashboard?payment=pending&txnId=${transactionId || ""}`,
-          request.url
-        )
-      );
-    } else {
-      return NextResponse.redirect(
-        new URL(
-          `/error?message=payment-failed&txnId=${transactionId || ""}`,
-          request.url
-        )
-      );
-    }
+    // Decode the state parameter
+    const state = JSON.parse(Buffer.from(stateParam, "base64").toString());
+
+    // Redirect to the success page with the state information
+    const successUrl = new URL(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/payment-success`
+    );
+    successUrl.searchParams.set("orderId", state.orderId);
+    successUrl.searchParams.set("timestamp", state.timestamp.toString());
+
+    return NextResponse.redirect(successUrl);
   } catch (error) {
-    console.error("Payment callback error:", error);
+    console.error("Error in payment callback:", error);
     return NextResponse.redirect(
-      new URL("/error?message=payment-callback-failed", request.url)
+      `${process.env.NEXT_PUBLIC_BASE_URL}/payment-error`
     );
   }
 }
