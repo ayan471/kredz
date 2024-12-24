@@ -4,7 +4,7 @@ import crypto from "crypto";
 const PHONEPE_SALT_KEY = process.env.PHONEPE_SALT_KEY;
 const PHONEPE_SALT_INDEX = "1";
 
-const PAYMENT_DATASTORE = new Map();
+var PAYMENT_DATASTORE = new Map();
 
 export async function POST(request: Request) {
   const payload = await request.json();
