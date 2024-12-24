@@ -27,6 +27,8 @@ export default function PaymentCallback() {
           params.append(key, value);
         });
 
+        console.log("Received params:", Object.fromEntries(params));
+
         const response = await fetch(
           `/api/check-payment-status?${params.toString()}`
         );

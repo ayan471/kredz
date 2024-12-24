@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       merchantUserId: userId || customerPhone,
       amount: Math.round(amount * 100),
       redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-callback`,
-      redirectMode: "POST",
+      redirectMode: "REDIRECT",
       callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/phonepe-webhook`,
       mobileNumber: customerPhone,
       paymentInstrument: {

@@ -14,7 +14,9 @@ export async function GET(request: Request) {
   const merchantTransactionId = searchParams.get("merchantTransactionId");
   const transactionId = searchParams.get("transactionId");
 
-  if (!code || !merchantId || !merchantTransactionId || !transactionId) {
+  console.log("Received params:", Object.fromEntries(searchParams));
+
+  if (!merchantId || !merchantTransactionId) {
     return NextResponse.json(
       { success: false, message: "Missing required parameters" },
       { status: 400 }
@@ -33,7 +35,6 @@ export async function GET(request: Request) {
     const payload = {
       merchantId: PHONEPE_MERCHANT_ID,
       merchantTransactionId: merchantTransactionId,
-      transactionId: transactionId,
     };
 
     const base64Payload = Buffer.from(JSON.stringify(payload)).toString(
@@ -68,6 +69,7 @@ export async function GET(request: Request) {
     }
 
     const responseData = await phonePeResponse.json();
+    console.log("PhonePe API response:", responseData);
 
     if (responseData.success) {
       const paymentStatus = responseData.code;
