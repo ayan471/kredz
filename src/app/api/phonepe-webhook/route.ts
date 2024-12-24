@@ -8,7 +8,6 @@ var PAYMENT_DATASTORE = new Map();
 
 export async function POST(request: Request) {
   const payload = await request.json();
-  console.log(payload);
   // const xVerify = request.headers.get("X-VERIFY");
 
   // if (!xVerify) {
@@ -43,11 +42,16 @@ export async function POST(request: Request) {
 
   // Here you would typically update your database with the payment status
   // For this example, we'll just log the status
-  const { merchantId, merchantTransactionId, transactionId, amount, success } =
-    payload;
+  const encodedResponse = payload.response;
+  const decodedResponse = JSON.parse(
+    Buffer.from(encodedResponse, "base64").toString()
+  );
 
-  console.log(`${transactionId} ${success}`);
-  PAYMENT_DATASTORE.set(transactionId, success);
+  console.log(decodedResponse);
+  const { code, success, data } = decodedResponse;
+
+  console.log(`${data.transactionId} ${success}`);
+  PAYMENT_DATASTORE.set(data.transactionId, success);
 
   // console.log(`Payment status for transaction ${transactionId}: ${success}`);
 
