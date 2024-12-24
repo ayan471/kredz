@@ -39,8 +39,8 @@ const planOptions: PlanOption[] = [
     value: "1 month",
     label: "Starter",
     duration: 1,
-    discountedPrice: 1,
-    originalPrice: 2,
+    discountedPrice: 189,
+    originalPrice: 300,
     color: "from-blue-400 to-blue-600",
   },
   {
