@@ -7,7 +7,8 @@ const PHONEPE_SALT_INDEX = "1";
 const PAYMENT_DATASTORE = new Map();
 
 export async function POST(request: Request) {
-  const body = await request.text();
+  const payload = await request.json();
+  console.log(payload);
   // const xVerify = request.headers.get("X-VERIFY");
 
   // if (!xVerify) {
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
   // }
 
   // Process the webhook payload
-  const payload = JSON.parse(body);
+  // const payload = JSON.parse(body);
   // console.log("Received webhook payload:", payload);
 
   // Here you would typically update your database with the payment status
