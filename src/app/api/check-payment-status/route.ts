@@ -11,26 +11,16 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   console.log("Received params in server:", Object.fromEntries(searchParams));
 
-  let merchantId = searchParams.get("merchantId");
+  let merchantId = searchParams.get("merchantId") || PHONEPE_MERCHANT_ID;
   let merchantTransactionId = searchParams.get("merchantTransactionId");
 
-  // If the required params are not in the URL, check if they're in the storedParams
-  if (!merchantId || !merchantTransactionId) {
-    const storedParams = searchParams.get("storedParams");
-    if (storedParams) {
-      const parsedParams = new URLSearchParams(storedParams);
-      merchantId = parsedParams.get("merchantId");
-      merchantTransactionId = parsedParams.get("merchantTransactionId");
-    }
-  }
-
-  if (!merchantId || !merchantTransactionId) {
-    console.error("Missing required parameters:", {
-      merchantId,
-      merchantTransactionId,
-    });
+  if (!merchantTransactionId) {
+    console.error("Missing required parameter: merchantTransactionId");
     return NextResponse.json(
-      { success: false, message: "Missing required parameters" },
+      {
+        success: false,
+        message: "Missing required parameter: merchantTransactionId",
+      },
       { status: 400 }
     );
   }
@@ -45,7 +35,7 @@ export async function GET(request: Request) {
 
   try {
     const payload = {
-      merchantId: PHONEPE_MERCHANT_ID,
+      merchantId: merchantId,
       merchantTransactionId: merchantTransactionId,
     };
 

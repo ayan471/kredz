@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -17,16 +17,13 @@ export default function PaymentCallback() {
   );
   const [message, setMessage] = useState("");
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
       try {
         // Collect all search params
-        const params = new URLSearchParams();
-        searchParams.forEach((value, key) => {
-          params.append(key, value);
-        });
-
+        const params = new URLSearchParams(searchParams);
         console.log("Received params in client:", Object.fromEntries(params));
 
         // If no params are received, try to get them from localStorage
@@ -34,11 +31,21 @@ export default function PaymentCallback() {
           const storedParams = localStorage.getItem("paymentParams");
           if (storedParams) {
             console.log("Using stored params:", storedParams);
-            params.append("storedParams", storedParams);
+            const parsedParams = new URLSearchParams(storedParams);
+            parsedParams.forEach((value, key) => {
+              params.append(key, value);
+            });
           }
         } else {
           // Store the params in localStorage
           localStorage.setItem("paymentParams", params.toString());
+        }
+
+        // If still no params, redirect to an error page
+        if (params.toString() === "") {
+          console.error("No parameters received and none stored");
+          router.push("/payment-error");
+          return;
         }
 
         const response = await fetch(
@@ -61,7 +68,7 @@ export default function PaymentCallback() {
     };
 
     checkPaymentStatus();
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   return (
     <div className="container mx-auto p-4">
