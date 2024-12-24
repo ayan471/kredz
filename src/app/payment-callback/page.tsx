@@ -18,57 +18,75 @@ export default function PaymentCallback() {
   const [message, setMessage] = useState("");
   const searchParams = useSearchParams();
   const router = useRouter();
-
   useEffect(() => {
-    const checkPaymentStatus = async () => {
+    // const checkPaymentStatus = async () => {
+    //   try {
+    // Collect all search params
+    // const params = new URLSearchParams(searchParams);
+    // console.log("Received params in client:", Object.fromEntries(params));
+    // // If no params are received, try to get them from localStorage
+    // if (params.toString() === "") {
+    //   const storedParams = localStorage.getItem("paymentParams");
+    //   if (storedParams) {
+    //     console.log("Using stored params:", storedParams);
+    //     const parsedParams = new URLSearchParams(storedParams);
+    //     parsedParams.forEach((value, key) => {
+    //       params.append(key, value);
+    //     });
+    //   }
+    // } else {
+    //   // Store the params in localStorage
+    //   localStorage.setItem("paymentParams", params.toString());
+    // }
+    // // If still no params, redirect to an error page
+    // if (params.toString() === "") {
+    //   console.error("No parameters received and none stored");
+    //   router.push("/payment-error");
+    //   return;
+    // }
+    // const response = await fetch(
+    //   `/api/check-payment-status?${params.toString()}`
+    // );
+    // const data = await response.json();
+    // if (data.success) {
+    //   setStatus("success");
+    //   setMessage(data.message || "Payment successful");
+    // } else {
+    //   setStatus("failure");
+    //   setMessage(data.message || "Payment failed");
+    // }
+    //   } catch (error) {
+    //     console.error("Error checking payment status:", error);
+    //     setStatus("failure");
+    //     setMessage("An error occurred while checking payment status");
+    //   }
+    // };
+    let interval: NodeJS.Timeout;
+
+    const retreivePaymentStatus = async () => {
       try {
-        // Collect all search params
-        const params = new URLSearchParams(searchParams);
-        console.log("Received params in client:", Object.fromEntries(params));
-
-        // If no params are received, try to get them from localStorage
-        if (params.toString() === "") {
-          const storedParams = localStorage.getItem("paymentParams");
-          if (storedParams) {
-            console.log("Using stored params:", storedParams);
-            const parsedParams = new URLSearchParams(storedParams);
-            parsedParams.forEach((value, key) => {
-              params.append(key, value);
-            });
-          }
-        } else {
-          // Store the params in localStorage
-          localStorage.setItem("paymentParams", params.toString());
-        }
-
-        // If still no params, redirect to an error page
-        if (params.toString() === "") {
-          console.error("No parameters received and none stored");
-          router.push("/payment-error");
-          return;
-        }
-
+        interval = setInterval(() => retreivePaymentStatus(), 5000);
         const response = await fetch(
-          `/api/check-payment-status?${params.toString()}`
+          `/api/phonepe-webhook?transactionId=${searchParams.get("transactionId") ?? "mock-transaction-id"}`
         );
         const data = await response.json();
 
-        if (data.success) {
-          setStatus("success");
-          setMessage(data.message || "Payment successful");
-        } else {
-          setStatus("failure");
-          setMessage(data.message || "Payment failed");
+        if (data.status === undefined) {
+          return;
         }
+
+        clearInterval(interval);
+        if (data.status) {
+          router.push("/payment-success");
+        }
+        router.push("/payment-failure");
       } catch (error) {
-        console.error("Error checking payment status:", error);
-        setStatus("failure");
-        setMessage("An error occurred while checking payment status");
+        clearInterval(interval);
       }
     };
 
-    checkPaymentStatus();
-  }, [searchParams, router]);
+    retreivePaymentStatus();
+  }, [searchParams]);
 
   return (
     <div className="container mx-auto p-4">

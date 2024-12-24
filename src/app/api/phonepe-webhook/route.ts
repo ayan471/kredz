@@ -4,6 +4,8 @@ import crypto from "crypto";
 const PHONEPE_SALT_KEY = process.env.PHONEPE_SALT_KEY;
 const PHONEPE_SALT_INDEX = "1";
 
+const PAYMENT_DATASTORE = new Map();
+
 export async function POST(request: Request) {
   const body = await request.text();
   const xVerify = request.headers.get("X-VERIFY");
@@ -40,11 +42,38 @@ export async function POST(request: Request) {
 
   // Here you would typically update your database with the payment status
   // For this example, we'll just log the status
-  const { merchantId, merchantTransactionId, transactionId, amount, status } =
+  const { merchantId, merchantTransactionId, transactionId, amount, success } =
     payload;
+
+  PAYMENT_DATASTORE.set(transactionId, success);
 
   console.log(`Payment status for transaction ${transactionId}: ${status}`);
 
   // Respond to PhonePe
   return NextResponse.json({ status: "OK" });
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const transactionId = searchParams.get("transactionId");
+
+  console.log(transactionId);
+
+  if (!transactionId) {
+    return NextResponse.json(
+      { error: "Missing transactionId parameter" },
+      { status: 400 }
+    );
+  }
+
+  const status = PAYMENT_DATASTORE.get(transactionId);
+
+  if (status === undefined) {
+    return NextResponse.json(
+      { error: "Transaction not found" },
+      { status: 404 }
+    );
+  }
+
+  return NextResponse.json({ status: true });
 }
