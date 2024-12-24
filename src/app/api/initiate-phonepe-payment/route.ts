@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { auth } from "@clerk/nextjs/server";
 
-const PHONEPE_API_KEY = process.env.PHONEPE_API_KEY;
+const PHONEPE_SALT_KEY = process.env.PHONEPE_SALT_KEY;
 const PHONEPE_MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID;
 const PHONEPE_API_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
 const PHONEPE_SALT_INDEX = "1";
@@ -13,8 +13,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log("Received request body:", body);
 
-    if (!PHONEPE_API_KEY || !PHONEPE_MERCHANT_ID) {
-      console.error("PhonePe API key or Merchant ID is missing");
+    if (!PHONEPE_SALT_KEY || !PHONEPE_MERCHANT_ID) {
+      console.error("PhonePe Salt Key or Merchant ID is missing");
       return NextResponse.json(
         { error: "PhonePe configuration is incomplete" },
         { status: 500 }
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       merchantUserId: userId || customerPhone,
       amount: Math.round(amount * 100),
       redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-callback`,
-      redirectMode: "REDIRECT",
+      redirectMode: "POST",
       callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/phonepe-webhook`,
       mobileNumber: customerPhone,
       paymentInstrument: {
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     );
     const checksum = crypto
       .createHash("sha256")
-      .update(`${base64Payload}/pg/v1/pay${PHONEPE_API_KEY}`)
+      .update(`${base64Payload}/pg/v1/pay${PHONEPE_SALT_KEY}`)
       .digest("hex");
 
     const phonePeResponse = await fetch(PHONEPE_API_URL, {

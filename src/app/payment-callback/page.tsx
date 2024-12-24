@@ -19,21 +19,16 @@ export default function PaymentCallback() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const code = searchParams.get("code");
-    const transactionId = searchParams.get("transactionId");
-    const merchantId = searchParams.get("merchantId");
-    const merchantTransactionId = searchParams.get("merchantTransactionId");
-
-    if (!code || !transactionId || !merchantId || !merchantTransactionId) {
-      setStatus("failure");
-      setMessage("Missing required parameters");
-      return;
-    }
-
     const checkPaymentStatus = async () => {
       try {
+        // Collect all search params
+        const params = new URLSearchParams();
+        searchParams.forEach((value, key) => {
+          params.append(key, value);
+        });
+
         const response = await fetch(
-          `/api/check-payment-status?code=${code}&transactionId=${transactionId}&merchantId=${merchantId}&merchantTransactionId=${merchantTransactionId}`
+          `/api/check-payment-status?${params.toString()}`
         );
         const data = await response.json();
 
