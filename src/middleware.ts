@@ -22,10 +22,10 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 const adminUserIds = [
-  "user_2qa96Ptiod6AXaQk2ucR89kZ6Td",
-  "user_2qa8rrNJeL0qiZsJDSIWpRfX0Er",
-  "user_2qa8Z81zJnpeajwEFOzc7GNYIsl",
-  "user_2qbTYLpoXpl48krDyFr0Hob9pnF",
+  "user_2qnrMesjbOk9wRV32n4VOrcJ1I4",
+  "user_2qnuTlOkJyAAmBrFO1MM6NdYVEo",
+  "user_2qnuJyA1LjPRi5ziUfwlODZ4al6",
+  "user_2qnu2PyLtlWfXd5PkC1RJXw3sMl",
 ];
 
 export default clerkMiddleware((auth, request: NextRequest) => {
