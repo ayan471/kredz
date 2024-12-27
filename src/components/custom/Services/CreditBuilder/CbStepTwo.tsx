@@ -325,12 +325,12 @@ const CbStepTwo: React.FC = () => {
                       <Zap className="w-4 h-4 mr-2" />
                       <span className="text-sm">Instant activation</span>
                     </div>
-                    <div className="flex items-center text-white">
+                    {/* <div className="flex items-center text-white">
                       <Check className="w-4 h-4 mr-2" />
                       <span className="text-sm">
                         Assured credit builder loan
                       </span>
-                    </div>
+                    </div> */}
                   </div>
                   <RadioGroupItem
                     value={plan.value}

@@ -93,7 +93,7 @@ const LaStepThree = () => {
                       ? 1200
                       : 0,
             features: [
-              "Pre-approved loan offer",
+              // "Pre-approved loan offer",
               "Instant processing",
               "Exclusive interest rates",
               "24/7 customer support",
