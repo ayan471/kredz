@@ -201,159 +201,171 @@ const LaStepOne = () => {
         </div>
       )}
       <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input
-              type="text"
-              id="fullName"
-              {...register("fullName")}
-              required
-            />
-          </div>
-
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="phoneNo">Phone No</Label>
-            <Input type="tel" id="phoneNo" {...register("phoneNo")} required />
-          </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="fullName">Full Name</Label>
+          <Input
+            id="fullName"
+            type="text"
+            {...register("fullName")}
+            className="w-full"
+          />
         </div>
-
-        <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="amtRequired">Loan Amount Required(in ₹)</Label>
-            <Input
-              type="text"
-              id="amtRequired"
-              {...register("amtRequired")}
-              required
-            />
-          </div>
-
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="prpseOfLoan">Purpose of Loan</Label>
-            <Input
-              type="text"
-              id="prpseOfLoan"
-              {...register("prpseOfLoan")}
-              required
-            />
-          </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="phoneNo">Phone Number</Label>
+          <Input
+            id="phoneNo"
+            type="tel"
+            {...register("phoneNo")}
+            className="w-full"
+          />
         </div>
-
-        <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="aadharImgFront">Aadhar Card Front Upload</Label>
-            <Input
-              id="aadharImgFront"
-              type="file"
-              {...register("aadharImgFront")}
-              className="w-full"
-            />
-          </div>
-
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="aadharImgBack">Aadhar Card Back Upload</Label>
-            <Input
-              id="aadharImgBack"
-              type="file"
-              {...register("aadharImgBack")}
-              className="w-full"
-            />
-          </div>
-
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="aadharNo">Aadhar Number</Label>
-            <Input
-              type="text"
-              id="aadharNo"
-              {...register("aadharNo")}
-              required
-            />
-          </div>
-
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="panImgFront">PAN Card Image</Label>
-            <Input id="panImgFront" type="file" {...register("panImgFront")} />
-          </div>
-
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="panNo">PAN Number</Label>
-            <Input type="text" id="panNo" {...register("panNo")} required />
-          </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="amtRequired">Amount Required</Label>
+          <Input
+            id="amtRequired"
+            type="number"
+            {...register("amtRequired")}
+            className="w-full"
+          />
         </div>
-
-        <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="creditScore">Credit Score</Label>
-            <Input
-              type="text"
-              id="creditScore"
-              {...register("creditScore")}
-              required
-            />
-          </div>
-
-          <div className="grid w-full items-center gap-4">
-            <Label htmlFor="empType">Employment Type</Label>
-            <Controller
-              name="empType"
-              control={control}
-              render={({ field }) => (
-                <RadioGroup onValueChange={field.onChange} value={field.value}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Salaried" id="r1" />
-                    <Label htmlFor="r1">Salaried</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Self Employed" id="r2" />
-                    <Label htmlFor="r2">Self Employed</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Others" id="r3" />
-                    <Label htmlFor="r3">Others(mention below)</Label>
-                  </div>
-                </RadioGroup>
-              )}
-            />
-          </div>
-
-          {empType === "Others" && (
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="EmpOthers">Employment Type(if Others)</Label>
-              <Input type="text" id="EmpOthers" {...register("EmpOthers")} />
-            </div>
-          )}
-
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="monIncomeRange">Monthly Income Range</Label>
-            <Controller
-              name="monIncomeRange"
-              control={control}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select income range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {incomeRanges.map((range) => (
-                      <SelectItem key={range.value} value={range.value}>
-                        {range.label}
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="prpseOfLoan">Purpose of Loan</Label>
+          <Input
+            id="prpseOfLoan"
+            type="text"
+            {...register("prpseOfLoan")}
+            className="w-full"
+          />
+        </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="aadharImgFront">Upload Aadhar Card (Front)</Label>
+          <Input
+            id="aadharImgFront"
+            type="file"
+            {...register("aadharImgFront")}
+            className="w-full"
+            accept=".jpg,.jpeg,.png"
+          />
+          <span className="text-xs text-muted-foreground mt-1">
+            Accepted formats: .jpg, .jpeg, .png
+          </span>
+        </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="aadharImgBack">Upload Aadhar Card (Back)</Label>
+          <Input
+            id="aadharImgBack"
+            type="file"
+            {...register("aadharImgBack")}
+            className="w-full"
+            accept=".jpg,.jpeg,.png"
+          />
+          <span className="text-xs text-muted-foreground mt-1">
+            Accepted formats: .jpg, .jpeg, .png
+          </span>
+        </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="aadharNo">Aadhar Number</Label>
+          <Input
+            id="aadharNo"
+            type="text"
+            {...register("aadharNo")}
+            className="w-full"
+          />
+        </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="panImgFront">Upload PAN Card (Front)</Label>
+          <Input
+            id="panImgFront"
+            type="file"
+            {...register("panImgFront")}
+            className="w-full"
+            accept=".jpg,.jpeg,.png"
+          />
+          <span className="text-xs text-muted-foreground mt-1">
+            Accepted formats: .jpg, .jpeg, .png
+          </span>
+        </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="panNo">PAN Number</Label>
+          <Input
+            id="panNo"
+            type="text"
+            {...register("panNo")}
+            className="w-full"
+          />
+        </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="creditScore">Credit Score</Label>
+          <Input
+            id="creditScore"
+            type="number"
+            {...register("creditScore")}
+            className="w-full"
+          />
+        </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="empType">Employment Type</Label>
+          <Controller
+            name="empType"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Employment Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {["Salaried", "Self-Employed", "Business Owner", "Other"].map(
+                    (type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
+        {empType === "Other" && (
           <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="monIncome">Monthly Income(in ₹)</Label>
+            <Label htmlFor="EmpOthers">Specify Other</Label>
             <Input
+              id="EmpOthers"
               type="text"
-              id="monIncome"
-              {...register("monIncome")}
-              required
+              {...register("EmpOthers")}
+              className="w-full"
             />
           </div>
+        )}
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="monIncomeRange">Monthly Income Range</Label>
+          <Controller
+            name="monIncomeRange"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Income Range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {incomeRanges.map((range) => (
+                    <SelectItem key={range.value} value={range.value}>
+                      {range.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="monIncome">Monthly Income</Label>
+          <Input
+            id="monIncome"
+            type="number"
+            {...register("monIncome")}
+            className="w-full"
+          />
         </div>
 
         <div className="flex flex-col gap-6 bg-[rgba(255,255,255,0.4)] p-6 border-[1px] rounded-xl">
@@ -381,7 +393,16 @@ const LaStepOne = () => {
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="selfieImg">Upload your selfie</Label>
-            <Input id="selfieImg" type="file" {...register("selfieImg")} />
+            <Input
+              id="selfieImg"
+              type="file"
+              {...register("selfieImg")}
+              className="w-full"
+              accept=".jpg,.jpeg,.png"
+            />
+            <span className="text-xs text-muted-foreground mt-1">
+              Accepted formats: .jpg, .jpeg, .png
+            </span>
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -410,6 +431,12 @@ const LaStepOne = () => {
                   variant: "destructive",
                 });
                 console.error("Upload error:", error);
+              }}
+              onUploadBegin={() => {
+                toast({
+                  title: "Upload Started",
+                  description: "Your bank statement is being uploaded...",
+                });
               }}
             />
             <span className="text-muted-foreground">

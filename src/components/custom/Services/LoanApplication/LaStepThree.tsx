@@ -50,6 +50,7 @@ const LaStepThree = () => {
     features: string[];
   }>({ name: "", discountedPrice: 0, realPrice: 0, features: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [eligibleAmount, setEligibleAmount] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,6 +69,8 @@ const LaStepThree = () => {
           const membershipPlan = await determineMembershipPlan(monIncome);
           setEligiblePlan(membershipPlan);
           setValue("membershipPlan", membershipPlan);
+
+          setEligibleAmount(result.data.eligibleAmount || null);
 
           // Set plan details (replace with actual data)
           setPlanDetails({
@@ -180,17 +183,22 @@ const LaStepThree = () => {
         Membership Plan
       </motion.h1>
 
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="text-xl mb-8 text-center"
-      >
-        Buy Membership Plan & Get Your upto 3X of monthly income. Pre-Approved
-        Loan Offer Processed Instantly.
-      </motion.p>
-
       <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
+        {eligibleAmount !== null && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-6 p-6 bg-green-100 border-green-300 border rounded-xl text-green-800"
+          >
+            <h2 className="text-xl font-semibold mb-2">
+              Your Eligible Loan Amount
+            </h2>
+            <p className="text-3xl font-bold">
+              ₹{eligibleAmount.toLocaleString()}
+            </p>
+          </motion.div>
+        )}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

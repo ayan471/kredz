@@ -88,6 +88,15 @@ const LaStepTwo = () => {
       return;
     }
 
+    if (!data.eMandate) {
+      toast({
+        title: "Error",
+        description: "E-mandate is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const result = await updateLoanApplicationData(id, {
       ...data,
       step: 2,
@@ -327,11 +336,13 @@ const LaStepTwo = () => {
             <Controller
               name="eMandate"
               control={control}
+              rules={{ required: "E-mandate is required" }}
               render={({ field }) => (
                 <Checkbox
                   id="eMandate"
                   checked={field.value}
                   onCheckedChange={field.onChange}
+                  required
                 />
               )}
             />
@@ -340,8 +351,14 @@ const LaStepTwo = () => {
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
               E-mandate/Auto Debit will be activated on the same account
+              (required)
             </Label>
           </div>
+          {form.formState.errors.eMandate && (
+            <p className="text-sm text-red-500 mt-1">
+              {form.formState.errors.eMandate.message}
+            </p>
+          )}
           <p className="text-sm text-red-500">
             some charges may be applicable for this procedure
           </p>
