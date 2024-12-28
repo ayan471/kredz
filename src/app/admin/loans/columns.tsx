@@ -42,7 +42,7 @@ export type LoanApplication = {
   updatedAt: Date;
   status: string | null;
   tenure: number | null;
-  membershipActive: boolean;
+  membershipActive: boolean | null;
 };
 
 export const columns: ColumnDef<LoanApplication>[] = [

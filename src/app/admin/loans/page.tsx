@@ -20,6 +20,7 @@ async function getLoanApplications(): Promise<LoanApplication[]> {
       createdAt: true,
       updatedAt: true,
       tenure: true,
+      membershipActive: true,
     },
     orderBy: {
       createdAt: "desc",
