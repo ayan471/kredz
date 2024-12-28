@@ -450,6 +450,23 @@ export async function getLoanApplicationDashboardData(userId: string) {
   }
 }
 
+export async function getMembershipStatus(applicationId: string) {
+  try {
+    const application = await prisma.loanApplication.findUnique({
+      where: { id: applicationId },
+      select: { membershipActive: true },
+    });
+
+    return {
+      success: true,
+      membershipActive: application?.membershipActive ?? false,
+    };
+  } catch (error) {
+    console.error("Error fetching membership status:", error);
+    return { success: false, error: "Failed to fetch membership status" };
+  }
+}
+
 export async function updateLoanStatus(id: string, status: string) {
   try {
     await prisma.loanApplication.update({

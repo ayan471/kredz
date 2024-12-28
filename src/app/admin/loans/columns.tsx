@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,8 +22,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   approveLoan,
-  makeUserEligible,
   rejectLoan,
+  getMembershipStatus,
+  makeUserEligible,
 } from "@/actions/loanApplicationActions";
 import { ApprovalModal } from "./components/approval-modal";
 import { EMIModal } from "./components/emi-modal";
@@ -139,7 +140,26 @@ export const columns: ColumnDef<LoanApplication>[] = [
     header: "Membership",
     accessorKey: "membershipActive",
     cell: ({ row }) => {
-      const isActive = row.getValue("membershipActive") as boolean;
+      const [isActive, setIsActive] = useState<boolean | null>(null);
+
+      useEffect(() => {
+        const fetchMembershipStatus = async () => {
+          const result = await getMembershipStatus(row.original.id);
+          if (result.success) {
+            setIsActive(result.membershipActive ?? false);
+          } else {
+            console.error("Failed to fetch membership status");
+            setIsActive(false);
+          }
+        };
+
+        fetchMembershipStatus();
+      }, [row.original.id]);
+
+      if (isActive === null) {
+        return <span>Loading...</span>;
+      }
+
       return (
         <Badge variant={isActive ? "success" : "secondary"}>
           {isActive ? "Active" : "Inactive"}
