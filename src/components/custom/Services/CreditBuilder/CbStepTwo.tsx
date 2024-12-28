@@ -15,7 +15,7 @@ import {
 } from "@/actions/formActions";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Clock, CreditCard, Zap } from "lucide-react";
+import { Check, Clock, CreditCard, Monitor, User, Zap } from "lucide-react";
 import { initiatePhonePePayment } from "@/components/lib/phonePe";
 
 type FormValues = {
@@ -319,18 +319,28 @@ const CbStepTwo: React.FC = () => {
                     </div>
                     <div className="flex items-center text-white">
                       <CreditCard className="w-4 h-4 mr-2" />
-                      <span className="text-sm">Includes GST</span>
+                      <span className="text-sm">
+                        Improve & Boost Your Credit Score
+                      </span>
                     </div>
                     <div className="flex items-center text-white">
-                      <Zap className="w-4 h-4 mr-2" />
-                      <span className="text-sm">Instant activation</span>
+                      <Monitor className="w-4 h-4 mr-2" />
+                      <span className="text-sm">
+                        Monitor & Maintain Good Credit Health
+                      </span>
                     </div>
-                    {/* <div className="flex items-center text-white">
+                    <div className="flex items-center text-white">
+                      <User className="w-4 h-4 mr-2" />
+                      <span className="text-sm">
+                        Identify & Remove Errors From Your Credit Report
+                      </span>
+                    </div>
+                    <div className="flex items-center text-white">
                       <Check className="w-4 h-4 mr-2" />
                       <span className="text-sm">
-                        Assured credit builder loan
+                        Assured Credit Builder Loan*(t&c)
                       </span>
-                    </div> */}
+                    </div>
                   </div>
                   <RadioGroupItem
                     value={plan.value}
