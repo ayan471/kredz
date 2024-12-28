@@ -28,6 +28,7 @@ import {
 import { ApprovalModal } from "./components/approval-modal";
 import { EMIModal } from "./components/emi-modal";
 import { RejectedModal } from "./components/rejected-modal";
+import { Badge } from "@/components/ui/badge";
 
 export type LoanApplication = {
   id: string;
@@ -40,6 +41,7 @@ export type LoanApplication = {
   updatedAt: Date;
   status: string | null;
   tenure: number | null;
+  membershipActive: boolean;
 };
 
 export const columns: ColumnDef<LoanApplication>[] = [
@@ -130,6 +132,18 @@ export const columns: ColumnDef<LoanApplication>[] = [
         >
           {status}
         </span>
+      );
+    },
+  },
+  {
+    header: "Membership",
+    accessorKey: "membershipActive",
+    cell: ({ row }) => {
+      const isActive = row.getValue("membershipActive") as boolean;
+      return (
+        <Badge variant={isActive ? "success" : "secondary"}>
+          {isActive ? "Active" : "Inactive"}
+        </Badge>
       );
     },
   },
