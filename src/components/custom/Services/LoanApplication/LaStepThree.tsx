@@ -173,23 +173,23 @@ const LaStepThree = () => {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[520px]">
+    <div className="mx-auto w-full max-w-[720px] px-6 py-12">
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="text-3xl font-bold text-center mb-8"
+        className="text-3xl font-bold text-center mb-10"
       >
         Membership Plan
       </motion.h1>
 
-      <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
+      <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
         {eligibleAmount !== null && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-6 p-6 bg-green-100 border-green-300 border rounded-xl text-green-800"
+            className="mb-8 p-6 bg-green-100 border-green-300 border rounded-xl text-green-800"
           >
             <h2 className="text-xl font-semibold mb-2">
               Your Eligible Loan Amount
@@ -203,11 +203,11 @@ const LaStepThree = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-col gap-6 bg-gradient-to-br from-blue-500 to-purple-600 p-8 border-[1px] rounded-xl text-white shadow-lg"
+          className="flex flex-col gap-6 bg-gradient-to-br from-blue-500 to-purple-600 p-8 sm:p-10 border-[1px] rounded-xl text-white shadow-lg"
         >
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-2xl font-bold">{planDetails.name} Plan</h2>
-            <div className="flex items-center flex-col">
+            <div className="flex items-end sm:items-center flex-col">
               <span className="text-3xl font-bold">
                 ₹{calculateAmounts(planDetails.discountedPrice).basePrice}
               </span>
@@ -248,29 +248,29 @@ const LaStepThree = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="flex flex-col gap-6 bg-white p-6 border-[1px] rounded-xl shadow-md"
+          className="flex flex-col gap-8 bg-white p-8 sm:p-10 border-[1px] rounded-xl shadow-md"
         >
-          <div className="grid w-full items-center gap-1.5">
+          <div className="grid w-full items-center gap-3">
             <Label htmlFor="fullName">Full Name</Label>
             <Input type="text" id="fullName" {...register("fullName")} />
           </div>
 
-          <div className="grid w-full items-center gap-1.5">
+          <div className="grid w-full items-center gap-3">
             <Label htmlFor="phoneNo">Phone No</Label>
             <Input type="tel" id="phoneNo" {...register("phoneNo")} />
           </div>
 
-          <div className="grid w-full items-center gap-1.5">
+          <div className="grid w-full items-center gap-3">
             <Label htmlFor="emailID">Email ID</Label>
             <Input type="email" id="emailID" {...register("emailID")} />
           </div>
 
-          <div className="grid w-full items-center gap-1.5">
+          <div className="grid w-full items-center gap-3">
             <Label htmlFor="panNo">PAN No</Label>
             <Input type="text" id="panNo" {...register("panNo")} />
           </div>
 
-          <div className="grid w-full items-center gap-1.5">
+          <div className="grid w-full items-center gap-3">
             <Label htmlFor="aadharNo">Aadhar No</Label>
             <Input type="text" id="aadharNo" {...register("aadharNo")} />
           </div>
@@ -283,7 +283,7 @@ const LaStepThree = () => {
         >
           <Button
             type="submit"
-            className="w-full text-md py-6 text-lg font-semibold"
+            className="w-full text-md py-4 sm:py-6 text-lg font-semibold"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Processing..." : "Proceed to Payment"}

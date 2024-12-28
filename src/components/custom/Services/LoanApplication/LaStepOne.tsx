@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { LoanApplication } from "@/types";
 import { UploadButton } from "@uploadthing/react";
 import { OurFileRouter } from "@/app/api/uploadthing/core";
+import "@uploadthing/react/styles.css";
 
 type FormValues = {
   fullName: string;
@@ -405,8 +406,7 @@ const LaStepOne = () => {
             </span>
           </div>
 
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="bankStatmntImg">Upload bank statement (PDF)</Label>
+          <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-primary rounded-lg bg-primary/5">
             <UploadButton<OurFileRouter>
               endpoint="pdfUploader"
               onClientUploadComplete={(res) => {
@@ -438,10 +438,16 @@ const LaStepOne = () => {
                   description: "Your bank statement is being uploaded...",
                 });
               }}
+              appearance={{
+                button:
+                  "ut-ready:bg-primary ut-ready:hover:bg-primary/90 ut-ready:text-white ut-ready:font-semibold ut-ready:py-3 ut-ready:px-4 ut-ready:rounded-md ut-ready:transition-colors ut-ready:duration-200 ut-ready:text-lg",
+                allowedContent:
+                  "flex flex-col items-center justify-center gap-2",
+              }}
             />
-            <span className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-2">
               ** Only PDF files are accepted
-            </span>
+            </p>
           </div>
         </div>
 
