@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import { LoanApplication } from "@/types";
+import { UploadButton } from "@uploadthing/react";
+import { OurFileRouter } from "@/app/api/uploadthing/core";
 
 type FormValues = {
   fullName: string;
@@ -31,7 +33,6 @@ type FormValues = {
   aadharImgBack: FileList;
   aadharNo: string;
   panImgFront: FileList;
-
   panNo: string;
   creditScore: string;
   empType: string;
@@ -40,7 +41,7 @@ type FormValues = {
   monIncome: string;
   currEmis: string;
   selfieImg: FileList;
-  bankStatmntImg: FileList;
+  bankStatmntImg: string; // Changed to string to store URL
 };
 
 const incomeRanges = [
@@ -384,12 +385,36 @@ const LaStepOne = () => {
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="bankStatmntImg">Upload bank statement</Label>
-            <Input
-              id="bankStatmntImg"
-              type="file"
-              {...register("bankStatmntImg")}
+            <Label htmlFor="bankStatmntImg">Upload bank statement (PDF)</Label>
+            <UploadButton<OurFileRouter>
+              endpoint="pdfUploader"
+              onClientUploadComplete={(res) => {
+                const uploadedFiles = res as {
+                  name: string;
+                  url: string;
+                  size: number;
+                }[];
+                if (uploadedFiles && uploadedFiles.length > 0) {
+                  setValue("bankStatmntImg", uploadedFiles[0].url);
+                  toast({
+                    title: "Upload Completed",
+                    description: "Bank statement uploaded successfully",
+                  });
+                  console.log("Bank statement URL:", uploadedFiles[0].url);
+                }
+              }}
+              onUploadError={(error: Error) => {
+                toast({
+                  title: "Upload Error",
+                  description: error.message,
+                  variant: "destructive",
+                });
+                console.error("Upload error:", error);
+              }}
             />
+            <span className="text-muted-foreground">
+              ** Only PDF files are accepted
+            </span>
           </div>
         </div>
 

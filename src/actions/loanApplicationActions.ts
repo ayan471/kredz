@@ -29,6 +29,7 @@ cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
 });
 
 export async function uploadToCloudinary(
@@ -37,10 +38,16 @@ export async function uploadToCloudinary(
 ): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
+  const isPDF = file.type === "application/pdf";
 
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: folder },
+      {
+        folder: folder,
+        resource_type: "auto", // Changed to auto to handle both images and PDFs
+        format: isPDF ? "pdf" : undefined,
+        flags: isPDF ? "attachment" : undefined,
+      },
       (error, result) => {
         if (error) {
           console.error("Cloudinary upload error:", error);
@@ -152,7 +159,6 @@ export async function submitLoanApplicationStep1(formData: FormData) {
         aadharImgBackUrl: data.aadharImgBackUrl,
         aadharNo: data.aadharNo,
         panImgFrontUrl: data.panImgFrontUrl,
-
         panNo: data.panNo,
         creditScore: data.creditScore,
         empType: data.empType,
@@ -160,9 +166,9 @@ export async function submitLoanApplicationStep1(formData: FormData) {
         monIncome: data.monIncome,
         currEmis: data.currEmis,
         selfieImgUrl: data.selfieImgUrl,
-        bankStatmntImgUrl: data.bankStatmntImgUrl,
+        bankStatmntImgUrl: data.bankStatmntImg, // URL from UploadThing
         status: "In Progress",
-        membershipPlan: applicationData.membershipPlan, // Changed from "Incomplete" to "In Progress"
+        membershipPlan: applicationData.membershipPlan,
       },
     });
     console.log("Loan application created:", application);

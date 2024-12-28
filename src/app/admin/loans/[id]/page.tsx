@@ -19,6 +19,7 @@ import {
   BanknoteIcon as Bank,
 } from "lucide-react";
 import { EditableInfoItem } from "./EditableInfoItem";
+import { PDFDownloadButton } from "./PDFDownloadButton";
 
 const prisma = new PrismaClient();
 
@@ -44,39 +45,6 @@ export default async function LoanApplicationDetailPage({
     orderBy: { createdAt: "desc" },
   });
 
-  const ImageWithDownload = ({
-    src,
-    alt,
-    filename,
-  }: {
-    src: string | null;
-    alt: string;
-    filename: string;
-  }) => {
-    if (!src) {
-      return <p className="text-gray-500 italic">No image available</p>;
-    }
-
-    return (
-      <div className="mt-2 space-y-2">
-        <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
-          <Image
-            src={src}
-            alt={alt}
-            fill
-            style={{ objectFit: "cover" }}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        </div>
-        <Button asChild variant="outline" size="sm" className="w-full">
-          <a href={src} download={filename}>
-            <Download className="mr-2 h-4 w-4" /> Download {alt}
-          </a>
-        </Button>
-      </div>
-    );
-  };
-
   const InfoItem = ({
     icon,
     label,
@@ -96,6 +64,58 @@ export default async function LoanApplicationDetailPage({
       </div>
     </div>
   );
+
+  const ImageWithDownload = ({
+    src,
+    alt,
+    filename,
+  }: {
+    src: string | null;
+    alt: string;
+    filename: string;
+  }) => {
+    if (!src) {
+      return <p className="text-gray-500 italic">No file available</p>;
+    }
+
+    const isPDF = filename.toLowerCase().endsWith(".pdf");
+
+    return (
+      <div className="mt-2 space-y-2">
+        {isPDF ? (
+          <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex flex-col items-center justify-center">
+            <FileText className="h-16 w-16 text-gray-400" />
+            <p className="mt-2 text-sm text-gray-500">{filename}</p>
+          </div>
+        ) : (
+          <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
+            <Image
+              src={src}
+              alt={alt}
+              fill
+              style={{ objectFit: "cover" }}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          </div>
+        )}
+        <div className="flex gap-2">
+          {isPDF ? (
+            <>
+              <Button asChild variant="outline" size="sm" className="flex-1">
+                <a href={src} target="_blank" rel="noopener noreferrer">
+                  <FileText className="mr-2 h-4 w-4" />
+                  View PDF
+                </a>
+              </Button>
+              <PDFDownloadButton url={src} filename={filename} isPDF={isPDF} />
+            </>
+          ) : (
+            <PDFDownloadButton url={src} filename={filename} isPDF={isPDF} />
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
@@ -177,8 +197,6 @@ export default async function LoanApplicationDetailPage({
               label="Current EMIs"
               value={application.currEmis}
             />
-
-            {/* @ts-ignore */}
             <EditableInfoItem
               icon={<Bank className="h-5 w-5 text-gray-400" />}
               label="Account Number"
@@ -274,11 +292,17 @@ export default async function LoanApplicationDetailPage({
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Bank Statement</h3>
-                <ImageWithDownload
-                  src={application.bankStatmntImgUrl}
-                  alt="Bank Statement"
-                  filename="bank_statement.jpg"
-                />
+                {application.bankStatmntImgUrl ? (
+                  <ImageWithDownload
+                    src={application.bankStatmntImgUrl}
+                    alt="Bank Statement"
+                    filename="bank_statement.pdf"
+                  />
+                ) : (
+                  <p className="text-gray-500 italic">
+                    Bank statement not uploaded
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
