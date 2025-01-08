@@ -405,7 +405,7 @@ const LaStepOne = () => {
               Accepted formats: .jpg, .jpeg, .png
             </span>
           </div>
-
+          <Label htmlFor="selfieImg">Upload Your Bank Statement</Label>
           <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-primary rounded-lg bg-primary/5">
             <UploadButton<OurFileRouter>
               endpoint="pdfUploader"

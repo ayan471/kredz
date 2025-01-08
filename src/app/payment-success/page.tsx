@@ -26,6 +26,24 @@ export default async function PaymentSuccessPage() {
             <p className="text-sm text-gray-500">
               Your transaction has been completed.
             </p>
+            <p className="text-sm text-gray-700 mt-4">
+              Please send your payment screenshot to this WhatsApp number:{" "}
+              <a
+                href="https://wa.link/e6weyb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-blue-600 hover:underline"
+              >
+                9238532686
+              </a>{" "}
+              or email it to:{" "}
+              <a
+                href="mailto:support@kredz.in"
+                className="font-bold text-blue-600 hover:underline"
+              >
+                support@kredz.in
+              </a>
+            </p>
             <Button
               asChild
               className="w-full py-3 px-4 text-white bg-gradient-to-r from-green-500 to-blue-500 rounded-md shadow-md hover:from-green-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
