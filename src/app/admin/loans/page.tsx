@@ -34,12 +34,14 @@ export default async function AdminLoansPage() {
   const loanApplications = await getLoanApplications();
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Loan Applications</h1>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Loan Applications</h1>
         <DownloadCSV data={loanApplications} />
       </div>
-      <DataTable columns={columns} data={loanApplications} />
+      <div className="overflow-x-auto">
+        <DataTable columns={columns} data={loanApplications} />
+      </div>
     </div>
   );
 }

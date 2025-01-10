@@ -17,11 +17,10 @@ export default async function CreditBuilderPage() {
   const subscriptions = await getCreditBuilderSubscriptions();
 
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-8">Credit Builder Dashboard</h1>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h1 className="text-3xl font-bold mb-8">Credit Builder Dashboard</h1>
 
-      <div className="flex justify-between items-center mb-4 mt-8">
-        <h2 className="text-2xl font-semibold">Subscriptions</h2>
         <DownloadCSV data={subscriptions} />
       </div>
       <DataTable columns={subscriptionColumns} data={subscriptions} />

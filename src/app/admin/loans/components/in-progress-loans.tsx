@@ -26,10 +26,13 @@ export function InProgressLoans({ loans }: InProgressLoansProps) {
         <CardDescription>Recent loan applications in progress.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-8">
+        <div className="space-y-6">
           {loans.map((loan) => (
-            <div key={loan.id} className="flex items-center">
-              <div className="ml-4 space-y-1">
+            <div
+              key={loan.id}
+              className="flex flex-col sm:flex-row sm:items-center justify-between"
+            >
+              <div className="space-y-1">
                 <p className="text-sm font-medium leading-none">
                   {loan.fullName}
                 </p>
@@ -37,7 +40,7 @@ export function InProgressLoans({ loans }: InProgressLoansProps) {
                   {formatCurrency(parseFloat(loan.amtRequired))}
                 </p>
               </div>
-              <div className="ml-auto font-medium">
+              <div className="text-sm font-medium mt-2 sm:mt-0">
                 {formatDate(loan.createdAt)}
               </div>
             </div>

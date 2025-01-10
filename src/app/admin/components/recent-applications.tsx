@@ -77,8 +77,10 @@ export async function RecentApplications() {
   const recentApplications = await getRecentApplications();
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Recent Applications</h2>
+    <div className="w-full overflow-x-auto">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">
+        Recent Applications
+      </h2>
       <Table>
         <TableHeader>
           <TableRow>

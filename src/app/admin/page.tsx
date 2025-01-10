@@ -136,11 +136,11 @@ export default async function AdminDashboard() {
   const inProgressLoans = await getInProgressLoans();
 
   return (
-    <div className="space-y-6">
-      <header className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Dashboard Overview</h1>
+    <div className="space-y-6 p-4 sm:p-6 md:p-8">
+      <header className="flex flex-col sm:flex-row justify-between items-center mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Dashboard Overview</h1>
       </header>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -195,7 +195,7 @@ export default async function AdminDashboard() {
         </Card>
       </div>
       <Overview data={monthlyLoanData} />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <ApprovedLoans loans={approvedLoans} />
         <RejectedLoans loans={rejectedLoans} />
         <InProgressLoans loans={inProgressLoans} />
