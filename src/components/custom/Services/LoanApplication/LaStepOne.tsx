@@ -24,11 +24,15 @@ import { LoanApplication } from "@/types";
 import { UploadButton } from "@uploadthing/react";
 import { OurFileRouter } from "@/app/api/uploadthing/core";
 import "@uploadthing/react/styles.css";
+import { useUser } from "@clerk/nextjs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 type FormValues = {
   fullName: string;
+  email: string;
   phoneNo: string;
-  amtRequired: string;
+  dateOfBirth: string;
   prpseOfLoan: string;
   aadharImgFront: FileList;
   aadharImgBack: FileList;
@@ -42,37 +46,57 @@ type FormValues = {
   monIncome: string;
   currEmis: string;
   selfieImg: FileList;
-  bankStatmntImg: string; // Changed to string to store URL
+  bankStatmntImg: string;
+  amtRequired: string;
+};
+
+const calculateAge = (birthDate: string): number => {
+  const today = new Date();
+  const birthDateObj = new Date(birthDate);
+  let age = today.getFullYear() - birthDateObj.getFullYear();
+  const monthDiff = today.getMonth() - birthDateObj.getMonth();
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDateObj.getDate())
+  ) {
+    age--;
+  }
+  return age;
 };
 
 const incomeRanges = [
-  { label: "0-10,000", value: "0-10000", eligibleAmount: 37000 },
-  { label: "10,001-23,000", value: "10001-23000", eligibleAmount: 53000 },
-  { label: "23,001-30,000", value: "23001-30000", eligibleAmount: 67000 },
-  { label: "30,001-37,000", value: "30001-37000", eligibleAmount: 83000 },
-  { label: "37,001-45,000", value: "37001-45000", eligibleAmount: 108000 },
-  { label: "45,001-55,000", value: "45001-55000", eligibleAmount: 131000 },
-  { label: "55,001-65,000", value: "55001-65000", eligibleAmount: 178000 },
-  { label: "65,001-75,000", value: "65001-75000", eligibleAmount: 216000 },
-  { label: "75,001-85,000", value: "75001-85000", eligibleAmount: 256000 },
-  { label: "85,001-95,000", value: "85001-95000", eligibleAmount: 308000 },
-  { label: "95,001-1,25,000", value: "95001-125000", eligibleAmount: 376000 },
-  { label: "More than 1,25,000", value: "125001+", eligibleAmount: 487000 },
+  { label: "0-10,000", value: "0-10000" },
+  { label: "10,001-20,000", value: "10001-20000" },
+  { label: "20,001-30,000", value: "20001-30000" },
+  { label: "30,001-37,000", value: "30001-37000" },
+  { label: "37,001-45,000", value: "37001-45000" },
+  { label: "45,001-55,000", value: "45001-55000" },
+  { label: "55,001-65,000", value: "55001-65000" },
+  { label: "65,001-75,000", value: "65001-75000" },
+  { label: "75,001-85,000", value: "75001-85000" },
+  { label: "85,001-95,000", value: "85001-95000" },
+  { label: "95,001-1,25,000", value: "95001-125000" },
+  { label: "More than 1,25,000", value: "125001+" },
 ];
 
 const LaStepOne = () => {
   const { toast } = useToast();
   const router = useRouter();
+  const { user } = useUser();
   const { register, control, handleSubmit, setValue, watch } =
     useForm<FormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasExistingApplication, setHasExistingApplication] = useState(false);
   const [existingApplicationData, setExistingApplicationData] =
     useState<LoanApplication | null>(null);
+  const [age, setAge] = useState<number | null>(null);
+  const [isRejected, setIsRejected] = useState(false);
+  const [isEighteen, setIsEighteen] = useState(false);
 
   const monIncomeRange = watch("monIncomeRange");
   const empType = watch("empType");
-  const membershipPlan = "basic"; // Example membership plan
+  const dateOfBirth = watch("dateOfBirth");
+  const monIncome = watch("monIncome");
 
   useEffect(() => {
     const checkExistingApplication = async () => {
@@ -91,9 +115,33 @@ const LaStepOne = () => {
     };
 
     checkExistingApplication();
-  }, [toast]);
+
+    // Set email and phone number from Clerk
+    if (user) {
+      setValue("email", user.emailAddresses[0]?.emailAddress || "");
+      setValue("phoneNo", user.phoneNumbers[0]?.phoneNumber || "");
+    }
+  }, [toast, user, setValue]);
+
+  useEffect(() => {
+    if (dateOfBirth) {
+      const calculatedAge = calculateAge(dateOfBirth);
+      setAge(calculatedAge);
+      setIsRejected(calculatedAge < 18);
+    }
+  }, [dateOfBirth]);
 
   const onSubmit = async (data: FormValues) => {
+    if (isRejected) {
+      toast({
+        title: "Application Rejected",
+        description:
+          "We're sorry, but you must be at least 18 years old to apply for a loan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (
       hasExistingApplication &&
       existingApplicationData?.status !== "Eligible"
@@ -119,19 +167,8 @@ const LaStepOne = () => {
     });
 
     formData.set("panNo", data.panNo.toUpperCase());
-
-    // Ensure monIncome is included
     formData.append("monIncome", data.monIncome);
-
-    const selectedRange = incomeRanges.find(
-      (range) => range.value === data.monIncomeRange
-    );
-    if (selectedRange) {
-      formData.append(
-        "eligibleAmount",
-        selectedRange.eligibleAmount.toString()
-      );
-    }
+    formData.append("age", age !== null ? age.toString() : "");
 
     try {
       const result = await submitLoanApplicationStep1(formData);
@@ -189,17 +226,15 @@ const LaStepOne = () => {
 
   return (
     <div className="mx-auto w-full max-w-[520px]">
-      {existingApplicationData?.status === "Eligible" && (
-        <div
-          className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6"
-          role="alert"
-        >
-          <p className="font-bold">Good news!</p>
-          <p>
-            You are eligible to apply for a new loan. Please fill out the form
-            below.
-          </p>
-        </div>
+      {isRejected && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Application Rejected</AlertTitle>
+          <AlertDescription>
+            We're sorry, but you must be at least 18 years old to apply for a
+            loan.
+          </AlertDescription>
+        </Alert>
       )}
       <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
         <div className="grid w-full items-center gap-1.5">
@@ -209,6 +244,17 @@ const LaStepOne = () => {
             type="text"
             {...register("fullName")}
             className="w-full"
+            disabled={isRejected}
+          />
+        </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            {...register("email")}
+            className="w-full"
+            disabled={isRejected}
           />
         </div>
         <div className="grid w-full items-center gap-1.5">
@@ -218,6 +264,20 @@ const LaStepOne = () => {
             type="tel"
             {...register("phoneNo")}
             className="w-full"
+            disabled={isRejected}
+          />
+        </div>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="dateOfBirth">Date of Birth</Label>
+          <Input
+            id="dateOfBirth"
+            type="date"
+            {...register("dateOfBirth", {
+              required: "Date of Birth is required",
+              onChange: (e) => setAge(calculateAge(e.target.value)),
+            })}
+            className="w-full"
+            disabled={isRejected}
           />
         </div>
         <div className="grid w-full items-center gap-1.5">
@@ -227,8 +287,12 @@ const LaStepOne = () => {
             type="number"
             {...register("amtRequired")}
             className="w-full"
+            disabled={isRejected}
           />
         </div>
+        {age !== null && (
+          <div className="text-sm text-muted-foreground">Age: {age} years</div>
+        )}
         <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="prpseOfLoan">Purpose of Loan</Label>
           <Input
@@ -236,6 +300,7 @@ const LaStepOne = () => {
             type="text"
             {...register("prpseOfLoan")}
             className="w-full"
+            disabled={isRejected}
           />
         </div>
         <div className="grid w-full items-center gap-1.5">
@@ -246,6 +311,7 @@ const LaStepOne = () => {
             {...register("aadharImgFront")}
             className="w-full"
             accept=".jpg,.jpeg,.png"
+            disabled={isRejected}
           />
           <span className="text-xs text-muted-foreground mt-1">
             Accepted formats: .jpg, .jpeg, .png
@@ -259,6 +325,7 @@ const LaStepOne = () => {
             {...register("aadharImgBack")}
             className="w-full"
             accept=".jpg,.jpeg,.png"
+            disabled={isRejected}
           />
           <span className="text-xs text-muted-foreground mt-1">
             Accepted formats: .jpg, .jpeg, .png
@@ -271,6 +338,7 @@ const LaStepOne = () => {
             type="text"
             {...register("aadharNo")}
             className="w-full"
+            disabled={isRejected}
           />
         </div>
         <div className="grid w-full items-center gap-1.5">
@@ -281,6 +349,7 @@ const LaStepOne = () => {
             {...register("panImgFront")}
             className="w-full"
             accept=".jpg,.jpeg,.png"
+            disabled={isRejected}
           />
           <span className="text-xs text-muted-foreground mt-1">
             Accepted formats: .jpg, .jpeg, .png
@@ -293,6 +362,7 @@ const LaStepOne = () => {
             type="text"
             {...register("panNo")}
             className="w-full"
+            disabled={isRejected}
           />
         </div>
         <div className="grid w-full items-center gap-1.5">
@@ -302,6 +372,7 @@ const LaStepOne = () => {
             type="number"
             {...register("creditScore")}
             className="w-full"
+            disabled={isRejected}
           />
         </div>
         <div className="grid w-full items-center gap-1.5">
@@ -310,7 +381,11 @@ const LaStepOne = () => {
             name="empType"
             control={control}
             render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                disabled={isRejected}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Employment Type" />
                 </SelectTrigger>
@@ -335,6 +410,7 @@ const LaStepOne = () => {
               type="text"
               {...register("EmpOthers")}
               className="w-full"
+              disabled={isRejected}
             />
           </div>
         )}
@@ -344,7 +420,11 @@ const LaStepOne = () => {
             name="monIncomeRange"
             control={control}
             render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                disabled={isRejected}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Income Range" />
                 </SelectTrigger>
@@ -366,6 +446,7 @@ const LaStepOne = () => {
             type="number"
             {...register("monIncome")}
             className="w-full"
+            disabled={isRejected}
           />
         </div>
 
@@ -376,7 +457,11 @@ const LaStepOne = () => {
               name="currEmis"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isRejected}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select number of EMIs" />
                   </SelectTrigger>
@@ -400,6 +485,7 @@ const LaStepOne = () => {
               {...register("selfieImg")}
               className="w-full"
               accept=".jpg,.jpeg,.png"
+              disabled={isRejected}
             />
             <span className="text-xs text-muted-foreground mt-1">
               Accepted formats: .jpg, .jpeg, .png
@@ -451,7 +537,11 @@ const LaStepOne = () => {
           </div>
         </div>
 
-        <Button type="submit" className="mt-8 text-md" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="mt-8 text-md"
+          disabled={isSubmitting || isRejected}
+        >
           {isSubmitting ? "Submitting..." : "Check Eligibility"}
         </Button>
       </form>

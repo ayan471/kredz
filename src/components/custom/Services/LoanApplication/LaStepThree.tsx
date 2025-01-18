@@ -16,6 +16,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Star, Check } from "lucide-react";
 import { initiatePhonePePayment } from "@/components/lib/phonePe";
+import { useUser } from "@clerk/nextjs";
 
 type FormValues = {
   fullName: string;
@@ -51,6 +52,7 @@ const LaStepThree = () => {
   }>({ name: "", discountedPrice: 0, realPrice: 0, features: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [eligibleAmount, setEligibleAmount] = useState<number | null>(null);
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,6 +65,11 @@ const LaStepThree = () => {
               setValue(key as keyof FormValues, value as string);
             }
           });
+
+          // Set email from Clerk
+          if (user) {
+            setValue("emailID", user.emailAddresses[0]?.emailAddress || "");
+          }
 
           // Determine membership plan based on monthly income
           const monIncome = parseFloat(result.data.monIncome || "0");
@@ -106,7 +113,7 @@ const LaStepThree = () => {
       }
     };
     fetchData();
-  }, [searchParams, setValue, form]);
+  }, [searchParams, setValue, form, user]);
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);

@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { IndianRupee, Calendar, PiggyBank } from "lucide-react";
 import { calculateEMI } from "@/components/lib/utils";
+import { useUser } from "@clerk/nextjs";
 
 type FormValues = {
   fullName: string;
@@ -40,6 +41,29 @@ type EMIDetails = {
   interestRate: number;
 };
 
+const calculateEligibleAmount = (salary: number, age: number): number => {
+  if (age < 23) {
+    if (salary <= 10000) return 7000;
+    if (salary <= 20000) return 12000;
+    if (salary <= 30000) return 23000;
+    return 34000;
+  } else {
+    // Original calculation for users 23 and older
+    if (salary <= 10000) return 37000;
+    if (salary <= 23000) return 53000;
+    if (salary <= 30000) return 67000;
+    if (salary <= 37000) return 83000;
+    if (salary <= 45000) return 108000;
+    if (salary <= 55000) return 131000;
+    if (salary <= 65000) return 178000;
+    if (salary <= 75000) return 216000;
+    if (salary <= 85000) return 256000;
+    if (salary <= 95000) return 308000;
+    if (salary <= 125000) return 376000;
+    return 487000;
+  }
+};
+
 const LaStepTwo = () => {
   const { toast } = useToast();
   const router = useRouter();
@@ -48,7 +72,7 @@ const LaStepTwo = () => {
   const { register, control, handleSubmit, setValue, watch } = form;
   const [eligibleAmount, setEligibleAmount] = useState<number | null>(null);
   const [emiDetails, setEmiDetails] = useState<EMIDetails | null>(null);
-
+  const { user } = useUser();
   const selectedTenure = watch("emiTenure");
 
   useEffect(() => {
@@ -63,12 +87,20 @@ const LaStepTwo = () => {
               setValue(key as keyof FormValues, value as string);
             }
           });
-          setEligibleAmount(applicationData.eligibleAmount || null);
+          const calculatedEligibleAmount = calculateEligibleAmount(
+            parseFloat(applicationData.monIncome || "0"),
+            applicationData.age || 0
+          );
+          setEligibleAmount(calculatedEligibleAmount);
         }
+      }
+      // Set email from Clerk
+      if (user) {
+        setValue("emailID", user.emailAddresses[0]?.emailAddress || "");
       }
     };
     fetchData();
-  }, [searchParams, setValue, form]);
+  }, [searchParams, setValue, form, user]);
 
   useEffect(() => {
     if (eligibleAmount && selectedTenure) {

@@ -77,6 +77,7 @@ export async function saveLoanApplicationData(data: Record<string, string>) {
       data: {
         userId: user.id,
         fullName: data.fullName,
+        email: data.email || null, // Handle potential null value
         phoneNo: data.phoneNo,
         amtRequired: data.amtRequired,
         prpseOfLoan: data.prpseOfLoan,
@@ -89,6 +90,8 @@ export async function saveLoanApplicationData(data: Record<string, string>) {
         currEmis: data.currEmis,
         step: 1,
         membershipPlan,
+        dateOfBirth: new Date(data.dateOfBirth),
+        age: parseInt(data.age),
       },
     });
     console.log("Loan application data saved:", applicationData);
@@ -152,6 +155,7 @@ export async function submitLoanApplicationStep1(formData: FormData) {
       data: {
         userId: user.id,
         fullName: data.fullName,
+        email: data.email || undefined,
         phoneNo: data.phoneNo,
         amtRequired: data.amtRequired,
         prpseOfLoan: data.prpseOfLoan,
@@ -169,6 +173,8 @@ export async function submitLoanApplicationStep1(formData: FormData) {
         bankStatmntImgUrl: data.bankStatmntImg, // URL from UploadThing
         status: "In Progress",
         membershipPlan: applicationData.membershipPlan,
+        dateOfBirth: new Date(data.dateOfBirth),
+        age: parseInt(data.age),
       },
     });
     console.log("Loan application created:", application);

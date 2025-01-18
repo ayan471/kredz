@@ -44,6 +44,7 @@ export interface LoanApplicationData {
   userId: string;
   fullName: string | null;
   phoneNo: string | null;
+  age: number | null;
   amtRequired: string | null;
   prpseOfLoan: string | null;
   aadharNo: string | null;

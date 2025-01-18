@@ -53,17 +53,19 @@ model CreditBuilderApplicationData {
 }
 
 model LoanApplication {
-  id                String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String
-  fullName          String
-  phoneNo           String
-  amtRequired       String
-  prpseOfLoan       String
-  aadharImgFrontUrl String?
-  aadharImgBackUrl  String?
-  aadharNo          String
-  panImgFrontUrl    String?
-
+  id                       String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId                   String
+  fullName                 String
+  phoneNo                  String
+  email                    String?
+  amtRequired              String
+  prpseOfLoan              String
+  aadharImgFrontUrl        String?
+  aadharImgBackUrl         String?
+  aadharNo                 String
+  panImgFrontUrl           String?
+  dateOfBirth              DateTime
+  age                      Int
   panNo                    String
   creditScore              String
   empType                  String
@@ -158,10 +160,13 @@ model ChannelPartner {
 }
 
 model LoanApplicationData {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
   userId         String
   fullName       String?
   phoneNo        String?
+  email          String?
+  dateOfBirth    DateTime?
+  age            Int?
   amtRequired    String?
   prpseOfLoan    String?
   aadharNo       String?
@@ -177,10 +182,10 @@ model LoanApplicationData {
   accountNumber  String?
   bankName       String?
   ifscCode       String?
-  eMandate       Boolean  @default(false)
-  step           Int      @default(1)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  eMandate       Boolean   @default(false)
+  step           Int       @default(1)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model ContactFormSubmission {
