@@ -53,6 +53,7 @@ export interface LoanApplicationData {
   empType: string | null;
   EmpOthers: string | null;
   monIncome: string | null;
+  totalActiveLoans: string | null;
   currEmis: string | null;
   emailID: string | null;
   emiTenure: string | null;

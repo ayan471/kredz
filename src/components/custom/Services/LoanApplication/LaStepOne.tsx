@@ -20,13 +20,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
-import { LoanApplication } from "@/types";
+import type { LoanApplication } from "@/types";
 import { UploadButton } from "@uploadthing/react";
-import { OurFileRouter } from "@/app/api/uploadthing/core";
+import type { OurFileRouter } from "@/app/api/uploadthing/core";
 import "@uploadthing/react/styles.css";
 import { useUser } from "@clerk/nextjs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const totalActiveLoansRanges = [
+  { label: "0-3", value: "0-3" },
+  { label: "4-7", value: "4-7" },
+  { label: "8-10", value: "8-10" },
+  { label: "10+", value: "10+" },
+];
 
 type FormValues = {
   fullName: string;
@@ -48,6 +56,8 @@ type FormValues = {
   selfieImg: FileList;
   bankStatmntImg: string;
   amtRequired: string;
+  totalActiveLoans: string;
+  termsConfirmation: boolean;
 };
 
 const calculateAge = (birthDate: string): number => {
@@ -79,12 +89,25 @@ const incomeRanges = [
   { label: "More than 1,25,000", value: "125001+" },
 ];
 
+const creditScoreRanges = [
+  { label: "0-300", value: "0-300" },
+  { label: "301-600", value: "301-600" },
+  { label: "601-750", value: "601-750" },
+  { label: "751+", value: "751+" },
+];
+
 const LaStepOne = () => {
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useUser();
-  const { register, control, handleSubmit, setValue, watch } =
-    useForm<FormValues>();
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<FormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasExistingApplication, setHasExistingApplication] = useState(false);
   const [existingApplicationData, setExistingApplicationData] =
@@ -97,6 +120,7 @@ const LaStepOne = () => {
   const empType = watch("empType");
   const dateOfBirth = watch("dateOfBirth");
   const monIncome = watch("monIncome");
+  const termsConfirmation = watch("termsConfirmation"); // Added line
 
   useEffect(() => {
     const checkExistingApplication = async () => {
@@ -163,12 +187,15 @@ const LaStepOne = () => {
         formData.append(key, value[0]);
       } else if (typeof value === "string") {
         formData.append(key, value);
+      } else if (key === "termsConfirmation") {
+        formData.append(key, value ? "true" : "false");
       }
     });
 
     formData.set("panNo", data.panNo.toUpperCase());
     formData.append("monIncome", data.monIncome);
     formData.append("age", age !== null ? age.toString() : "");
+    formData.append("totalActiveLoans", data.totalActiveLoans);
 
     try {
       const result = await submitLoanApplicationStep1(formData);
@@ -236,7 +263,20 @@ const LaStepOne = () => {
           </AlertDescription>
         </Alert>
       )}
-      <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        className="flex flex-col gap-6"
+        onSubmit={handleSubmit(onSubmit, (errors) => {
+          console.log(errors);
+          if (errors.termsConfirmation) {
+            toast({
+              title: "Terms Confirmation Required",
+              description:
+                "Please confirm that all provided details are correct.",
+              variant: "destructive",
+            });
+          }
+        })}
+      >
         <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="fullName">Full Name</Label>
           <Input
@@ -367,12 +407,27 @@ const LaStepOne = () => {
         </div>
         <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="creditScore">Credit Score</Label>
-          <Input
-            id="creditScore"
-            type="number"
-            {...register("creditScore")}
-            className="w-full"
-            disabled={isRejected}
+          <Controller
+            name="creditScore"
+            control={control}
+            render={({ field }) => (
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                disabled={isRejected}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Credit Score Range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {creditScoreRanges.map((range) => (
+                    <SelectItem key={range.value} value={range.value}>
+                      {range.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           />
         </div>
         <div className="grid w-full items-center gap-1.5">
@@ -476,7 +531,31 @@ const LaStepOne = () => {
               )}
             />
           </div>
-
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="totalActiveLoans">Total Active Ongoing Loans</Label>
+            <Controller
+              name="totalActiveLoans"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isRejected}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Total Active Loans" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {totalActiveLoansRanges.map((range) => (
+                      <SelectItem key={range.value} value={range.value}>
+                        {range.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="selfieImg">Upload your selfie</Label>
             <Input
@@ -537,11 +616,34 @@ const LaStepOne = () => {
           </div>
         </div>
 
+        <div className="flex items-center space-x-2 mt-4">
+          <Checkbox
+            id="termsConfirmation"
+            {...register("termsConfirmation", {
+              required: "You must agree to the terms",
+            })}
+          />
+          <label
+            htmlFor="termsConfirmation"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            I confirm that all the provided details are correct, and if found to
+            be incorrect, my loan offer may be canceled.
+          </label>
+        </div>
+        {errors.termsConfirmation && (
+          <p className="text-sm text-red-500 mt-1">
+            {errors.termsConfirmation.message}
+          </p>
+        )}
+
         <Button
           type="submit"
           className="mt-8 text-md"
-          disabled={isSubmitting || isRejected}
+          disabled={isSubmitting || isRejected || !termsConfirmation}
         >
+          {" "}
+          {/* Updated line */}
           {isSubmitting ? "Submitting..." : "Check Eligibility"}
         </Button>
       </form>

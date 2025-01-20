@@ -92,6 +92,7 @@ export async function saveLoanApplicationData(data: Record<string, string>) {
         membershipPlan,
         dateOfBirth: new Date(data.dateOfBirth),
         age: parseInt(data.age),
+        totalActiveLoans: data.totalActiveLoans,
       },
     });
     console.log("Loan application data saved:", applicationData);
@@ -175,6 +176,7 @@ export async function submitLoanApplicationStep1(formData: FormData) {
         membershipPlan: applicationData.membershipPlan,
         dateOfBirth: new Date(data.dateOfBirth),
         age: parseInt(data.age),
+        totalActiveLoans: data.totalActiveLoans,
       },
     });
     console.log("Loan application created:", application);
@@ -232,6 +234,7 @@ export async function getLoanApplicationData(id: string): Promise<{
 
     if (data) {
       let eligibleAmount: number | null = null;
+
       if (data.monIncome) {
         eligibleAmount = await calculateEligibleAmount(
           parseFloat(data.monIncome)
