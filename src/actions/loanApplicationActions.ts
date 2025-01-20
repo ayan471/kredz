@@ -187,6 +187,45 @@ export async function submitLoanApplicationStep1(formData: FormData) {
   }
 }
 
+export async function saveRejectedApplication(data: FormData) {
+  const user = await currentUser();
+  if (!user) {
+    return { success: false, error: "User not authenticated" };
+  }
+
+  try {
+    const applicationData = await prisma.rejectedLoanApplication.create({
+      data: {
+        userId: user.id,
+        fullName: data.get("fullName") as string,
+        email: data.get("email") as string,
+        phoneNo: data.get("phoneNo") as string,
+        dateOfBirth: new Date(data.get("dateOfBirth") as string),
+        amtRequired: data.get("amtRequired") as string,
+        prpseOfLoan: data.get("prpseOfLoan") as string,
+        aadharNo: data.get("aadharNo") as string,
+        panNo: data.get("panNo") as string,
+        creditScore: data.get("creditScore") as string,
+        empType: data.get("empType") as string,
+        EmpOthers: data.get("EmpOthers") as string,
+        monIncomeRange: data.get("monIncomeRange") as string,
+        monIncome: data.get("monIncome") as string,
+        currEmis: data.get("currEmis") as string,
+        totalActiveLoans: data.get("totalActiveLoans") as string,
+        rejectionReason: data.get("rejectionReason") as string,
+      },
+    });
+
+    return { success: true, id: applicationData.id };
+  } catch (error) {
+    console.error("Error saving rejected application data:", error);
+    return {
+      success: false,
+      error: "Failed to save rejected application data",
+    };
+  }
+}
+
 export async function submitLoanEligibility(formData: FormData) {
   const user = await currentUser();
   if (!user) {

@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import {
   submitLoanApplicationStep1,
   checkExistingLoanApplication,
+  saveRejectedApplication,
 } from "@/actions/loanApplicationActions";
 import {
   Select,
@@ -28,6 +29,7 @@ import { useUser } from "@clerk/nextjs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RejectionMessage } from "./rejection-message";
 
 const totalActiveLoansRanges = [
   { label: "0-3", value: "0-3" },
@@ -115,12 +117,20 @@ const LaStepOne = () => {
   const [age, setAge] = useState<number | null>(null);
   const [isRejected, setIsRejected] = useState(false);
   const [isEighteen, setIsEighteen] = useState(false);
+  const [isRejectedForCreditScore, setIsRejectedForCreditScore] =
+    useState(false);
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
 
-  const monIncomeRange = watch("monIncomeRange");
-  const empType = watch("empType");
-  const dateOfBirth = watch("dateOfBirth");
-  const monIncome = watch("monIncome");
-  const termsConfirmation = watch("termsConfirmation"); // Added line
+  const {
+    monIncomeRange,
+    empType,
+    dateOfBirth,
+    monIncome,
+    termsConfirmation,
+    creditScore,
+    currEmis,
+    totalActiveLoans,
+  } = watch();
 
   useEffect(() => {
     const checkExistingApplication = async () => {
@@ -154,6 +164,32 @@ const LaStepOne = () => {
       setIsRejected(calculatedAge < 18);
     }
   }, [dateOfBirth]);
+
+  useEffect(() => {
+    console.log("Terms confirmation state:", termsConfirmation);
+  }, [termsConfirmation]);
+
+  const checkEligibility = (data: FormValues) => {
+    const creditScoreValue = Number.parseInt(data.creditScore.split("-")[0]);
+    const activeEmis =
+      data.currEmis === "More than 4" ? 5 : Number.parseInt(data.currEmis);
+    const activeLoans = Number.parseInt(data.totalActiveLoans.split("-")[0]);
+
+    if (creditScoreValue < 600) {
+      setRejectionReason("Low credit score");
+      return false;
+    }
+    if (activeLoans >= 1) {
+      setRejectionReason("Active overdues");
+      return false;
+    }
+    if (activeEmis > 10) {
+      setRejectionReason("Too many active EMIs");
+      return false;
+    }
+
+    return true;
+  };
 
   const onSubmit = async (data: FormValues) => {
     if (isRejected) {
@@ -196,6 +232,28 @@ const LaStepOne = () => {
     formData.append("monIncome", data.monIncome);
     formData.append("age", age !== null ? age.toString() : "");
     formData.append("totalActiveLoans", data.totalActiveLoans);
+
+    if (!checkEligibility(data)) {
+      setIsRejectedForCreditScore(true);
+      formData.append("rejectionReason", rejectionReason || "");
+      try {
+        const result = await saveRejectedApplication(formData);
+        if (!result.success) {
+          throw new Error(
+            result.error || "Failed to save rejected application"
+          );
+        }
+      } catch (error) {
+        console.error("Error saving rejected application:", error);
+        toast({
+          title: "Error",
+          description: "Failed to save your application. Please try again.",
+          variant: "destructive",
+        });
+      }
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const result = await submitLoanApplicationStep1(formData);
@@ -249,6 +307,10 @@ const LaStepOne = () => {
         </Button>
       </div>
     );
+  }
+
+  if (isRejectedForCreditScore) {
+    return <RejectionMessage reason={rejectionReason || ""} />;
   }
 
   return (
@@ -410,6 +472,7 @@ const LaStepOne = () => {
           <Controller
             name="creditScore"
             control={control}
+            rules={{ required: "Credit Score is required" }}
             render={({ field }) => (
               <Select
                 onValueChange={field.onChange}
@@ -511,6 +574,7 @@ const LaStepOne = () => {
             <Controller
               name="currEmis"
               control={control}
+              rules={{ required: "Current EMIs is required" }}
               render={({ field }) => (
                 <Select
                   onValueChange={field.onChange}
@@ -536,6 +600,7 @@ const LaStepOne = () => {
             <Controller
               name="totalActiveLoans"
               control={control}
+              rules={{ required: "Total Active Loans is required" }}
               render={({ field }) => (
                 <Select
                   onValueChange={field.onChange}
@@ -642,8 +707,6 @@ const LaStepOne = () => {
           className="mt-8 text-md"
           disabled={isSubmitting || isRejected || !termsConfirmation}
         >
-          {" "}
-          {/* Updated line */}
           {isSubmitting ? "Submitting..." : "Check Eligibility"}
         </Button>
       </form>
