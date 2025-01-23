@@ -200,24 +200,62 @@ model ContactFormSubmission {
 }
 
 model RejectedLoanApplication {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId           String
-  fullName         String
-  email            String?
-  phoneNo          String
-  dateOfBirth      DateTime
-  amtRequired      String
-  prpseOfLoan      String
-  aadharNo         String
-  panNo            String
-  creditScore      String
-  empType          String
-  EmpOthers        String?
-  monIncomeRange   String
-  monIncome        String
-  currEmis         String
-  totalActiveLoans String
-  rejectionReason  String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String
+  fullName             String
+  email                String?
+  phoneNo              String
+  dateOfBirth          DateTime
+  amtRequired          String
+  prpseOfLoan          String
+  aadharNo             String
+  panNo                String
+  creditScore          String
+  empType              String
+  EmpOthers            String?
+  monIncomeRange       String
+  monIncome            String
+  currEmis             String
+  totalActiveLoans     String
+  rejectionReason      String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  address              String?
+  hasSalarySlip        Boolean?
+  salaryReceiveMethod  String?
+  hasIncomeTaxReturn   Boolean?
+  businessRegistration String?
+}
+
+model CreditBuilderLoanApplication {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String
+  fullName              String
+  mobileNumber          String
+  email                 String?
+  dateOfBirth           DateTime
+  age                   Int
+  address               String
+  loanAmountRequired    Float
+  purpose               String
+  aadharNumber          String
+  aadharFrontUrl        String?
+  aadharBackUrl         String?
+  panNumber             String
+  panCardUrl            String?
+  employmentType        String
+  monthlyIncome         Float
+  hasSalarySlip         Boolean?
+  salaryReceiveMethod   String?
+  hasIncomeTaxReturn    Boolean?
+  businessRegistration  String?
+  creditScore           Int
+  currentActiveEmis     Int
+  currentActiveOverdues Int
+  bankStatementUrl      String?
+  status                String   @default("In Progress")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  eligibleAmount        Float?
+  rejectionReason       String?
 }
