@@ -258,4 +258,8 @@ model CreditBuilderLoanApplication {
   updatedAt             DateTime @updatedAt
   eligibleAmount        Float?
   rejectionReason       String?
+  accountNumber         String?
+  bankName              String?
+  ifscCode              String?
+  emiTenure             Int?
 }
