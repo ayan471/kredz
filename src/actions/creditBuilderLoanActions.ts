@@ -67,97 +67,103 @@ export async function saveCreditBuilderLoanApplication(formData: FormData) {
   }
 
   try {
+    const panNumber = formData.get("panNumber") as string;
+
+    // Check for existing active loan
+    const existingLoan = await prisma.creditBuilderLoanApplication.findFirst({
+      where: {
+        panNumber: panNumber,
+        status: {
+          in: ["In Progress", "Approved", "Partially Approved"],
+        },
+      },
+    });
+
+    if (existingLoan) {
+      return {
+        success: false,
+        error:
+          "You already have an active loan application. You cannot apply for a new loan at this time.",
+      };
+    }
+
     const data: Prisma.CreditBuilderLoanApplicationCreateInput = {
       userId: user.id,
-      fullName: "",
-      mobileNumber: "",
-      dateOfBirth: new Date(),
-      age: 0,
-      address: "",
-      loanAmountRequired: 0,
-      purpose: "",
-      aadharNumber: "",
-      panNumber: "",
-      employmentType: "",
-      monthlyIncome: 0,
-      creditScore: 0,
-      currentActiveEmis: 0,
-      currentActiveOverdues: 0,
+      fullName: formData.get("fullName") as string,
+      mobileNumber: formData.get("mobileNumber") as string,
+      email: formData.get("email") as string,
+      dateOfBirth: new Date(formData.get("dateOfBirth") as string),
+      age: Number.parseInt(formData.get("age") as string),
+      address: formData.get("address") as string,
+      loanAmountRequired: Number.parseFloat(
+        formData.get("loanAmountRequired") as string
+      ),
+      purpose: formData.get("purpose") as string,
+      aadharNumber: formData.get("aadharNumber") as string,
+      panNumber: panNumber,
+      employmentType: formData.get("employmentType") as string,
+      monthlyIncome: Number.parseFloat(formData.get("monthlyIncome") as string),
+      creditScore: Number.parseInt(formData.get("creditScore") as string),
+      currentActiveEmis: Number.parseInt(
+        formData.get("currentActiveEmis") as string
+      ),
+      currentActiveOverdues: Number.parseInt(
+        formData.get("currentActiveOverdues") as string
+      ),
       status: "In Progress",
       aadharFrontUrl: null,
       aadharBackUrl: null,
       panCardUrl: null,
       bankStatementUrl: null,
+      accountNumber: null,
+      bankName: null,
+      ifscCode: null,
+      emiTenure: null,
+      hasSalarySlip: formData.get("hasSalarySlip") === "true",
+      salaryReceiveMethod: formData.get("salaryReceiveMethod") as string,
+      hasIncomeTaxReturn: formData.get("hasIncomeTaxReturn") === "true",
+      businessRegistration: formData.get("businessRegistration") as string,
     };
 
     const fileUploads: Promise<void>[] = [];
 
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        fileUploads.push(
-          uploadToCloudinary(value, "credit_builder_loan_applications").then(
-            (url) => {
-              if (key === "aadharFront") {
-                data.aadharFrontUrl = url;
-              } else if (key === "aadharBack") {
-                data.aadharBackUrl = url;
-              } else if (key === "panCard") {
-                data.panCardUrl = url;
-              } else if (key === "bankStatement") {
-                data.bankStatementUrl = url;
-              }
-            }
-          )
-        );
-      } else {
-        switch (key) {
-          case "fullName":
-            data.fullName = value as string;
-            break;
-          case "mobileNumber":
-            data.mobileNumber = value as string;
-            break;
-          case "dateOfBirth":
-            data.dateOfBirth = new Date(value as string);
-            break;
-          case "age":
-            data.age = Number.parseInt(value as string, 10);
-            break;
-          case "address":
-            data.address = value as string;
-            break;
-          case "loanAmountRequired":
-            data.loanAmountRequired = Number.parseInt(value as string, 10);
-            break;
-          case "purpose":
-            data.purpose = value as string;
-            break;
-          case "aadharNumber":
-            data.aadharNumber = value as string;
-            break;
-          case "panNumber":
-            data.panNumber = value as string;
-            break;
-          case "employmentType":
-            data.employmentType = value as string;
-            break;
-          case "monthlyIncome":
-            data.monthlyIncome = Number.parseInt(value as string, 10);
-            break;
-          case "creditScore":
-            data.creditScore = Number.parseInt(value as string, 10);
-            break;
-          case "currentActiveEmis":
-            data.currentActiveEmis = Number.parseInt(value as string, 10);
-            break;
-          case "currentActiveOverdues":
-            data.currentActiveOverdues = Number.parseInt(value as string, 10);
-            break;
-          case "status":
-            data.status = value as string;
-            break;
-        }
-      }
+    const aadharFront = formData.get("aadharFront") as File;
+    if (aadharFront) {
+      fileUploads.push(
+        uploadToCloudinary(
+          aadharFront,
+          "credit_builder_loan_applications"
+        ).then((url) => {
+          data.aadharFrontUrl = url;
+        })
+      );
+    }
+
+    const aadharBack = formData.get("aadharBack") as File;
+    if (aadharBack) {
+      fileUploads.push(
+        uploadToCloudinary(aadharBack, "credit_builder_loan_applications").then(
+          (url) => {
+            data.aadharBackUrl = url;
+          }
+        )
+      );
+    }
+
+    const panCard = formData.get("panCard") as File;
+    if (panCard) {
+      fileUploads.push(
+        uploadToCloudinary(panCard, "credit_builder_loan_applications").then(
+          (url) => {
+            data.panCardUrl = url;
+          }
+        )
+      );
+    }
+
+    const bankStatement = formData.get("bankStatement") as string;
+    if (bankStatement) {
+      data.bankStatementUrl = bankStatement;
     }
 
     await Promise.all(fileUploads);
@@ -304,6 +310,19 @@ export async function updateCreditBuilderLoanApplication(
             break;
           case "status":
             data.status = value as string;
+            break;
+          // New fields for bank details and EMI tenure
+          case "accountNumber":
+            data.accountNumber = value as string;
+            break;
+          case "bankName":
+            data.bankName = value as string;
+            break;
+          case "ifscCode":
+            data.ifscCode = value as string;
+            break;
+          case "emiTenure":
+            data.emiTenure = Number.parseInt(value as string, 10);
             break;
         }
       }

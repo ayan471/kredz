@@ -29,19 +29,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 type FormData = {
   fullName: string;
   email: string;
-  phoneNo: string;
+  mobileNumber: string;
   dateOfBirth: string;
-  amtRequired: string;
-  prpseOfLoan: string;
-  aadharNo: string;
-  panNo: string;
+  loanAmountRequired: string;
+  purpose: string;
+  aadharNumber: string;
+  panNumber: string;
   creditScore: string;
-  empType: string;
+  employmentType: string;
   EmpOthers: string;
-  monIncomeRange: string;
-  monIncome: string;
-  currEmis: string;
-  totalActiveLoans: string;
+  monthlyIncome: string;
+  currentActiveEmis: string;
+  currentActiveOverdues: string;
   aadharFront: File | null;
   aadharBack: File | null;
   panCard: File | null;
@@ -64,7 +63,7 @@ const CreditBuilderLoanForm: React.FC = () => {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useUser();
-  const empType = watch("empType");
+  const employmentType = watch("employmentType");
 
   useEffect(() => {
     const fetchRejectedApplication = async () => {
@@ -75,20 +74,20 @@ const CreditBuilderLoanForm: React.FC = () => {
             const formData: Partial<FormData> = {
               fullName: result.data.fullName || "",
               email: result.data.email || "",
-              phoneNo: result.data.phoneNo || "",
+              mobileNumber: result.data.phoneNo || "",
               dateOfBirth: result.data.dateOfBirth
                 ? new Date(result.data.dateOfBirth).toISOString().split("T")[0]
                 : "",
-              amtRequired: result.data.amtRequired?.toString() || "",
-              prpseOfLoan: result.data.prpseOfLoan || "",
-              aadharNo: result.data.aadharNo || "",
-              panNo: result.data.panNo || "",
+              loanAmountRequired: result.data.amtRequired?.toString() || "",
+              purpose: result.data.prpseOfLoan || "",
+              aadharNumber: result.data.aadharNo || "",
+              panNumber: result.data.panNo || "",
               creditScore: result.data.creditScore?.toString() || "",
-              empType: result.data.empType || "",
-              monIncome: result.data.monIncome?.toString() || "",
-              monIncomeRange: result.data.monIncomeRange || "",
-              currEmis: result.data.currEmis?.toString() || "",
-              totalActiveLoans: result.data.totalActiveLoans?.toString() || "",
+              employmentType: result.data.empType || "",
+              monthlyIncome: result.data.monIncome?.toString() || "",
+              currentActiveEmis: result.data.currEmis?.toString() || "",
+              currentActiveOverdues:
+                result.data.totalActiveLoans?.toString() || "",
               address: result.data.address || "",
             };
             if (result.data.dateOfBirth) {
@@ -141,11 +140,11 @@ const CreditBuilderLoanForm: React.FC = () => {
         } else if (value !== null && value !== undefined) {
           if (
             [
-              "amtRequired",
-              "monIncome",
+              "loanAmountRequired",
+              "monthlyIncome",
               "creditScore",
-              "currEmis",
-              "totalActiveLoans",
+              "currentActiveEmis",
+              "currentActiveOverdues",
               "age",
             ].includes(key)
           ) {
@@ -165,30 +164,51 @@ const CreditBuilderLoanForm: React.FC = () => {
 
       if (result.success && result.data) {
         const eligibilityResult = await checkEligibility(result.data.id);
+
+        toast({
+          title: "Application Submitted",
+          description: "Your loan application has been submitted successfully.",
+        });
+
         if (eligibilityResult.success) {
-          if (eligibilityResult.message) {
-            toast({
-              title: "Partially Approved",
-              description: eligibilityResult.message,
-            });
-          } else {
-            toast({
-              title: "Congratulations!",
-              description: `You are eligible for a pre-approved Credit Builder Loan of up to ₹${eligibilityResult.eligibleAmount.toLocaleString()}. Our executive will contact you within 24-48 hours.`,
-            });
-          }
+          const queryParams = new URLSearchParams({
+            eligibleAmount: eligibilityResult.eligibleAmount.toString(),
+            status: eligibilityResult.message
+              ? "Partially Approved"
+              : "Approved",
+            message: eligibilityResult.message || "",
+            applicationId: result.data.id,
+            customerName: data.fullName,
+            customerPhone: data.mobileNumber,
+            customerEmail: data.email,
+          }).toString();
+
+          router.push(
+            `/credit-builder-loan/loan-eligibility-result?${queryParams}`
+          );
         } else {
-          toast({
-            title: "Application Status",
-            description:
+          const queryParams = new URLSearchParams({
+            status: "Rejected",
+            message:
               eligibilityResult.error || "Unable to determine eligibility",
-            variant: "destructive",
-          });
+            applicationId: result.data.id,
+            customerName: data.fullName,
+            customerPhone: data.mobileNumber,
+            customerEmail: data.email,
+          }).toString();
+
+          router.push(
+            `/credit-builder-loan/loan-eligibility-result?${queryParams}`
+          );
         }
       } else {
-        throw new Error(
-          result.error || "An error occurred while processing your application"
-        );
+        toast({
+          title: "Application Error",
+          description:
+            result.error ||
+            "An error occurred while processing your application",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -227,10 +247,10 @@ const CreditBuilderLoanForm: React.FC = () => {
               />
             </div>
             <div>
-              <Label htmlFor="phoneNo">Phone Number</Label>
+              <Label htmlFor="mobileNumber">Mobile Number</Label>
               <Input
-                id="phoneNo"
-                {...register("phoneNo", { required: true })}
+                id="mobileNumber"
+                {...register("mobileNumber", { required: true })}
               />
             </div>
             <div>
@@ -260,17 +280,17 @@ const CreditBuilderLoanForm: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">Loan Details</h3>
             <div>
-              <Label htmlFor="amtRequired">Loan Amount Required</Label>
+              <Label htmlFor="loanAmountRequired">Loan Amount Required</Label>
               <Input
-                id="amtRequired"
+                id="loanAmountRequired"
                 type="number"
-                {...register("amtRequired", { required: true })}
+                {...register("loanAmountRequired", { required: true })}
               />
             </div>
             <div>
-              <Label htmlFor="prpseOfLoan">Purpose of Loan</Label>
+              <Label htmlFor="purpose">Purpose of Loan</Label>
               <Controller
-                name="prpseOfLoan"
+                name="purpose"
                 control={control}
                 rules={{ required: true }}
                 render={({ field }) => (
@@ -310,10 +330,10 @@ const CreditBuilderLoanForm: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">Personal Details</h3>
             <div>
-              <Label htmlFor="aadharNo">Aadhaar Number</Label>
+              <Label htmlFor="aadharNumber">Aadhaar Number</Label>
               <Input
-                id="aadharNo"
-                {...register("aadharNo", { required: true })}
+                id="aadharNumber"
+                {...register("aadharNumber", { required: true })}
               />
             </div>
             <div>
@@ -339,8 +359,11 @@ const CreditBuilderLoanForm: React.FC = () => {
               />
             </div>
             <div>
-              <Label htmlFor="panNo">PAN Number</Label>
-              <Input id="panNo" {...register("panNo", { required: true })} />
+              <Label htmlFor="panNumber">PAN Number</Label>
+              <Input
+                id="panNumber"
+                {...register("panNumber", { required: true })}
+              />
             </div>
             <div>
               <Label htmlFor="panCard">Upload PAN Card</Label>
@@ -366,9 +389,9 @@ const CreditBuilderLoanForm: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">Employment Details</h3>
             <div>
-              <Label htmlFor="empType">Employment Type</Label>
+              <Label htmlFor="employmentType">Employment Type</Label>
               <Controller
-                name="empType"
+                name="employmentType"
                 control={control}
                 rules={{ required: true }}
                 render={({ field }) => (
@@ -387,7 +410,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                 )}
               />
             </div>
-            {empType === "Salaried" && (
+            {employmentType === "Salaried" && (
               <>
                 <div className="flex items-center space-x-2">
                   <Checkbox id="hasSalarySlip" {...register("hasSalarySlip")} />
@@ -402,7 +425,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                   <Controller
                     name="salaryReceiveMethod"
                     control={control}
-                    rules={{ required: empType === "Salaried" }}
+                    rules={{ required: employmentType === "Salaried" }}
                     render={({ field }) => (
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -422,8 +445,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                 </div>
               </>
             )}
-
-            {empType === "Self Employed" && (
+            {employmentType === "Self Employed" && (
               <>
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -441,7 +463,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                   <Controller
                     name="businessRegistration"
                     control={control}
-                    rules={{ required: empType === "Self Employed" }}
+                    rules={{ required: employmentType === "Self Employed" }}
                     render={({ field }) => (
                       <Select
                         onValueChange={field.onChange}
@@ -468,46 +490,18 @@ const CreditBuilderLoanForm: React.FC = () => {
                 </div>
               </>
             )}
-            {empType === "Others" && (
+            {employmentType === "Others" && (
               <div>
                 <Label htmlFor="EmpOthers">Specify Other Employment Type</Label>
                 <Input id="EmpOthers" {...register("EmpOthers")} />
               </div>
             )}
             <div>
-              <Label htmlFor="monIncomeRange">Monthly Income Range</Label>
-              <Controller
-                name="monIncomeRange"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select income range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0-10000">₹0 - ₹10,000</SelectItem>
-                      <SelectItem value="10001-25000">
-                        ₹10,001 - ₹25,000
-                      </SelectItem>
-                      <SelectItem value="25001-50000">
-                        ₹25,001 - ₹50,000
-                      </SelectItem>
-                      <SelectItem value="50001-100000">
-                        ₹50,001 - ₹1,00,000
-                      </SelectItem>
-                      <SelectItem value="100001+">Above ₹1,00,000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-            <div>
-              <Label htmlFor="monIncome">Exact Monthly Income</Label>
+              <Label htmlFor="monthlyIncome">Monthly Income</Label>
               <Input
-                id="monIncome"
+                id="monthlyIncome"
                 type="number"
-                {...register("monIncome", { required: true })}
+                {...register("monthlyIncome", { required: true })}
               />
             </div>
           </div>
@@ -524,19 +518,19 @@ const CreditBuilderLoanForm: React.FC = () => {
               />
             </div>
             <div>
-              <Label htmlFor="currEmis">Current EMIs</Label>
+              <Label htmlFor="currentActiveEmis">Current EMIs</Label>
               <Input
-                id="currEmis"
+                id="currentActiveEmis"
                 type="number"
-                {...register("currEmis", { required: true })}
+                {...register("currentActiveEmis", { required: true })}
               />
             </div>
             <div>
-              <Label htmlFor="totalActiveLoans">Total Active Loans</Label>
+              <Label htmlFor="currentActiveOverdues">Total Active Loans</Label>
               <Input
-                id="totalActiveLoans"
+                id="currentActiveOverdues"
                 type="number"
-                {...register("totalActiveLoans", { required: true })}
+                {...register("currentActiveOverdues", { required: true })}
               />
             </div>
             <div>
