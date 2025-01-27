@@ -91,7 +91,9 @@ const CreditBuilderLoanForm: React.FC = () => {
               address: result.data.address || "",
             };
             if (result.data.dateOfBirth) {
-              const calculatedAge = calculateAge(result.data.dateOfBirth);
+              const calculatedAge = calculateAge(
+                new Date(result.data.dateOfBirth).toISOString().split("T")[0]
+              );
               formData.age = calculatedAge;
             }
             reset(formData);
@@ -172,7 +174,9 @@ const CreditBuilderLoanForm: React.FC = () => {
 
         if (eligibilityResult.success) {
           const queryParams = new URLSearchParams({
-            eligibleAmount: eligibilityResult.eligibleAmount.toString(),
+            eligibleAmount: eligibilityResult.eligibleAmount
+              ? eligibilityResult.eligibleAmount.toString()
+              : "",
             status: eligibilityResult.message
               ? "Partially Approved"
               : "Approved",
