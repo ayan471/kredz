@@ -75,7 +75,7 @@ export default function NavigationMenuDemo() {
             </Link>
           </NavigationMenuItem>
 
-          <NavigationMenuItem>
+          {/* <NavigationMenuItem>
             <NavigationMenuTrigger className="uppercase tracking-wider">
               Services
             </NavigationMenuTrigger>
@@ -99,6 +99,14 @@ export default function NavigationMenuDemo() {
                 ))}
               </ul>
             </NavigationMenuContent>
+          </NavigationMenuItem> */}
+
+          <NavigationMenuItem>
+            <Link href="/services" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <p className="uppercase tracking-wider">Sevices</p>
+              </NavigationMenuLink>
+            </Link>
           </NavigationMenuItem>
 
           <NavigationMenuItem>

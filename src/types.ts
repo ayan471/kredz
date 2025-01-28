@@ -70,3 +70,22 @@ export interface LoanApplicationData {
 export type EditableLoanApplication = Partial<
   Omit<LoanApplication, "id" | "userId" | "createdAt" | "updatedAt">
 >;
+
+export type EditableCreditBuilderLoanApplication = {
+  fullName: string;
+  mobileNumber: string;
+  email: string;
+  loanAmountRequired: number;
+  purpose: string;
+  aadharNumber: string;
+  panNumber: string;
+  employmentType: string;
+  monthlyIncome: number;
+  currentActiveEmis: number;
+  accountNumber: string;
+  bankName: string;
+  ifscCode: string;
+  emiTenure: number;
+  eligibleAmount: number;
+  status: string;
+};

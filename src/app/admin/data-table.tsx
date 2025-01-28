@@ -2,14 +2,14 @@
 
 import React from "react";
 import {
-  ColumnDef,
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
   getPaginationRowModel,
-  SortingState,
+  type SortingState,
   getSortedRowModel,
-  ColumnFiltersState,
+  type ColumnFiltersState,
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import {
@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -58,10 +59,12 @@ export function DataTable<TData, TValue>({
     <div className="w-full">
       <div className="flex flex-col sm:flex-row items-center justify-between py-4 gap-4">
         <Input
-          placeholder="Filter by Phone Number..."
-          value={(table.getColumn("phoneNo")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter by Mobile Number..."
+          value={
+            (table.getColumn("mobileNumber")?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
-            table.getColumn("phoneNo")?.setFilterValue(event.target.value)
+            table.getColumn("mobileNumber")?.setFilterValue(event.target.value)
           }
           className="max-w-sm w-full"
         />

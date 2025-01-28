@@ -10,6 +10,7 @@ import {
   Wallet,
   MessageSquare,
   Menu,
+  Banknote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -28,6 +29,11 @@ export function Sidebar() {
       label: "Credit Builder",
     },
     { href: "/admin/loans", icon: FileText, label: "Loans" },
+    {
+      href: "/admin/credit-builder-loan",
+      icon: Banknote,
+      label: "Credit Builder Loan",
+    },
     {
       href: "/admin/contact-submissions",
       icon: MessageSquare,

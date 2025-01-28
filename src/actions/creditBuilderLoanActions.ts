@@ -1,10 +1,15 @@
 "use server";
 
-import { PrismaClient, type Prisma } from "@prisma/client";
+import {
+  CreditBuilderLoanApplication,
+  PrismaClient,
+  type Prisma,
+} from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { v2 as cloudinary } from "cloudinary";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { EditableCreditBuilderLoanApplication } from "@/types";
 
 const prisma = new PrismaClient();
 
@@ -406,5 +411,23 @@ export async function checkEligibility(applicationId: string) {
       success: false,
       error: "An error occurred while checking eligibility",
     };
+  }
+}
+
+export async function updateCreditBuilderLoanApplicationData(
+  id: string,
+  data: Partial<CreditBuilderLoanApplication>
+) {
+  try {
+    const updatedApplication = await prisma.creditBuilderLoanApplication.update(
+      {
+        where: { id },
+        data,
+      }
+    );
+    return updatedApplication;
+  } catch (error) {
+    console.error("Error updating Credit Builder Loan application:", error);
+    throw new Error("Failed to update Credit Builder Loan application");
   }
 }

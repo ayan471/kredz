@@ -38,8 +38,13 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isLoggedIn }) => {
             <Link href="/about">About</Link>
           </p>
         </AccordionItem>
+        <AccordionItem value="item-2">
+          <p className="flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180">
+            <Link href="/services">Services</Link>
+          </p>
+        </AccordionItem>
 
-        <AccordionItem value="item-3">
+        {/* <AccordionItem value="item-3">
           <AccordionTrigger>Services</AccordionTrigger>
           <AccordionContent>
             <ul className="text-md flex flex-col gap-4 text-slate-800 font-semibold">
@@ -61,7 +66,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isLoggedIn }) => {
               </li>
             </ul>
           </AccordionContent>
-        </AccordionItem>
+        </AccordionItem> */}
 
         <AccordionItem value="item-4">
           <p className="flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180">
