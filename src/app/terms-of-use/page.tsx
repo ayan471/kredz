@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Phone, Mail, MapPin } from "lucide-react";
 
@@ -123,15 +123,15 @@ const TermsAndConditions = () => {
           </p>
           <ul className="list-none mt-2">
             <li className="flex items-center mb-2">
-              <Phone className="mr-2 text-indigo-600" size={18} />
+              <Phone className="mr-2 text-orange-500" size={18} />
               <span>+91 8240561547</span>
             </li>
             <li className="flex items-center mb-2">
-              <Mail className="mr-2 text-indigo-600" size={18} />
+              <Mail className="mr-2 text-orange-500" size={18} />
               <span>support@kredz.com</span>
             </li>
             <li className="flex items-center">
-              <MapPin className="mr-2 text-indigo-600" size={18} />
+              <MapPin className="mr-2 text-orange-500" size={18} />
               <span>
                 No 656A, ElcotSez, Zsurvey, Behind Accenture Company, Old
                 Mahablipuram Road, RajivGandhi Salai Sholinganallur - 600119
@@ -149,13 +149,13 @@ const TermsAndConditions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-orange-100 to-blue-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-extrabold text-gray-900 text-center mb-8"
+          className="text-4xl font-extrabold text-blue-900 text-center mb-8"
         >
           Terms and Conditions
         </motion.h1>
@@ -166,7 +166,7 @@ const TermsAndConditions = () => {
           className="bg-white shadow-xl rounded-lg overflow-hidden"
         >
           <div className="p-6">
-            <p className="text-gray-700 mb-6">
+            <p className="text-blue-700 mb-6">
               Welcome to <span className="font-semibold">Kredz</span>! By using
               our website and services, you agree to the following terms and
               conditions. Please read them carefully before using our services.
@@ -175,15 +175,15 @@ const TermsAndConditions = () => {
               <div key={index} className="mb-4">
                 <button
                   onClick={() => toggleSection(index)}
-                  className="w-full text-left flex justify-between items-center p-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+                  className="w-full text-left flex justify-between items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200"
                 >
-                  <span className="text-indigo-600 font-medium">
+                  <span className="text-blue-900 font-medium">
                     {section.title}
                   </span>
                   {expandedSection === index ? (
-                    <ChevronUp className="w-5 h-5" />
+                    <ChevronUp className="w-5 h-5 text-orange-500" />
                   ) : (
-                    <ChevronDown className="w-5 h-5" />
+                    <ChevronDown className="w-5 h-5 text-orange-500" />
                   )}
                 </button>
                 <AnimatePresence>
@@ -194,11 +194,11 @@ const TermsAndConditions = () => {
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="p-4 bg-gray-50 rounded-b-lg">
+                      <div className="p-4 bg-orange-50 rounded-b-lg">
                         {typeof section.content === "string" ? (
-                          <p className="text-gray-700">{section.content}</p>
+                          <p className="text-blue-700">{section.content}</p>
                         ) : (
-                          section.content
+                          <div className="text-blue-700">{section.content}</div>
                         )}
                       </div>
                     </motion.div>
@@ -212,7 +212,7 @@ const TermsAndConditions = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="text-center text-gray-600 mt-8"
+          className="text-center text-blue-700 mt-8"
         >
           By using our services, you acknowledge that you have read, understood,
           and agreed to these Terms and Conditions.

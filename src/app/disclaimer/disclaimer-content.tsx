@@ -8,7 +8,6 @@ import {
   Lock,
   Info,
   RefreshCcw,
-  UserCheck,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -61,17 +60,17 @@ export default function DisclaimerContent() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-16 bg-gradient-to-br from-orange-50 to-blue-50">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="text-center mb-16"
       >
-        <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+        <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-blue-900 mb-4">
           Website Disclaimer
         </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        <p className="text-xl text-blue-700 max-w-3xl mx-auto">
           The information provided on the Kredz website is for general
           informational purposes only. Please read our disclaimer carefully.
         </p>
@@ -87,7 +86,7 @@ export default function DisclaimerContent() {
           <motion.div
             key={section.title}
             className={`bg-white rounded-xl shadow-lg p-6 transition-all duration-300 ease-in-out transform hover:scale-105 ${
-              hoveredIndex === index ? "ring-2 ring-blue-400" : ""
+              hoveredIndex === index ? "ring-2 ring-orange-400" : ""
             }`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -96,14 +95,14 @@ export default function DisclaimerContent() {
             onMouseLeave={() => setHoveredIndex(null)}
           >
             <div className="flex items-center mb-4">
-              <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-3 rounded-full mr-4">
+              <div className="bg-gradient-to-br from-orange-500 to-blue-600 p-3 rounded-full mr-4">
                 <section.icon className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-2xl font-bold text-blue-900">
                 {section.title}
               </h2>
             </div>
-            <p className="text-gray-600 leading-relaxed">{section.content}</p>
+            <p className="text-blue-700 leading-relaxed">{section.content}</p>
           </motion.div>
         ))}
       </motion.div>

@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, ThumbsUp, Target, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,7 +21,7 @@ const reasons = [
     icon: Target,
     title: "Tailored Solutions",
     description:
-      "Every individuals financial needs are unique. We offer customized strategies that fit your situation.",
+      "Every individual's financial needs are unique. We offer customized strategies that fit your situation.",
   },
   {
     icon: Shield,
@@ -35,7 +33,7 @@ const reasons = [
 
 const WhyChooseKredz = () => {
   return (
-    <section className="bg-gradient-to-b from-white to-indigo-50 py-24">
+    <section className="bg-gradient-to-b from-white to-orange-50 py-24">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -43,10 +41,10 @@ const WhyChooseKredz = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-blue-900 mb-4">
             Why Choose Kredz?
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-blue-700 max-w-3xl mx-auto">
             Your journey to a better financial future begins here. We offer
             expert guidance and tailored solutions to meet your unique needs.
           </p>
@@ -59,14 +57,14 @@ const WhyChooseKredz = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white rounded-lg shadow-lg p-6 flex items-start"
+              className="bg-white rounded-lg shadow-lg p-6 flex items-start border border-orange-200"
             >
-              <reason.icon className="w-12 h-12 text-indigo-600 mr-4 flex-shrink-0" />
+              <reason.icon className="w-12 h-12 text-orange-500 mr-4 flex-shrink-0" />
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-xl font-semibold text-blue-900 mb-2">
                   {reason.title}
                 </h3>
-                <p className="text-gray-600">{reason.description}</p>
+                <p className="text-blue-700">{reason.description}</p>
               </div>
             </motion.div>
           ))}
@@ -78,15 +76,15 @@ const WhyChooseKredz = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="text-center"
         >
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
+          <h3 className="text-2xl font-bold text-blue-900 mb-4">
             Get Started Today!
           </h3>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-blue-700 max-w-3xl mx-auto mb-8">
             Whether you need help improving your credit, securing a loan, or
             accessing exclusive services, Kredz is here to help.
           </p>
           <Link href={"/contact"}>
-            <Button className="text-lg px-8 py-4 bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
+            <Button className="text-lg px-8 py-4 bg-orange-500 hover:bg-orange-600 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl text-white">
               Contact Us
             </Button>
           </Link>

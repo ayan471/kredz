@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,7 +6,7 @@ import { motion } from "framer-motion";
 
 const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
   return (
-    <section className="bg-gradient-to-b from-indigo-50 to-white py-16 md:py-24 overflow-hidden">
+    <section className="bg-gradient-to-b from-orange-50 to-white py-16 md:py-24 overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center gap-12">
           <motion.div
@@ -17,11 +15,11 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-6">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+            <h1 className="text-2xl md:text-4xl font-extrabold text-blue-900 leading-tight mb-6">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-blue-900">
                 Apka Apne Financial Buddy
               </span>{" "}
-              <p className="md:text-6xl text-4xl  mt-1">
+              <p className="md:text-6xl text-4xl mt-1">
                 Kredz is here for all your financial needs!
               </p>
             </h1>
@@ -30,12 +28,12 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
               {isLoggedIn ? (
                 <>
                   <Link href="/consultancy-application">
-                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
+                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-orange-500 hover:bg-orange-600 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl text-white">
                       Apply Now
                     </Button>
                   </Link>
                   <Link href="/credit-builder">
-                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-purple-600 hover:bg-purple-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
+                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-blue-900 hover:bg-blue-800 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl text-white">
                       Credit Builder
                     </Button>
                   </Link>
@@ -43,12 +41,12 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
               ) : (
                 <>
                   <Link href="/sign-up">
-                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
+                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-orange-500 hover:bg-orange-600 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl text-white">
                       Apply Now
                     </Button>
                   </Link>
                   <Link href="/sign-up">
-                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-purple-600 hover:bg-purple-700 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl">
+                    <Button className="text-lg px-[2.5rem] py-[1.5rem] bg-blue-900 hover:bg-blue-800 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl text-white">
                       Credit Builder
                     </Button>
                   </Link>
@@ -75,8 +73,8 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
                 className="transition-transform duration-300 hover:scale-105"
               />
             </div>
-            <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-yellow-400 rounded-full"></div>
-            <div className="absolute -top-6 -right-6 w-32 h-32 bg-indigo-400 rounded-full"></div>
+            <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-orange-400 rounded-full"></div>
+            <div className="absolute -top-6 -right-6 w-32 h-32 bg-blue-400 rounded-full"></div>
           </motion.div>
         </div>
       </div>

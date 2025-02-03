@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { useSwipeable } from "react-swipeable";
@@ -48,15 +48,14 @@ const Testimonials = () => {
   const handlers = useSwipeable({
     onSwipedLeft: nextTestimonial,
     onSwipedRight: prevTestimonial,
-
     trackMouse: true,
   });
 
   return (
-    <section className="bg-gradient-to-b from-indigo-100 to-white py-12 md:py-24 overflow-hidden">
+    <section className="bg-gradient-to-b from-orange-100 to-white py-12 md:py-24 overflow-hidden">
       <div className="container mx-auto px-4 relative">
         <motion.div
-          className="absolute top-0 left-0 w-32 h-32 md:w-64 md:h-64 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"
+          className="absolute top-0 left-0 w-32 h-32 md:w-64 md:h-64 bg-orange-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"
           animate={{
             x: [0, 30, 0],
             y: [0, 50, 0],
@@ -64,12 +63,12 @@ const Testimonials = () => {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             repeatType: "reverse",
           }}
         />
         <motion.div
-          className="absolute top-0 right-0 w-32 h-32 md:w-64 md:h-64 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"
+          className="absolute top-0 right-0 w-32 h-32 md:w-64 md:h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"
           animate={{
             x: [0, -30, 0],
             y: [0, 50, 0],
@@ -77,12 +76,12 @@ const Testimonials = () => {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             repeatType: "reverse",
           }}
         />
         <motion.h2
-          className="text-3xl md:text-5xl font-bold text-center text-gray-900 mb-8 md:mb-12 relative z-10"
+          className="text-3xl md:text-5xl font-bold text-center text-blue-900 mb-8 md:mb-12 relative z-10"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -99,40 +98,40 @@ const Testimonials = () => {
               transition={{ duration: 0.5 }}
               className="bg-white rounded-2xl shadow-2xl p-6 md:p-12 relative z-10"
             >
-              <Quote className="w-12 h-12 md:w-16 md:h-16 text-indigo-500 mb-4 md:mb-6 absolute -top-6 -left-6 md:-top-8 md:-left-8 bg-white rounded-full p-2 md:p-3 shadow-lg" />
-              <p className="text-lg md:text-2xl text-gray-700 mb-6 md:mb-8 italic">
+              <Quote className="w-12 h-12 md:w-16 md:h-16 text-orange-500 mb-4 md:mb-6 absolute -top-6 -left-6 md:-top-8 md:-left-8 bg-white rounded-full p-2 md:p-3 shadow-lg" />
+              <p className="text-lg md:text-2xl text-blue-700 mb-6 md:mb-8 italic">
                 &ldquo;{testimonials[currentIndex].quote}&rdquo;
               </p>
               <div className="flex items-center">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-4 border-indigo-500 mr-4">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-4 border-orange-500 mr-4">
                   <img
-                    src={testimonials[currentIndex].image}
+                    src={testimonials[currentIndex].image || "/placeholder.svg"}
                     alt={testimonials[currentIndex].name}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900">
+                  <h3 className="text-xl md:text-2xl font-semibold text-blue-900">
                     {testimonials[currentIndex].name}
                   </h3>
-                  <p className="text-indigo-600">Satisfied Client</p>
+                  <p className="text-orange-600">Satisfied Client</p>
                 </div>
               </div>
             </motion.div>
           </AnimatePresence>
           <button
             onClick={prevTestimonial}
-            className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-4 md:-translate-x-16 bg-white rounded-full p-2 md:p-4 shadow-lg hover:bg-indigo-100 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-4 md:-translate-x-16 bg-white rounded-full p-2 md:p-4 shadow-lg hover:bg-orange-100 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
             aria-label="Previous testimonial"
           >
-            <ChevronLeft className="w-6 h-6 md:w-8 md:h-8 text-indigo-600" />
+            <ChevronLeft className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
           </button>
           <button
             onClick={nextTestimonial}
-            className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-4 md:translate-x-16 bg-white rounded-full p-2 md:p-4 shadow-lg hover:bg-indigo-100 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-4 md:translate-x-16 bg-white rounded-full p-2 md:p-4 shadow-lg hover:bg-orange-100 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
             aria-label="Next testimonial"
           >
-            <ChevronRight className="w-6 h-6 md:w-8 md:h-8 text-indigo-600" />
+            <ChevronRight className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
           </button>
         </div>
         <div className="flex justify-center mt-6 md:mt-8">
@@ -142,8 +141,8 @@ const Testimonials = () => {
               onClick={() => setCurrentIndex(index)}
               className={`w-3 h-3 md:w-4 md:h-4 rounded-full mx-1 md:mx-2 transition-all duration-300 focus:outline-none ${
                 index === currentIndex
-                  ? "bg-indigo-600 scale-125"
-                  : "bg-gray-300 hover:bg-indigo-400"
+                  ? "bg-orange-600 scale-125"
+                  : "bg-gray-300 hover:bg-orange-400"
               }`}
               aria-label={`Go to testimonial ${index + 1}`}
             />
