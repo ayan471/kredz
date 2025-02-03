@@ -5,10 +5,8 @@ import { useState, useEffect } from "react";
 import { useUser, UserButton } from "@clerk/nextjs";
 import {
   Home,
-  CreditCard,
   FileText,
   User,
-  Wallet,
   Star,
   BookOpen,
   Activity,
@@ -17,7 +15,7 @@ import {
   X,
   ArrowLeft,
 } from "lucide-react";
-import { CreditBuilderSubscription } from "@prisma/client";
+import type { CreditBuilderSubscription } from "@prisma/client";
 
 interface SidebarProps {
   subscription: CreditBuilderSubscription | null;
@@ -72,23 +70,23 @@ export function Sidebar({ subscription }: SidebarProps) {
   return (
     <>
       <button
-        className="md:hidden fixed top-4 left-4 z-30 p-2 bg-gray-800 text-white rounded-full shadow-lg"
+        className="md:hidden fixed top-4 left-4 z-30 p-2 bg-blue-900 text-white rounded-full shadow-lg"
         onClick={toggleSidebar}
         aria-label={isOpen ? "Close menu" : "Open menu"}
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
       <div
-        className={`sidebar fixed inset-y-0 left-0 z-20 w-64 bg-gray-800 text-white transform transition-transform duration-300 ease-in-out ${
+        className={`sidebar fixed inset-y-0 left-0 z-20 w-64 bg-blue-900 text-white transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:relative md:translate-x-0`}
       >
-        <div className="flex items-center justify-between h-16 px-4 bg-gray-900">
+        <div className="flex items-center justify-between h-16 px-4 bg-blue-950">
           <h1 className="text-xl font-bold truncate">
             {user ? `${user.firstName}'s Dashboard` : "Dashboard"}
           </h1>
           <button
-            className="md:hidden p-1 rounded-md hover:bg-gray-700"
+            className="md:hidden p-1 rounded-md hover:bg-blue-800"
             onClick={toggleSidebar}
             aria-label="Close menu"
           >
@@ -101,7 +99,7 @@ export function Sidebar({ subscription }: SidebarProps) {
               <li key={item.href} className="px-4">
                 {item.locked ? (
                   <span
-                    className="flex items-center py-2 text-gray-500 cursor-not-allowed"
+                    className="flex items-center py-2 text-gray-400 cursor-not-allowed"
                     title="Subscription required"
                   >
                     <item.icon className="w-5 h-5 mr-3" />
@@ -111,13 +109,13 @@ export function Sidebar({ subscription }: SidebarProps) {
                 ) : (
                   <Link
                     href={item.href}
-                    className="flex items-center py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200"
+                    className="flex items-center py-2 text-blue-100 hover:text-white hover:bg-orange-500 rounded-md transition-colors duration-200"
                     onClick={() => setIsOpen(false)}
                   >
                     <item.icon className="w-5 h-5 mr-3" />
                     <span className="text-sm font-medium">{item.label}</span>
                     {item.comingSoon && (
-                      <span className="ml-2 px-2 py-1 text-xs font-semibold text-gray-800 bg-yellow-400 rounded-full">
+                      <span className="ml-2 px-2 py-1 text-xs font-semibold text-blue-900 bg-orange-300 rounded-full">
                         Soon
                       </span>
                     )}

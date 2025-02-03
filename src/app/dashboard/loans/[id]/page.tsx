@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Calendar,
   CreditCard,
@@ -60,10 +59,17 @@ export default async function LoanDetailsPage({
   if (!loan) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-4">Loan Not Found</h1>
-        <p>The requested loan application could not be found.</p>
+        <h1 className="text-2xl font-bold mb-4 text-blue-900">
+          Loan Not Found
+        </h1>
+        <p className="text-blue-800">
+          The requested loan application could not be found.
+        </p>
         <Link href="/dashboard/loans">
-          <Button variant="outline" className="mt-4">
+          <Button
+            variant="outline"
+            className="mt-4 text-blue-900 border-blue-900 hover:bg-blue-100"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Loans
           </Button>
         </Link>
@@ -93,21 +99,24 @@ export default async function LoanDetailsPage({
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <Link href="/dashboard/loans">
-          <Button variant="outline" className="mb-6">
+          <Button
+            variant="outline"
+            className="mb-6 text-blue-900 border-blue-900 hover:bg-blue-100"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Loans
           </Button>
         </Link>
-        <Card className="overflow-hidden shadow-lg mb-6">
-          <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+        <Card className="overflow-hidden shadow-lg mb-6 border-orange-300">
+          <CardHeader className="bg-orange-500 text-white p-6">
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle className="text-3xl font-bold mb-2">
                   {loan.prpseOfLoan}
                 </CardTitle>
-                <CardDescription className="text-blue-100 text-lg">
+                <CardDescription className="text-orange-100 text-lg">
                   Application ID: {loan.id}
                 </CardDescription>
               </div>
@@ -118,67 +127,82 @@ export default async function LoanDetailsPage({
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-6 bg-white">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold mb-2">
+                <h3 className="text-lg font-semibold mb-2 text-blue-900">
                   Applicant Details
                 </h3>
                 <div className="flex items-center">
-                  <User className="h-5 w-5 text-gray-500 mr-2" />
-                  <span className="text-gray-600">Full Name:</span>
-                  <span className="ml-auto font-semibold">{loan.fullName}</span>
+                  <User className="h-5 w-5 text-orange-500 mr-2" />
+                  <span className="text-blue-800">Full Name:</span>
+                  <span className="ml-auto font-semibold text-blue-900">
+                    {loan.fullName}
+                  </span>
                 </div>
                 <div className="flex items-center">
-                  <CreditCard className="h-5 w-5 text-gray-500 mr-2" />
-                  <span className="text-gray-600">Phone Number:</span>
-                  <span className="ml-auto font-semibold">{loan.phoneNo}</span>
+                  <CreditCard className="h-5 w-5 text-orange-500 mr-2" />
+                  <span className="text-blue-800">Phone Number:</span>
+                  <span className="ml-auto font-semibold text-blue-900">
+                    {loan.phoneNo}
+                  </span>
                 </div>
                 <div className="flex items-center">
-                  <FileText className="h-5 w-5 text-gray-500 mr-2" />
-                  <span className="text-gray-600">Aadhar Number:</span>
-                  <span className="ml-auto font-semibold">{loan.aadharNo}</span>
+                  <FileText className="h-5 w-5 text-orange-500 mr-2" />
+                  <span className="text-blue-800">Aadhar Number:</span>
+                  <span className="ml-auto font-semibold text-blue-900">
+                    {loan.aadharNo}
+                  </span>
                 </div>
                 <div className="flex items-center">
-                  <FileText className="h-5 w-5 text-gray-500 mr-2" />
-                  <span className="text-gray-600">PAN Number:</span>
-                  <span className="ml-auto font-semibold">{loan.panNo}</span>
+                  <FileText className="h-5 w-5 text-orange-500 mr-2" />
+                  <span className="text-blue-800">PAN Number:</span>
+                  <span className="ml-auto font-semibold text-blue-900">
+                    {loan.panNo}
+                  </span>
                 </div>
               </div>
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold mb-2">Loan Details</h3>
+                <h3 className="text-lg font-semibold mb-2 text-blue-900">
+                  Loan Details
+                </h3>
                 <div className="flex items-center">
-                  <DollarSign className="h-5 w-5 text-gray-500 mr-2" />
-                  <span className="text-gray-600">Amount Required:</span>
-                  <span className="ml-auto font-semibold">
-                    ₹{parseFloat(loan.amtRequired).toLocaleString("en-IN")}
+                  <DollarSign className="h-5 w-5 text-orange-500 mr-2" />
+                  <span className="text-blue-800">Amount Required:</span>
+                  <span className="ml-auto font-semibold text-blue-900">
+                    ₹
+                    {Number.parseFloat(loan.amtRequired).toLocaleString(
+                      "en-IN"
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center">
-                  <Building2 className="h-5 w-5 text-gray-500 mr-2" />
-                  <span className="text-gray-600">Employment Type:</span>
-                  <span className="ml-auto font-semibold">{loan.empType}</span>
-                </div>
-                <div className="flex items-center">
-                  <Wallet className="h-5 w-5 text-gray-500 mr-2" />
-                  <span className="text-gray-600">Monthly Income:</span>
-                  <span className="ml-auto font-semibold">
-                    ₹{parseFloat(loan.monIncome).toLocaleString("en-IN")}
+                  <Building2 className="h-5 w-5 text-orange-500 mr-2" />
+                  <span className="text-blue-800">Employment Type:</span>
+                  <span className="ml-auto font-semibold text-blue-900">
+                    {loan.empType}
                   </span>
                 </div>
                 <div className="flex items-center">
-                  <CreditCard className="h-5 w-5 text-gray-500 mr-2" />
-                  <span className="text-gray-600">Credit Score:</span>
-                  <span className="ml-auto font-semibold">
+                  <Wallet className="h-5 w-5 text-orange-500 mr-2" />
+                  <span className="text-blue-800">Monthly Income:</span>
+                  <span className="ml-auto font-semibold text-blue-900">
+                    ₹{Number.parseFloat(loan.monIncome).toLocaleString("en-IN")}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <CreditCard className="h-5 w-5 text-orange-500 mr-2" />
+                  <span className="text-blue-800">Credit Score:</span>
+                  <span className="ml-auto font-semibold text-blue-900">
                     {loan.creditScore}
                   </span>
                 </div>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="bg-gray-50 p-6">
+          <CardFooter className="bg-orange-50 p-6">
             <div className="w-full text-center">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-blue-800">
                 Application submitted on{" "}
                 {new Date(loan.createdAt).toLocaleDateString()}
               </p>
@@ -187,45 +211,45 @@ export default async function LoanDetailsPage({
         </Card>
 
         {loan.approvedAmount && (
-          <Card className="overflow-hidden shadow-lg mb-6">
-            <CardHeader className="bg-green-500 text-white p-6">
+          <Card className="overflow-hidden shadow-lg mb-6 border-orange-300">
+            <CardHeader className="bg-blue-900 text-white p-6">
               <CardTitle className="text-2xl font-bold">
                 Approval Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="bg-green-100 rounded-lg p-6 mb-6">
-                <h3 className="text-xl font-semibold mb-2 text-green-800">
+            <CardContent className="p-6 bg-white">
+              <div className="bg-blue-100 rounded-lg p-6 mb-6">
+                <h3 className="text-xl font-semibold mb-2 text-blue-900">
                   Approved Amount
                 </h3>
-                <div className="text-4xl font-bold text-green-600">
+                <div className="text-4xl font-bold text-blue-900">
                   ₹{loan.approvedAmount.toLocaleString("en-IN")}
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {loan.rateOfInterest && (
                   <div className="flex items-center">
-                    <Percent className="h-5 w-5 text-gray-500 mr-2" />
-                    <span className="text-gray-600">Interest Rate:</span>
-                    <span className="ml-auto font-semibold">
+                    <Percent className="h-5 w-5 text-orange-500 mr-2" />
+                    <span className="text-blue-800">Interest Rate:</span>
+                    <span className="ml-auto font-semibold text-blue-900">
                       {loan.rateOfInterest}%
                     </span>
                   </div>
                 )}
                 {loan.tenure && (
                   <div className="flex items-center">
-                    <Calendar className="h-5 w-5 text-gray-500 mr-2" />
-                    <span className="text-gray-600">Loan Tenure:</span>
-                    <span className="ml-auto font-semibold">
+                    <Calendar className="h-5 w-5 text-orange-500 mr-2" />
+                    <span className="text-blue-800">Loan Tenure:</span>
+                    <span className="ml-auto font-semibold text-blue-900">
                       {loan.tenure} months
                     </span>
                   </div>
                 )}
                 {loan.emi && (
                   <div className="flex items-center">
-                    <Clock className="h-5 w-5 text-gray-500 mr-2" />
-                    <span className="text-gray-600">Monthly EMI:</span>
-                    <span className="ml-auto font-semibold">
+                    <Clock className="h-5 w-5 text-orange-500 mr-2" />
+                    <span className="text-blue-800">Monthly EMI:</span>
+                    <span className="ml-auto font-semibold text-blue-900">
                       ₹{loan.emi.toLocaleString("en-IN")}
                     </span>
                   </div>
@@ -236,13 +260,13 @@ export default async function LoanDetailsPage({
         )}
 
         {loan.status === "Rejected" && loan.rejectionReason && (
-          <Card className="overflow-hidden shadow-lg mb-6">
+          <Card className="overflow-hidden shadow-lg mb-6 border-orange-300">
             <CardHeader className="bg-red-500 text-white p-6">
               <CardTitle className="text-2xl font-bold">
                 Rejection Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-6 bg-white">
               <div className="bg-red-100 rounded-lg p-6 mb-6">
                 <h3 className="text-xl font-semibold mb-2 text-red-800">
                   Reason for Rejection
@@ -253,7 +277,9 @@ export default async function LoanDetailsPage({
               </div>
               <div className="mt-4">
                 <Link href="/credit-builder">
-                  <Button className="w-full">Buy Credit Builder Plan</Button>
+                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                    Buy Credit Builder Plan
+                  </Button>
                 </Link>
               </div>
             </CardContent>
@@ -261,12 +287,12 @@ export default async function LoanDetailsPage({
         )}
 
         {isEMIPaymentDue() && (
-          <Card className="overflow-hidden shadow-lg">
-            <CardHeader className="bg-blue-500 text-white p-6">
+          <Card className="overflow-hidden shadow-lg border-orange-300">
+            <CardHeader className="bg-blue-900 text-white p-6">
               <CardTitle className="text-2xl font-bold">EMI Payment</CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <p className="mb-4">
+            <CardContent className="p-6 bg-white">
+              <p className="mb-4 text-blue-800">
                 Your next EMI payment is due. Please pay to avoid late fees.
               </p>
               <EMIPayButton

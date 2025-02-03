@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,13 +34,13 @@ const AboutUs = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-b from-indigo-50 to-white py-16">
+    <div className="bg-gradient-to-b from-orange-50 to-white py-16">
       <div className="container mx-auto px-4">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl md:text-5xl font-bold text-center text-gray-900 mb-12"
+          className="text-4xl md:text-5xl font-bold text-center text-navy-900 mb-12"
         >
           About Us – Kredz
         </motion.h1>
@@ -53,13 +51,13 @@ const AboutUs = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="max-w-3xl mx-auto text-center mb-16"
         >
-          <p className="text-xl text-gray-700 mb-6">
+          <p className="text-xl text-navy-700 mb-6">
             At Kredz, we help individuals and businesses achieve their financial
             goals with expert loan consulting, credit-building services, and
             valuable partnerships. Our mission is to empower you with the tools
             and knowledge needed to build a strong financial future.
           </p>
-          <p className="text-xl text-gray-700">
+          <p className="text-xl text-navy-700">
             We partner with RBI-registered Banks and NBFCs to provide the best
             loan options, while offering tailored credit improvement strategies
             to enhance your financial health.
@@ -77,12 +75,12 @@ const AboutUs = () => {
               key={index}
               className="bg-white rounded-lg shadow-lg p-6 flex items-start"
             >
-              <service.icon className="w-12 h-12 text-indigo-600 mr-4 flex-shrink-0" />
+              <service.icon className="w-12 h-12 text-orange-500 mr-4 flex-shrink-0" />
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-xl font-semibold text-navy-900 mb-2">
                   {service.title}
                 </h3>
-                <p className="text-gray-700">{service.description}</p>
+                <p className="text-navy-700">{service.description}</p>
               </div>
             </div>
           ))}
@@ -92,7 +90,7 @@ const AboutUs = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="bg-indigo-600 text-white rounded-lg shadow-xl p-8 text-center"
+          className="bg-navy-600 text-white rounded-lg shadow-xl p-8 text-center"
         >
           <h2 className="text-3xl font-semibold mb-4">Our Commitment</h2>
           <p className="text-xl mb-6">
@@ -100,7 +98,7 @@ const AboutUs = () => {
             solutions to help you succeed. Our dedicated team is committed to
             providing you with the best financial guidance and support.
           </p>
-          <Button className="bg-white text-indigo-600 hover:bg-indigo-100 text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button className="bg-orange-500 text-white hover:bg-orange-600 text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
             Learn More About Our Services
             <ChevronRight className="ml-2 h-5 w-5" />
           </Button>
@@ -112,14 +110,14 @@ const AboutUs = () => {
           transition={{ duration: 0.5, delay: 0.8 }}
           className="text-center mt-16"
         >
-          <h2 className="text-3xl font-semibold text-gray-900 mb-6">
+          <h2 className="text-3xl font-semibold text-navy-900 mb-6">
             Ready to Start Your Journey?
           </h2>
-          <p className="text-xl text-gray-700 mb-8">
+          <p className="text-xl text-navy-700 mb-8">
             Contact us today to get started on your path toward better credit
             and exciting financial opportunities!
           </p>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button className="bg-navy-600 hover:bg-navy-700 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
             Contact Us
             <ChevronRight className="ml-2 h-5 w-5" />
           </Button>

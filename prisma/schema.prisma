@@ -64,8 +64,8 @@ model LoanApplication {
   aadharImgBackUrl         String?
   aadharNo                 String
   panImgFrontUrl           String?
-  dateOfBirth              DateTime
-  age                      Int
+  dateOfBirth              DateTime?
+  age                      Int?
   panNo                    String
   creditScore              String
   empType                  String

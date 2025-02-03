@@ -68,19 +68,19 @@ export default async function DashboardPage() {
     await getUserData(userId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
       <div className="container mx-auto p-6 space-y-8">
         <header className="text-center py-8">
-          <h1 className="text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-400">
+          <h1 className="text-4xl font-bold mb-2 text-blue-900">
             Your Financial Dashboard
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-blue-700">
             Track your loan application and credit builder progress
           </p>
         </header>
         <div className="grid gap-6 md:grid-cols-2">
-          <Card className="overflow-hidden shadow-lg transition-all hover:shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-teal-400 text-white">
+          <Card className="overflow-hidden shadow-lg transition-all hover:shadow-xl border-orange-300 bg-orange-50">
+            <CardHeader className="bg-orange-500 text-white">
               <CardTitle className="text-2xl flex items-center gap-2">
                 <IndianRupee className="h-6 w-6" />
                 Loan Application
@@ -90,12 +90,12 @@ export default async function DashboardPage() {
               {loanApplication ? (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <span className="text-sm font-medium text-orange-800">
                       {loanApplication.status === "Approved"
                         ? "Approved Amount:"
                         : "Amount Requested:"}
                     </span>
-                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <span className="text-2xl font-bold text-orange-600">
                       ₹
                       {loanApplication.status === "Approved"
                         ? loanApplication.approvedAmount ||
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <span className="text-sm font-medium text-orange-800">
                       Status:
                     </span>
                     <Badge
@@ -113,16 +113,16 @@ export default async function DashboardPage() {
                           ? "success"
                           : "secondary"
                       }
-                      className="text-sm px-3 py-1"
+                      className="text-sm px-3 py-1 bg-orange-100 text-orange-800"
                     >
                       {loanApplication.status}
                     </Badge>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">
+                  <div className="mt-4 pt-4 border-t border-orange-200">
+                    <h3 className="text-lg font-semibold mb-2 text-orange-800">
                       Next Steps
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-orange-700">
                       {loanApplication.status === "Approved"
                         ? "Congratulations! Your loan has been approved. We'll contact you shortly with further details."
                         : "Your application is being processed. We'll update you on any progress."}
@@ -131,12 +131,12 @@ export default async function DashboardPage() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                  <p className="text-orange-700">
                     No completed loan application found
                   </p>
                   <Link href={"/consultancy-application"}>
-                    <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+                    <button className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors">
                       Start Application
                     </button>
                   </Link>
@@ -145,8 +145,8 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden shadow-lg transition-all hover:shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-400 text-white">
+          <Card className="overflow-hidden shadow-lg transition-all hover:shadow-xl border-blue-300 bg-blue-50">
+            <CardHeader className="bg-blue-900 text-white">
               <CardTitle className="text-2xl flex items-center gap-2">
                 <TrendingUp className="h-6 w-6" />
                 Credit Builder Subscription
@@ -156,39 +156,39 @@ export default async function DashboardPage() {
               {creditBuilderSubscription ? (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <span className="text-sm font-medium text-blue-900">
                       Current Plan:
                     </span>
                     <Badge
                       variant="outline"
-                      className="text-sm px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-purple-300"
+                      className="text-sm px-3 py-1 bg-blue-100 text-blue-900 border-blue-300"
                     >
                       {creditBuilderSubscription.plan}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <span className="text-sm font-medium text-blue-900">
                       Subscribed on:
                     </span>
-                    <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
+                    <span className="flex items-center gap-1 text-blue-800">
                       <CalendarIcon className="h-4 w-4" />
                       {formatDate(creditBuilderSubscription.createdAt)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <span className="text-sm font-medium text-blue-900">
                       Expires on:
                     </span>
-                    <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
+                    <span className="flex items-center gap-1 text-blue-800">
                       <CalendarIcon className="h-4 w-4" />
                       {formatDate(creditBuilderSubscription.expiryDate)}
                     </span>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">
+                  <div className="mt-4 pt-4 border-t border-blue-200">
+                    <h3 className="text-lg font-semibold mb-2 text-blue-900">
                       Subscription Benefits
                     </h3>
-                    <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400">
+                    <ul className="list-disc list-inside text-sm text-blue-800">
                       <li>Regular credit score updates</li>
                       <li>Personalized credit improvement tips</li>
                       <li>Access to financial education resources</li>
@@ -197,12 +197,10 @@ export default async function DashboardPage() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <CreditCard className="h-12 w-12 text-purple-500 mx-auto mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400">
-                    No active subscription found
-                  </p>
+                  <CreditCard className="h-12 w-12 text-blue-900 mx-auto mb-4" />
+                  <p className="text-blue-800">No active subscription found</p>
                   <Link href={"/credit-builder"}>
-                    <button className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors">
+                    <button className="mt-4 px-4 py-2 bg-blue-900 text-white rounded-md hover:bg-blue-800 transition-colors">
                       Explore Plans
                     </button>
                   </Link>

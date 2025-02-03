@@ -7,13 +7,15 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   CalendarIcon,
   CreditCardIcon,
-  BanknotesIcon,
-} from "@heroicons/react/24/outline";
+  BanknoteIcon as BanknotesIcon,
+  UserIcon,
+} from "lucide-react";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -40,84 +42,114 @@ export default async function LoansPage() {
   const loans = await getUserLoans(userId);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8 text-gray-800">My Loans</h1>
-      {loans.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {loans.map((loan) => (
-            <Link href={`/dashboard/loans/${loan.id}`} key={loan.id}>
-              <Card className="overflow-hidden transition-shadow duration-300 ease-in-out hover:shadow-lg cursor-pointer">
-                <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                  <CardTitle className="text-xl font-semibold">
-                    {loan.prpseOfLoan}
-                  </CardTitle>
-                  <CardDescription className="text-blue-100">
-                    Application ID: {loan.id}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center">
-                      <BanknotesIcon className="h-5 w-5 text-gray-500 mr-2" />
-                      <span className="text-sm text-gray-600">
-                        Amount Required:
-                      </span>
-                      <span className="ml-auto font-semibold">
-                        ₹
-                        {parseFloat(loan.amtRequired || "0").toLocaleString(
-                          "en-IN"
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <CalendarIcon className="h-5 w-5 text-gray-500 mr-2" />
-                      <span className="text-sm text-gray-600">
-                        Application Date:
-                      </span>
-                      <span className="ml-auto font-semibold">
-                        {new Date(loan.createdAt).toLocaleDateString("en-IN")}
-                      </span>
-                    </div>
-                    {loan.eligibility && (
-                      <div className="flex items-center">
-                        <CreditCardIcon className="h-5 w-5 text-gray-500 mr-2" />
-                        <span className="text-sm text-gray-600">
-                          EMI Tenure:
-                        </span>
-                        <span className="ml-auto font-semibold">
-                          {loan.eligibility.emiTenure} months
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto">
+        <h1 className="text-4xl font-bold mb-8 text-blue-900">My Loans</h1>
+        {loans.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {loans.map((loan) => (
+              <Link href={`/dashboard/loans/${loan.id}`} key={loan.id}>
+                <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer border-orange-300">
+                  <CardHeader className="bg-orange-500 text-white p-4">
+                    <CardTitle className="text-xl font-semibold mb-1">
+                      {loan.prpseOfLoan}
+                    </CardTitle>
+                    <CardDescription className="text-orange-100 text-sm">
+                      Application ID: {loan.id}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-4 bg-white">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-blue-800">
+                          <BanknotesIcon className="h-5 w-5 text-orange-500 mr-2" />
+                          <span className="text-sm font-medium">Amount:</span>
+                        </div>
+                        <span className="text-sm font-bold text-blue-900">
+                          ₹
+                          {Number.parseFloat(
+                            loan.amtRequired || "0"
+                          ).toLocaleString("en-IN")}
                         </span>
                       </div>
-                    )}
-                    <div className="pt-4">
-                      <Badge
-                        variant={
-                          loan.status === "Approved"
-                            ? "success"
-                            : loan.status === "Rejected"
-                              ? "destructive"
-                              : "default"
-                        }
-                        className="w-full justify-center text-center py-1"
-                      >
-                        {loan.status}
-                      </Badge>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-blue-800">
+                          <CalendarIcon className="h-5 w-5 text-orange-500 mr-2" />
+                          <span className="text-sm font-medium">
+                            Applied on:
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium text-blue-900">
+                          {new Date(loan.createdAt).toLocaleDateString("en-IN")}
+                        </span>
+                      </div>
+                      {loan.dateOfBirth && (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-blue-800">
+                            <CalendarIcon className="h-5 w-5 text-orange-500 mr-2" />
+                            <span className="text-sm font-medium">DOB:</span>
+                          </div>
+                          <span className="text-sm font-medium text-blue-900">
+                            {new Date(loan.dateOfBirth).toLocaleDateString(
+                              "en-IN"
+                            )}
+                          </span>
+                        </div>
+                      )}
+                      {loan.age !== null && (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-blue-800">
+                            <UserIcon className="h-5 w-5 text-orange-500 mr-2" />
+                            <span className="text-sm font-medium">Age:</span>
+                          </div>
+                          <span className="text-sm font-medium text-blue-900">
+                            {loan.age} years
+                          </span>
+                        </div>
+                      )}
+                      {loan.eligibility && (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-blue-800">
+                            <CreditCardIcon className="h-5 w-5 text-orange-500 mr-2" />
+                            <span className="text-sm font-medium">
+                              EMI Tenure:
+                            </span>
+                          </div>
+                          <span className="text-sm font-medium text-blue-900">
+                            {loan.eligibility.emiTenure} months
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <Card className="bg-gray-50 border border-gray-200">
-          <CardContent className="flex items-center justify-center h-32">
-            <p className="text-gray-600 text-lg">
-              You have no completed loan applications.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+                  </CardContent>
+                  <CardFooter className="bg-orange-50 p-4">
+                    <Badge
+                      variant={
+                        loan.status === "Approved"
+                          ? "success"
+                          : loan.status === "Rejected"
+                            ? "destructive"
+                            : "default"
+                      }
+                      className="w-full justify-center text-center py-2 text-sm font-semibold"
+                    >
+                      {loan.status}
+                    </Badge>
+                  </CardFooter>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <Card className="bg-white border border-orange-200 shadow-md">
+            <CardContent className="flex items-center justify-center h-32">
+              <p className="text-blue-800 text-lg">
+                You have no completed loan applications.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

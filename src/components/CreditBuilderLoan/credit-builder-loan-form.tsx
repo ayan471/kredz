@@ -25,6 +25,7 @@ import {
 } from "@/actions/creditBuilderLoanActions";
 import { useUser } from "@clerk/nextjs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { sendWhatsAppNotification } from "../lib/sendWhatsAppNotification";
 
 type FormData = {
   fullName: string;
@@ -171,6 +172,24 @@ const CreditBuilderLoanForm: React.FC = () => {
           title: "Application Submitted",
           description: "Your loan application has been submitted successfully.",
         });
+
+        // Send WhatsApp notification
+        try {
+          if (user?.phoneNumbers && user.phoneNumbers[0]) {
+            await sendWhatsAppNotification(
+              user.phoneNumbers[0].phoneNumber,
+              data.fullName
+            );
+            console.log("WhatsApp notification sent successfully");
+          } else {
+            console.warn(
+              "User phone number not available for WhatsApp notification"
+            );
+          }
+        } catch (error) {
+          console.error("Error sending WhatsApp notification:", error);
+          // Don't throw here, as we want to continue with the application process even if WhatsApp notification fails
+        }
 
         if (eligibilityResult.success) {
           const queryParams = new URLSearchParams({

@@ -16,8 +16,7 @@ import {
   Briefcase,
   PieChart,
   ArrowRight,
-  TypeIcon as type,
-  LucideIcon,
+  type LucideIcon,
 } from "lucide-react";
 import { getUserMembership } from "@/actions/loanApplicationActions";
 
@@ -49,10 +48,10 @@ interface InfoItemProps {
 function InfoItem({ icon: Icon, label, value }: InfoItemProps) {
   return (
     <div className="flex items-start space-x-3">
-      {Icon && <Icon className="w-5 h-5 text-indigo-500 mt-0.5" />}
+      {Icon && <Icon className="w-5 h-5 text-orange-500 mt-0.5" />}
       <div>
-        <p className="text-sm font-medium text-gray-500">{label}</p>
-        <p className="text-base font-semibold text-gray-900">{value}</p>
+        <p className="text-sm font-medium text-blue-700">{label}</p>
+        <p className="text-base font-semibold text-blue-900">{value}</p>
       </div>
     </div>
   );
@@ -75,23 +74,23 @@ export default async function MembershipPage() {
   )) as LoanApplication | null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-extrabold text-center text-indigo-900 mb-12">
+        <h1 className="text-4xl font-extrabold text-center text-blue-900 mb-12">
           My Membership
         </h1>
         {loanApplication && loanApplication.membershipPlan ? (
           <div className="space-y-8">
-            <Card className="overflow-hidden shadow-xl">
-              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6">
+            <Card className="overflow-hidden shadow-xl border-orange-300">
+              <CardHeader className="bg-orange-500 p-6">
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-3xl font-bold text-white">
                     {loanApplication.membershipPlan} Plan
                   </CardTitle>
-                  <BadgeCheck className="w-12 h-12 text-yellow-300" />
+                  <BadgeCheck className="w-12 h-12 text-blue-900" />
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-6 bg-white">
                 <div className="grid grid-cols-2 gap-6">
                   <InfoItem
                     icon={Calendar}
@@ -139,18 +138,18 @@ export default async function MembershipPage() {
             </Card>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="shadow-lg">
-                <CardHeader className="bg-blue-50 border-b border-blue-100">
-                  <CardTitle className="text-xl text-blue-700 flex items-center space-x-2">
+              <Card className="shadow-lg border-orange-300">
+                <CardHeader className="bg-blue-900 border-b border-orange-300">
+                  <CardTitle className="text-xl text-white flex items-center space-x-2">
                     <DollarSign className="w-6 h-6" />
                     <span>Loan Details</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent className="p-6 bg-white">
                   <div className="space-y-4">
                     <InfoItem
                       label="Amount Required"
-                      value={`₹${parseInt(loanApplication.amtRequired).toLocaleString()}`}
+                      value={`₹${Number.parseInt(loanApplication.amtRequired).toLocaleString()}`}
                     />
                     <InfoItem
                       label="Purpose"
@@ -168,14 +167,14 @@ export default async function MembershipPage() {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-lg">
-                <CardHeader className="bg-green-50 border-b border-green-100">
-                  <CardTitle className="text-xl text-green-700 flex items-center space-x-2">
+              <Card className="shadow-lg border-orange-300">
+                <CardHeader className="bg-blue-900 border-b border-orange-300">
+                  <CardTitle className="text-xl text-white flex items-center space-x-2">
                     <Briefcase className="w-6 h-6" />
                     <span>Employment Details</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent className="p-6 bg-white">
                   <div className="space-y-4">
                     <InfoItem
                       label="Employment Type"
@@ -183,7 +182,7 @@ export default async function MembershipPage() {
                     />
                     <InfoItem
                       label="Monthly Income"
-                      value={`₹${parseInt(loanApplication.monIncome).toLocaleString()}`}
+                      value={`₹${Number.parseInt(loanApplication.monIncome).toLocaleString()}`}
                     />
                     {loanApplication.EmpOthers && (
                       <InfoItem
@@ -196,29 +195,32 @@ export default async function MembershipPage() {
               </Card>
             </div>
 
-            <Card className="shadow-lg">
-              <CardHeader className="bg-purple-50 border-b border-purple-100">
-                <CardTitle className="text-xl text-purple-700 flex items-center space-x-2">
+            <Card className="shadow-lg border-orange-300">
+              <CardHeader className="bg-blue-900 border-b border-orange-300">
+                <CardTitle className="text-xl text-white flex items-center space-x-2">
                   <PieChart className="w-6 h-6" />
                   <span>Loan Status</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-6 bg-white">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">Current Status</p>
+                    <p className="text-sm text-blue-700 mb-1">Current Status</p>
                     <Badge
                       variant={
                         loanApplication.membershipActive
                           ? "success"
                           : "secondary"
                       }
-                      className="text-lg font-semibold"
+                      className="text-lg font-semibold bg-orange-500 text-white"
                     >
                       {loanApplication.membershipActive ? "Active" : "Inactive"}
                     </Badge>
                   </div>
-                  <Button asChild>
+                  <Button
+                    asChild
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                  >
                     <Link
                       href="/dashboard"
                       className="flex items-center space-x-2"
@@ -228,7 +230,10 @@ export default async function MembershipPage() {
                     </Link>
                   </Button>
                   {!loanApplication.membershipActive && (
-                    <Button asChild className="mt-4">
+                    <Button
+                      asChild
+                      className="mt-4 bg-blue-900 hover:bg-blue-800 text-white"
+                    >
                       <Link
                         href="/consultancy-application"
                         className="flex items-center space-x-2"
@@ -243,19 +248,23 @@ export default async function MembershipPage() {
             </Card>
           </div>
         ) : (
-          <Card className="max-w-md mx-auto shadow-xl">
-            <CardContent className="p-8">
+          <Card className="max-w-md mx-auto shadow-xl border-orange-300">
+            <CardContent className="p-8 bg-white">
               <div className="text-center space-y-6">
-                <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto">
-                  <CreditCard className="w-12 h-12 text-yellow-600" />
+                <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
+                  <CreditCard className="w-12 h-12 text-orange-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold text-blue-900">
                   No Active Membership
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-blue-700">
                   You don't have an active membership or loan application.
                 </p>
-                <Button asChild size="lg" className="w-full">
+                <Button
+                  asChild
+                  size="lg"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                >
                   <Link
                     href="/consultancy-application"
                     className="flex items-center justify-center space-x-2"
