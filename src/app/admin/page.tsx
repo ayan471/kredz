@@ -136,61 +136,71 @@ export default async function AdminDashboard() {
   const inProgressLoans = await getInProgressLoans();
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 md:p-8">
+    <div className="space-y-6 p-4 sm:p-6 md:p-8 bg-gradient-to-br from-orange-50 to-blue-50">
       <header className="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">Dashboard Overview</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
+          Dashboard Overview
+        </h1>
       </header>
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
+        <Card className="bg-white border-orange-200 shadow-md hover:shadow-lg transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-blue-800">
               Credit Builder Subscriptions
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-orange-500">
               {creditBuilderSubscriptionCount}
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white border-orange-200 shadow-md hover:shadow-lg transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-blue-800">
               Loan Applications
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loanApplicationCount}</div>
+            <div className="text-2xl font-bold text-orange-500">
+              {loanApplicationCount}
+            </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white border-orange-200 shadow-md hover:shadow-lg transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-blue-800">
               Approved Loans
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{approvedLoansCount}</div>
+            <div className="text-2xl font-bold text-orange-500">
+              {approvedLoansCount}
+            </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white border-orange-200 shadow-md hover:shadow-lg transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-blue-800">
               Rejected Loans
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{rejectedLoansCount}</div>
+            <div className="text-2xl font-bold text-orange-500">
+              {rejectedLoansCount}
+            </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white border-orange-200 shadow-md hover:shadow-lg transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-blue-800">
               Loans In Progress
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressLoansCount}</div>
+            <div className="text-2xl font-bold text-orange-500">
+              {inProgressLoansCount}
+            </div>
           </CardContent>
         </Card>
       </div>
