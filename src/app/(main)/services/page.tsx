@@ -11,7 +11,7 @@ const services = [
     description:
       "Our Loan Consulting service offers expert advice and assistance to help you secure the best loan options suited to your financial needs. Whether it's a personal loan, home loan, or business loan, we guide you through the entire loan process.",
     icon: "💼",
-    color: "from-orange-400 to-blue-500",
+    color: "from-orange-500 to-blue-900",
     link: "/consultancy-application",
     features: [
       "Expert Loan Advice: Personalized recommendations on loan types, lenders, and terms.",
@@ -27,7 +27,7 @@ const services = [
     description:
       "The Membership Card gives you exclusive access to Kredz's premium loan consulting and credit-building services. With our membership, you can take advantage of specialized offerings and priority access to our experts.",
     icon: "💳",
-    color: "from-blue-400 to-orange-500",
+    color: "from-blue-900 to-orange-500",
     link: "/membership-cards",
     features: [
       "Exclusive Benefits: Access to customized loan consulting, special loan offers, and faster services.",
@@ -43,7 +43,7 @@ const services = [
     description:
       "Our Credit Building Subscription is designed to help you enhance and maintain a healthy credit score. With ongoing support and expert advice, you can take charge of your credit health and open doors to better financial opportunities.",
     icon: "📈",
-    color: "from-orange-400 to-blue-500",
+    color: "from-orange-500 to-blue-900",
     link: "/credit-builder",
     features: [
       "Personalized Credit Plans: Get a customized credit-building strategy based on your current credit profile.",
@@ -59,7 +59,7 @@ const services = [
     description:
       "Kredz Credit Builder Loan is designed to help individuals build or improve their credit score. By borrowing a small, manageable amount and making timely payments, you can demonstrate positive credit behavior and enhance your credit profile.",
     icon: "🏗️",
-    color: "from-blue-400 to-orange-500",
+    color: "from-blue-900 to-orange-500",
     link: "/credit-builder-loan",
     features: [
       "Build Credit Score: Improve your credit score through consistent, timely payments.",
@@ -75,7 +75,7 @@ const services = [
     description:
       "Kredz offers an exclusive Channel Partner Program for businesses or individuals looking to collaborate with us and expand their financial service offerings.",
     icon: "🤝",
-    color: "from-orange-400 to-blue-500",
+    color: "from-orange-500 to-blue-900",
     link: "#",
     features: [
       "Revenue Sharing: Earn commissions by referring clients to Kredz for credit-building or loan consulting services.",
@@ -91,7 +91,7 @@ const services = [
     description:
       "At Kredz, we are committed to helping you take control of your financial journey. We offer comprehensive services to ensure you build, manage, and protect your credit while gaining access to loans and exclusive membership benefits.",
     icon: "🌟",
-    color: "from-blue-400 to-orange-500",
+    color: "from-blue-900 to-orange-500",
     link: "/about-us",
     features: [
       "Expert Guidance: Our team of financial experts provides personalized advice, helping you make informed decisions at every stage.",
@@ -106,7 +106,7 @@ const services = [
 
 export default function ServicesPage() {
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-100 text-blue-900">
       <HeroSection />
       <motion.div
         initial={{ opacity: 0 }}
@@ -114,7 +114,7 @@ export default function ServicesPage() {
         transition={{ duration: 0.8 }}
         className="container mx-auto px-4 py-16"
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 bg-gradient-to-r from-orange-400 to-blue-500 bg-clip-text text-transparent">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 bg-gradient-to-r from-orange-500 to-blue-900 bg-clip-text text-transparent">
           Our Services
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

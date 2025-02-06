@@ -92,8 +92,10 @@ const AboutUs = () => {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="bg-navy-600 text-white rounded-lg shadow-xl p-8 text-center"
         >
-          <h2 className="text-3xl font-semibold mb-4">Our Commitment</h2>
-          <p className="text-xl mb-6">
+          <h2 className="text-3xl font-semibold mb-4 text-blue-900">
+            Our Commitment
+          </h2>
+          <p className="text-xl mb-6 text-blue-950">
             At Kredz, we offer transparent, reliable, and customer-focused
             solutions to help you succeed. Our dedicated team is committed to
             providing you with the best financial guidance and support.
@@ -117,7 +119,7 @@ const AboutUs = () => {
             Contact us today to get started on your path toward better credit
             and exciting financial opportunities!
           </p>
-          <Button className="bg-navy-600 hover:bg-navy-700 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
             Contact Us
             <ChevronRight className="ml-2 h-5 w-5" />
           </Button>

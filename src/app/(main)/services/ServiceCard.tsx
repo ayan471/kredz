@@ -1,14 +1,4 @@
-"use client";
-
 import { motion } from "framer-motion";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 interface ServiceCardProps {
@@ -31,53 +21,29 @@ export default function ServiceCard({ service, index }: ServiceCardProps) {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
+      className="bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300"
     >
-      <Card className="h-full bg-gray-800 border-gray-700 hover:bg-gray-700 transition-all duration-300 overflow-hidden group">
-        <CardHeader className="relative p-6">
-          <div
-            className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
-          ></div>
-          <div className="relative z-10">
-            <CardTitle className="text-2xl font-bold text-white mb-2 flex items-center">
-              <span className="text-3xl mr-2">{service.icon}</span>
-              {service.title}
-            </CardTitle>
-            <CardDescription className="text-gray-300">
-              {service.description}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="relative p-6">
-          <div
-            className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
-          ></div>
-          <motion.div
-            className="relative z-10"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">
-              Key Features:
-            </h3>
-            <ul className="list-disc list-inside text-gray-300 mb-4">
-              {service.features.map((feature, idx) => (
-                <li key={idx} className="mb-1">
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <div className="flex justify-between items-center">
-              <Button
-                asChild
-                className="bg-gradient-to-r from-orange-500 to-blue-500 hover:from-orange-600 hover:to-blue-600 text-white"
-              >
-                <Link href={service.buttonLink}>{service.buttonText}</Link>
-              </Button>
-            </div>
-          </motion.div>
-        </CardContent>
-      </Card>
+      <div className={`p-6 bg-gradient-to-r ${service.color}`}>
+        <div className="text-4xl mb-4">{service.icon}</div>
+        <h3 className="text-xl font-semibold text-white mb-2">
+          {service.title}
+        </h3>
+        <p className="text-white text-sm">{service.description}</p>
+      </div>
+      <div className="p-6">
+        <ul className="list-disc list-inside mb-4 text-blue-900">
+          {service.features.map((feature, index) => (
+            <li key={index} className="mb-2 text-sm">
+              {feature}
+            </li>
+          ))}
+        </ul>
+        <Link href={service.buttonLink}>
+          <button className="w-full bg-orange-500 text-white py-2 px-4 hover:bg-orange-600 transition-colors duration-300  rounded-full">
+            {service.buttonText}
+          </button>
+        </Link>
+      </div>
     </motion.div>
   );
 }
