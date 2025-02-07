@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import SuccessImage from "../../../../public/images/success.png";
+import SuccessImage from "../../../../../public/images/success.png";
 
 const SuccessPage = () => {
   return (
