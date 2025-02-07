@@ -134,7 +134,7 @@ export default async function CreditBuilderLoanDetailPage({
               Edit
             </a>
           </Button>
-          <DownloadCSV data={application} />
+          <DownloadCSV data={[application]} />
         </div>
       </div>
 
