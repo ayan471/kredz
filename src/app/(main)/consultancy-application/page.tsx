@@ -1,8 +1,5 @@
-import React from "react";
-
-import LaStepOne from "@/components/custom/Services/LoanApplication/LaStepOne";
 import LoanApplicationHero from "@/components/custom/LoanApplicationHero";
-import { StepwiseLoanApplication } from "@/components/custom/Services/LoanApplication/StepwiseLoanApplication";
+import LaStepOne from "@/components/custom/Services/LoanApplication/LaStepOne";
 
 const LoanApplication = () => {
   return (
