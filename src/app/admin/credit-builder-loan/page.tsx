@@ -2,13 +2,27 @@ import { PrismaClient } from "@prisma/client";
 import { columns } from "./columns";
 import { DownloadCSV } from "./download-csv";
 import { DataTable } from "../data-table";
+import { DateRangeSelector } from "./DateRangeSelector";
 
 const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 
-async function getCreditBuilderLoanApplications() {
+async function getCreditBuilderLoanApplications(dateRange?: {
+  from: string;
+  to: string;
+}) {
+  const where = dateRange
+    ? {
+        createdAt: {
+          gte: new Date(dateRange.from),
+          lte: new Date(dateRange.to),
+        },
+      }
+    : {};
+
   const applications = await prisma.creditBuilderLoanApplication.findMany({
+    where,
     select: {
       id: true,
       userId: true,
@@ -29,8 +43,16 @@ async function getCreditBuilderLoanApplications() {
   return applications;
 }
 
-export default async function AdminCreditBuilderLoansPage() {
-  const loanApplications = await getCreditBuilderLoanApplications();
+export default async function AdminCreditBuilderLoansPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const dateRange = searchParams.dateRange
+    ? JSON.parse(searchParams.dateRange as string)
+    : undefined;
+
+  const loanApplications = await getCreditBuilderLoanApplications(dateRange);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
@@ -39,7 +61,10 @@ export default async function AdminCreditBuilderLoansPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
             Credit Builder Loan Applications
           </h1>
-          <DownloadCSV data={loanApplications} />
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <DateRangeSelector />
+            <DownloadCSV data={loanApplications} />
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow-lg p-6 overflow-x-auto">
           <DataTable columns={columns} data={loanApplications} />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
@@ -13,10 +13,11 @@ import {
   determineMembershipPlan,
 } from "@/actions/loanApplicationActions";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { Star, Check } from "lucide-react";
+import { CheckCircle2, ChevronRight } from "lucide-react";
 import { initiatePhonePePayment } from "@/components/lib/phonePe";
 import { useUser } from "@clerk/nextjs";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type FormValues = {
   fullName: string;
@@ -72,7 +73,7 @@ const LaStepThree = () => {
           }
 
           // Determine membership plan based on monthly income
-          const monIncome = parseFloat(result.data.monIncome || "0");
+          const monIncome = Number.parseFloat(result.data.monIncome || "0");
           const membershipPlan = await determineMembershipPlan(monIncome);
           setEligiblePlan(membershipPlan);
           setValue("membershipPlan", membershipPlan);
@@ -138,7 +139,7 @@ const LaStepThree = () => {
         });
 
         const paymentResult = await initiatePhonePePayment({
-          amount: parseFloat(
+          amount: Number.parseFloat(
             calculateAmounts(planDetails.discountedPrice).totalAmount
           ),
           orderId: id,
@@ -180,123 +181,145 @@ const LaStepThree = () => {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[720px] px-6 py-12">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-3xl font-bold text-center mb-10"
-      >
-        Membership Plan
-      </motion.h1>
-
-      <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
-        {eligibleAmount !== null && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-8 p-6 bg-green-100 border-green-300 border rounded-xl text-green-800"
-          >
-            <h2 className="text-xl font-semibold mb-2">
-              Your Eligible Loan Amount
-            </h2>
-            <p className="text-3xl font-bold">
-              ₹{eligibleAmount.toLocaleString()}
-            </p>
-          </motion.div>
-        )}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-col gap-6 bg-gradient-to-br from-blue-500 to-purple-600 p-8 sm:p-10 border-[1px] rounded-xl text-white shadow-lg"
-        >
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h2 className="text-2xl font-bold">{planDetails.name} Plan</h2>
-            <div className="flex items-end sm:items-center flex-col">
-              <span className="text-3xl font-bold">
-                ₹{calculateAmounts(planDetails.discountedPrice).basePrice}
-              </span>
-              <span className="text-sm">
-                + ₹{calculateAmounts(planDetails.discountedPrice).gstAmount} GST
-              </span>
-              <span className="text-lg font-semibold">
-                Total: ₹
-                {calculateAmounts(planDetails.discountedPrice).totalAmount}
-              </span>
-              <span className="text-sm line-through text-gray-300">
-                ₹{planDetails.realPrice}
-              </span>
+    <div className="mx-auto w-full max-w-4xl p-6 space-y-8">
+      <Card className="border-2 border-orange-500 shadow-lg overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-orange-500 to-blue-950 text-white p-6">
+          <CardTitle className="text-3xl font-bold text-center">
+            Loan Application - Membership
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          {/* <div className="mb-8">
+            <Progress
+              value={(3 / 6) * 100}
+              className="w-full h-3 rounded-full bg-orange-200"
+            />
+            <div className="flex justify-between mt-4">
+              {[
+                "Loan Application",
+                "Eligibility",
+                "Membership",
+                "Loan Approval",
+                "Loan Agreement",
+                "Loan Disbursement",
+              ].map((step, index) => (
+                <div key={step} className="flex flex-col items-center">
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium
+                    ${index <= 2 ? "bg-orange-500 text-white" : "bg-orange-100 text-blue-950"}
+                    ${index === 2 ? "ring-4 ring-orange-500 ring-offset-2" : ""}`}
+                  >
+                    {index <= 2 ? (
+                      <CheckCircle2 className="w-6 h-6" />
+                    ) : (
+                      index + 1
+                    )}
+                  </div>
+                  <span
+                    className={`text-xs mt-2 ${index === 2 ? "font-semibold text-blue-950" : "text-gray-500"}`}
+                  >
+                    {step}
+                  </span>
+                </div>
+              ))}
             </div>
-          </div>
-          <ul className="mt-4 space-y-2">
-            {planDetails.features.map((feature, index) => (
-              <motion.li
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
-                className="flex items-center"
-              >
-                <Check className="w-5 h-5 mr-2 text-green-400" />
-                {feature}
-              </motion.li>
-            ))}
-          </ul>
-          <Input
-            type="hidden"
-            id="membershipPlan"
-            {...register("membershipPlan")}
-          />
-        </motion.div>
+          </div> */}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="flex flex-col gap-8 bg-white p-8 sm:p-10 border-[1px] rounded-xl shadow-md"
-        >
-          <div className="grid w-full items-center gap-3">
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input type="text" id="fullName" {...register("fullName")} />
-          </div>
+          <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
+            {eligibleAmount !== null && (
+              <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-2">
+                    Your Eligible Loan Amount
+                  </h2>
+                  <p className="text-3xl font-bold">
+                    ₹{eligibleAmount.toLocaleString()}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
-          <div className="grid w-full items-center gap-3">
-            <Label htmlFor="phoneNo">Phone No</Label>
-            <Input type="tel" id="phoneNo" {...register("phoneNo")} />
-          </div>
+            <Card className="border-orange-500 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-orange-500 to-blue-950 text-white">
+                <CardTitle className="text-2xl font-bold">
+                  {planDetails.name} Plan
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="text-3xl font-bold">
+                    ₹{calculateAmounts(planDetails.discountedPrice).basePrice}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm">
+                      + ₹
+                      {calculateAmounts(planDetails.discountedPrice).gstAmount}{" "}
+                      GST
+                    </div>
+                    <div className="text-lg font-semibold">
+                      Total: ₹
+                      {
+                        calculateAmounts(planDetails.discountedPrice)
+                          .totalAmount
+                      }
+                    </div>
+                    <div className="text-sm line-through text-gray-500">
+                      ₹{planDetails.realPrice}
+                    </div>
+                  </div>
+                </div>
+                <ul className="space-y-2">
+                  {planDetails.features.map((feature, index) => (
+                    <li key={index} className="flex items-center">
+                      <CheckCircle2 className="w-5 h-5 mr-2 text-orange-500" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Input
+                  type="hidden"
+                  id="membershipPlan"
+                  {...register("membershipPlan")}
+                />
+              </CardContent>
+            </Card>
 
-          <div className="grid w-full items-center gap-3">
-            <Label htmlFor="emailID">Email ID</Label>
-            <Input type="email" id="emailID" {...register("emailID")} />
-          </div>
+            <Card className="border-orange-500 shadow-md">
+              <CardContent className="p-6 space-y-6">
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input type="text" id="fullName" {...register("fullName")} />
+                </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="phoneNo">Phone No</Label>
+                  <Input type="tel" id="phoneNo" {...register("phoneNo")} />
+                </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="emailID">Email ID</Label>
+                  <Input type="email" id="emailID" {...register("emailID")} />
+                </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="panNo">PAN No</Label>
+                  <Input type="text" id="panNo" {...register("panNo")} />
+                </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="aadharNo">Aadhar No</Label>
+                  <Input type="text" id="aadharNo" {...register("aadharNo")} />
+                </div>
+              </CardContent>
+            </Card>
 
-          <div className="grid w-full items-center gap-3">
-            <Label htmlFor="panNo">PAN No</Label>
-            <Input type="text" id="panNo" {...register("panNo")} />
-          </div>
-
-          <div className="grid w-full items-center gap-3">
-            <Label htmlFor="aadharNo">Aadhar No</Label>
-            <Input type="text" id="aadharNo" {...register("aadharNo")} />
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-        >
-          <Button
-            type="submit"
-            className="w-full text-md py-4 sm:py-6 text-lg font-semibold"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Processing..." : "Proceed to Payment"}
-          </Button>
-        </motion.div>
-      </form>
+            <Button
+              type="submit"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 text-lg font-semibold"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Processing..." : "Proceed to Payment"}
+              <ChevronRight className="ml-2 h-5 w-5" />
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       <DevTool control={control} />
     </div>

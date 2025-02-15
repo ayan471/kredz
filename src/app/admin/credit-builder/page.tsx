@@ -2,19 +2,43 @@ import { PrismaClient } from "@prisma/client";
 import { columns as subscriptionColumns } from "./subscription-columns";
 import { DataTable } from "../data-table";
 import { DownloadCSV } from "./download-csv";
+import { DateRangeSelector } from "../credit-builder-loan/DateRangeSelector";
 
 const prisma = new PrismaClient();
 
-async function getCreditBuilderSubscriptions() {
+export const dynamic = "force-dynamic";
+
+async function getCreditBuilderSubscriptions(dateRange?: {
+  from: string;
+  to: string;
+}) {
+  const where = dateRange
+    ? {
+        createdAt: {
+          gte: new Date(dateRange.from),
+          lte: new Date(dateRange.to),
+        },
+      }
+    : {};
+
   return await prisma.creditBuilderSubscription.findMany({
+    where,
     orderBy: {
       createdAt: "desc",
     },
   });
 }
 
-export default async function CreditBuilderPage() {
-  const subscriptions = await getCreditBuilderSubscriptions();
+export default async function CreditBuilderPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const dateRange = searchParams.dateRange
+    ? JSON.parse(searchParams.dateRange as string)
+    : undefined;
+
+  const subscriptions = await getCreditBuilderSubscriptions(dateRange);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
@@ -23,7 +47,10 @@ export default async function CreditBuilderPage() {
           <h1 className="text-3xl font-bold mb-8 text-blue-900">
             Credit Builder Dashboard
           </h1>
-          <DownloadCSV data={subscriptions} />
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <DateRangeSelector />
+            <DownloadCSV data={subscriptions} />
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow-lg p-6">
           <DataTable columns={subscriptionColumns} data={subscriptions} />
