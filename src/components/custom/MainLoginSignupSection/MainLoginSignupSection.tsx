@@ -191,15 +191,6 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
                 repeatType: "reverse",
               }}
             ></motion.div>
-            <motion.div
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-white/10 backdrop-blur-md rounded-full"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{
-                duration: 3,
-                repeat: Number.POSITIVE_INFINITY,
-                repeatType: "reverse",
-              }}
-            ></motion.div>
           </motion.div>
         </div>
       </div>

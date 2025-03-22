@@ -481,7 +481,11 @@ const Step4Documents: React.FC<StepProps> = ({
           id="aadharImgBack"
           type="file"
           {...register("aadharImgBack", {
-            required: "Aadhar card back image is required",
+            required: "Aadhar number is required",
+            pattern: {
+              value: /^[0-9]{12}$/,
+              message: "Please enter a valid 12-digit Aadhar number",
+            },
           })}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
@@ -502,7 +506,7 @@ const Step4Documents: React.FC<StepProps> = ({
             required: "PAN number is required",
             pattern: {
               value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-              message: "Invalid PAN number",
+              message: "Please enter a valid PAN number (e.g., ABCDE1234F)",
             },
           })}
           className="w-full p-3"
@@ -883,11 +887,13 @@ const LaStepOne: React.FC = () => {
       4: [
         "aadharImgFront",
         "aadharImgBack",
+        "aadharNo",
+        "panNo",
         "panImgFront",
         "selfieImg",
         "bankStatmntImg",
       ],
-      5: ["currEmis", "totalActiveLoans"],
+      5: ["currEmis", "totalActiveLoans", "termsConfirmation"],
     }[currentStep];
 
     const isValid = await trigger(fields as any);

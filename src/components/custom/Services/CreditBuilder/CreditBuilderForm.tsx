@@ -253,6 +253,7 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
             <Input
               type="tel"
               id="phoneNo"
+              disabled
               {...register("phoneNo", {
                 required: "Phone number is required",
               })}
