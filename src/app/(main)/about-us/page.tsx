@@ -9,7 +9,10 @@ import {
   Briefcase,
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+
 const AboutUs = () => {
+  const router = useRouter();
   const services = [
     {
       icon: Award,
@@ -100,7 +103,10 @@ const AboutUs = () => {
             solutions to help you succeed. Our dedicated team is committed to
             providing you with the best financial guidance and support.
           </p>
-          <Button className="bg-orange-500 text-white hover:bg-orange-600 text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button
+            className="bg-orange-600 hover:bg-orange-700 text-white text-base md:text-lg px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto"
+            onClick={() => router.push("/services")}
+          >
             Learn More About Our Services
             <ChevronRight className="ml-2 h-5 w-5" />
           </Button>
@@ -119,7 +125,10 @@ const AboutUs = () => {
             Contact us today to get started on your path toward better credit
             and exciting financial opportunities!
           </p>
-          <Button className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button
+            className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+            onClick={() => router.push("/contact")}
+          >
             Contact Us
             <ChevronRight className="ml-2 h-5 w-5" />
           </Button>

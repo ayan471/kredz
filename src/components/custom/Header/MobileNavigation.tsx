@@ -35,7 +35,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isLoggedIn }) => {
 
         <AccordionItem value="item-2">
           <p className="flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180">
-            <Link href="/about">About</Link>
+            <Link href="/about-us">About</Link>
           </p>
         </AccordionItem>
         <AccordionItem value="item-2">
