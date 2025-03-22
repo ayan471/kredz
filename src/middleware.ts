@@ -19,6 +19,12 @@ const isPublicRoute = createRouteMatcher([
   "/api/initiate-phonepe-payment",
   "/api/phonepe-webhook",
   "/payment-error",
+  "/api/payment/callback(.*)",
+  "/api/payment/success-notification(.*)",
+  "/api/payment/process(.*)",
+  "/api/payment/process-faster(.*)",
+  "/api/payment/process-membership(.*)",
+  "/api/test-payment-email(.*)",
 ]);
 
 const adminUserIds = [

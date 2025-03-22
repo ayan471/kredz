@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
   ArrowUpDown,
@@ -21,15 +21,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  approveLoan,
-  rejectLoan,
   getMembershipStatus,
   makeUserEligible,
+  toggleMembershipStatus, // We'll create this action
 } from "@/actions/loanApplicationActions";
 import { ApprovalModal } from "./components/approval-modal";
 import { EMIModal } from "./components/emi-modal";
 import { RejectedModal } from "./components/rejected-modal";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
 
 export type LoanApplication = {
   id: string;
@@ -78,7 +79,7 @@ export const columns: ColumnDef<LoanApplication>[] = [
       );
     },
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amtRequired"));
+      const amount = Number.parseFloat(row.getValue("amtRequired"));
       const formatted = new Intl.NumberFormat("en-IN", {
         style: "currency",
         currency: "INR",
@@ -142,7 +143,9 @@ export const columns: ColumnDef<LoanApplication>[] = [
     header: "Membership",
     accessorKey: "membershipActive",
     cell: ({ row }) => {
+      const { toast } = useToast();
       const [isActive, setIsActive] = useState<boolean | null>(null);
+      const [isUpdating, setIsUpdating] = useState(false);
 
       useEffect(() => {
         const fetchMembershipStatus = async () => {
@@ -158,14 +161,62 @@ export const columns: ColumnDef<LoanApplication>[] = [
         fetchMembershipStatus();
       }, [row.original.id]);
 
+      const handleToggleMembership = async () => {
+        if (isActive === null) return;
+
+        setIsUpdating(true);
+        try {
+          const newStatus = !isActive;
+          const result = await toggleMembershipStatus(
+            row.original.id,
+            newStatus
+          );
+
+          if (result.success) {
+            setIsActive(newStatus);
+            toast({
+              title: newStatus
+                ? "Membership Activated"
+                : "Membership Deactivated",
+              description: `Membership for ${row.original.fullName} has been ${newStatus ? "activated" : "deactivated"}.`,
+              variant: newStatus ? "default" : "destructive",
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: result.error || "Failed to update membership status",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error("Error toggling membership:", error);
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred",
+            variant: "destructive",
+          });
+        } finally {
+          setIsUpdating(false);
+        }
+      };
+
       if (isActive === null) {
         return <span>Loading...</span>;
       }
 
       return (
-        <Badge variant={isActive ? "success" : "secondary"}>
-          {isActive ? "Active" : "Inactive"}
-        </Badge>
+        <div className="flex items-center justify-center space-x-2">
+          <Badge variant={isActive ? "success" : "secondary"}>
+            {isActive ? "Active" : "Inactive"}
+          </Badge>
+          <Switch
+            checked={isActive}
+            onCheckedChange={handleToggleMembership}
+            disabled={isUpdating}
+            className="ml-2"
+            aria-label={`Toggle membership for ${row.original.fullName}`}
+          />
+        </div>
       );
     },
   },

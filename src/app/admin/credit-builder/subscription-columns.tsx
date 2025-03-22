@@ -1,11 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import {
+  ArrowUpDown,
+  MoreHorizontal,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+} from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -22,7 +28,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CreditBuilderSubscription } from "@prisma/client";
+import type { CreditBuilderSubscription } from "@prisma/client";
 import {
   Select,
   SelectContent,
@@ -32,7 +38,14 @@ import {
 } from "@/components/ui/select";
 
 import { useRouter } from "next/navigation";
-import { updateMonthlyCreditHealth } from "@/actions/formActions";
+import {
+  updateMonthlyCreditHealth,
+  toggleSubscriptionStatus,
+} from "@/actions/formActions";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
 
 interface CreditFactor {
   name: string;
@@ -108,6 +121,119 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
           Subscription Plan
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+      );
+    },
+  },
+  // {
+  //   accessorKey: "status",
+  //   header: ({ column }) => {
+  //     return (
+  //       <Button
+  //         variant="ghost"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //       >
+  //         Status
+  //         <ArrowUpDown className="ml-2 h-4 w-4" />
+  //       </Button>
+  //     );
+  //   },
+  //   cell: ({ row }) => {
+  //     const status = row.getValue("status") as string;
+
+  //     if (status === "active") {
+  //       return (
+  //         <Badge className="bg-green-500">
+  //           <CheckCircle className="h-3.5 w-3.5 mr-1" />
+  //           Active
+  //         </Badge>
+  //       );
+  //     } else if (status === "inactive") {
+  //       return (
+  //         <Badge variant="outline" className="text-gray-500 border-gray-300">
+  //           <XCircle className="h-3.5 w-3.5 mr-1" />
+  //           Inactive
+  //         </Badge>
+  //       );
+  //     } else if (status === "pending_payment") {
+  //       return (
+  //         <Badge
+  //           variant="outline"
+  //           className="bg-yellow-100 text-yellow-800 border-yellow-300"
+  //         >
+  //           <AlertTriangle className="h-3.5 w-3.5 mr-1" />
+  //           Pending Payment
+  //         </Badge>
+  //       );
+  //     } else {
+  //       return (
+  //         <Badge variant="outline" className="text-gray-500">
+  //           {status || "Unknown"}
+  //         </Badge>
+  //       );
+  //     }
+  //   },
+  // },
+  {
+    accessorKey: "isActive",
+    header: "Activation",
+    cell: ({ row }) => {
+      const subscription = row.original;
+      const [isActive, setIsActive] = useState(subscription.isActive || false);
+      const [isUpdating, setIsUpdating] = useState(false);
+      const router = useRouter();
+
+      const handleToggleStatus = async () => {
+        setIsUpdating(true);
+        try {
+          const newStatus = !isActive;
+          const result = await toggleSubscriptionStatus(
+            subscription.id,
+            newStatus
+          );
+
+          if (result.success) {
+            setIsActive(newStatus);
+            toast({
+              title: `Subscription ${newStatus ? "Activated" : "Deactivated"}`,
+              description: `The subscription is now ${newStatus ? "activated" : "deactivated"} for the user.`,
+              variant: newStatus ? "default" : "destructive",
+            });
+            router.refresh();
+          } else {
+            toast({
+              title: "Update Failed",
+              description:
+                result.error || "Failed to update subscription status",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error("Error toggling subscription status:", error);
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred",
+            variant: "destructive",
+          });
+        } finally {
+          setIsUpdating(false);
+        }
+      };
+
+      return (
+        <div className="flex items-center space-x-2">
+          <Switch
+            id={`activate-${subscription.id}`}
+            checked={isActive}
+            onCheckedChange={handleToggleStatus}
+            disabled={isUpdating}
+          />
+          <Label
+            htmlFor={`activate-${subscription.id}`}
+            className="text-sm cursor-pointer"
+          >
+            {isActive ? "Activate" : "Deactivate"}
+          </Label>
+        </div>
       );
     },
   },
@@ -266,7 +392,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                       onChange={(e) =>
                         setCreditFactors({
                           ...creditFactors,
-                          creditUtilization: parseInt(e.target.value),
+                          creditUtilization: Number.parseInt(e.target.value),
                         })
                       }
                     />
@@ -287,7 +413,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                       onChange={(e) =>
                         setCreditFactors({
                           ...creditFactors,
-                          paymentHistory: parseInt(e.target.value),
+                          paymentHistory: Number.parseInt(e.target.value),
                         })
                       }
                     />
@@ -311,7 +437,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                             ...creditFactors,
                             creditAge: {
                               ...creditFactors.creditAge,
-                              years: parseInt(e.target.value),
+                              years: Number.parseInt(e.target.value),
                             },
                           })
                         }
@@ -328,7 +454,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                             ...creditFactors,
                             creditAge: {
                               ...creditFactors.creditAge,
-                              months: parseInt(e.target.value),
+                              months: Number.parseInt(e.target.value),
                             },
                           })
                         }
@@ -345,7 +471,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                             ...creditFactors,
                             creditAge: {
                               ...creditFactors.creditAge,
-                              days: parseInt(e.target.value),
+                              days: Number.parseInt(e.target.value),
                             },
                           })
                         }
@@ -368,7 +494,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                       onChange={(e) =>
                         setCreditFactors({
                           ...creditFactors,
-                          creditMix: parseInt(e.target.value),
+                          creditMix: Number.parseInt(e.target.value),
                         })
                       }
                     />
@@ -392,7 +518,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                             ...creditFactors,
                             totalActiveAccounts: {
                               ...creditFactors.totalActiveAccounts,
-                              count: parseInt(e.target.value),
+                              count: Number.parseInt(e.target.value),
                             },
                           })
                         }
@@ -432,7 +558,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                             ...creditFactors,
                             delayHistory: {
                               ...creditFactors.delayHistory,
-                              count: parseInt(e.target.value),
+                              count: Number.parseInt(e.target.value),
                             },
                           })
                         }
@@ -472,7 +598,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                             ...creditFactors,
                             inquiries: {
                               ...creditFactors.inquiries,
-                              count: parseInt(e.target.value),
+                              count: Number.parseInt(e.target.value),
                             },
                           })
                         }
@@ -512,7 +638,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                             ...creditFactors,
                             overdueAccounts: {
                               ...creditFactors.overdueAccounts,
-                              count: parseInt(e.target.value),
+                              count: Number.parseInt(e.target.value),
                             },
                           })
                         }
@@ -549,7 +675,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                       onChange={(e) =>
                         setCreditFactors({
                           ...creditFactors,
-                          creditScore: parseInt(e.target.value),
+                          creditScore: Number.parseInt(e.target.value),
                         })
                       }
                     />
@@ -621,6 +747,7 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
               <Button
                 onClick={handleUpdateCreditHealth}
                 disabled={isUpdating || !selectedMonth}
+                className="text-white bg-orange-500"
               >
                 {isUpdating ? "Updating..." : "Confirm Update"}
               </Button>
@@ -634,6 +761,68 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
     id: "actions",
     cell: ({ row }) => {
       const subscription = row.original;
+      const [isActivating, setIsActivating] = useState(false);
+      const [isDeactivating, setIsDeactivating] = useState(false);
+      const router = useRouter();
+
+      const handleActivate = async () => {
+        setIsActivating(true);
+        try {
+          const result = await toggleSubscriptionStatus(subscription.id, true);
+          if (result.success) {
+            toast({
+              title: "Subscription Activated",
+              description: "The subscription is now visible to the user.",
+            });
+            router.refresh();
+          } else {
+            toast({
+              title: "Activation Failed",
+              description: result.error || "Failed to activate subscription",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error("Error activating subscription:", error);
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred",
+            variant: "destructive",
+          });
+        } finally {
+          setIsActivating(false);
+        }
+      };
+
+      const handleDeactivate = async () => {
+        setIsDeactivating(true);
+        try {
+          const result = await toggleSubscriptionStatus(subscription.id, false);
+          if (result.success) {
+            toast({
+              title: "Subscription Deactivated",
+              description: "The subscription is now hidden from the user.",
+              variant: "destructive",
+            });
+            router.refresh();
+          } else {
+            toast({
+              title: "Deactivation Failed",
+              description: result.error || "Failed to deactivate subscription",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error("Error deactivating subscription:", error);
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred",
+            variant: "destructive",
+          });
+        } finally {
+          setIsDeactivating(false);
+        }
+      };
 
       return (
         <DropdownMenu>
@@ -658,6 +847,26 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
                 View details
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {subscription.isActive ? (
+              <DropdownMenuItem
+                onClick={handleDeactivate}
+                disabled={isDeactivating}
+                className="text-red-600"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                {isDeactivating ? "Deactivating..." : "Deactivate Subscription"}
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={handleActivate}
+                disabled={isActivating}
+                className="text-green-600"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {isActivating ? "Activating..." : "Activate Subscription"}
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

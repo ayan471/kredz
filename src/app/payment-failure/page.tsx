@@ -1,36 +1,68 @@
-import { XCircle } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+"use client";
 
-export default function PaymentError() {
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertCircle } from "lucide-react";
+import Link from "next/link";
+
+export default function PaymentFailure() {
+  const searchParams = useSearchParams();
+  const [id, setId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Get the clean ID from the URL
+    const idParam = searchParams.get("id");
+    if (idParam) {
+      setId(idParam);
+    }
+  }, [searchParams]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-red-400 to-pink-500">
-      <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-2xl transform transition-all hover:scale-105">
-        <div className="text-center">
-          <XCircle className="mx-auto h-16 w-16 text-red-500" />
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Payment Error
-          </h2>
-          <p className="mt-2 text-xl text-gray-600">
-            We couldn't process your payment.
-          </p>
-          <div className="mt-8 space-y-6">
-            <p className="text-sm text-gray-500">
-              We couldn't retrieve the necessary information to complete your
-              transaction. Please check your payment details and try again.
-            </p>
-            <div className="space-y-4">
-              <Button
-                asChild
-                variant="outline"
-                className="w-full py-3 px-4 text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                <Link href="/">Return to Homepage</Link>
-              </Button>
-            </div>
+    <div className="container mx-auto max-w-md p-6 flex items-center justify-center min-h-screen">
+      <Card className="w-full">
+        <CardHeader className="text-center">
+          <div className="mx-auto bg-red-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+            <AlertCircle className="h-8 w-8 text-red-600" />
           </div>
-        </div>
-      </div>
+          <CardTitle className="text-2xl">Payment Failed</CardTitle>
+          <CardDescription>
+            We couldn't process your payment at this time.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p>
+            There was an issue processing your payment. This could be due to
+            insufficient funds, incorrect card details, or a temporary issue
+            with the payment gateway.
+          </p>
+          {id && (
+            <p className="mt-4 text-sm text-gray-500">Application ID: {id}</p>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-center gap-4">
+          {id ? (
+            <Link href={`/loan-application/step-three?id=${id}`}>
+              <Button variant="outline">Try Again</Button>
+            </Link>
+          ) : (
+            <Link href="/loan-application/step-three">
+              <Button variant="outline">Try Again</Button>
+            </Link>
+          )}
+          <Link href="/support">
+            <Button>Contact Support</Button>
+          </Link>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

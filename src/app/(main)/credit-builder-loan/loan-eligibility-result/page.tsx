@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
+import SabpaisaPaymentGateway from "@/components/sabpaisa-payment-gateway";
 
 type FormData = {
   accountNumber: string;
@@ -34,6 +35,10 @@ export default function LoanEligibilityResult() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Sabpaisa payment state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState<any>(null);
 
   const {
     register,
@@ -90,7 +95,15 @@ export default function LoanEligibilityResult() {
   const handlePayment = async () => {
     setIsProcessing(true);
     try {
-      const response = await fetch("/api/initiate-phonepe-payment", {
+      if (!applicationId) {
+        throw new Error("Application ID not found");
+      }
+
+      // Store the application ID in localStorage for recovery if needed
+      localStorage.setItem("lastFasterProcessingApplication", applicationId);
+
+      // Replace PhonePe with Sabpaisa
+      const response = await fetch("/api/initiate-sabpaisa-payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,12 +117,19 @@ export default function LoanEligibilityResult() {
         }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to initiate payment");
+      }
 
-      if (data.success) {
-        router.push(data.paymentUrl);
+      const paymentData = await response.json();
+
+      if (paymentData.success && paymentData.paymentDetails) {
+        // Set payment details and show the Sabpaisa payment modal
+        setPaymentDetails(paymentData.paymentDetails);
+        setShowPaymentModal(true);
       } else {
-        throw new Error(data.error || "Failed to initiate payment");
+        throw new Error(paymentData.error || "Failed to initiate payment");
       }
     } catch (error) {
       toast({
@@ -125,6 +145,56 @@ export default function LoanEligibilityResult() {
     }
   };
 
+  const handlePaymentToggle = () => {
+    setShowPaymentModal(false);
+    // Redirection will be handled by the PaymentStatusListener component
+  };
+
+  // Add this debug function to your loan-eligibility-result.tsx file
+  // Place it inside the component but outside any other functions
+
+  const handleDebugFasterProcessing = async () => {
+    if (!applicationId) {
+      toast({
+        title: "Error",
+        description: "Application ID not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Call the direct DB update API
+      const response = await fetch(
+        `/api/direct-db-update?applicationId=${applicationId}`,
+        {
+          method: "GET",
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "Debug Success",
+          description: `Update attempted. Current value: ${result.data.fasterProcessingPaid}`,
+        });
+      } else {
+        toast({
+          title: "Debug Error",
+          description: "Failed to update faster processing status",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Debug error:", error);
+      toast({
+        title: "Debug Error",
+        description: "An error occurred during debug",
+        variant: "destructive",
+      });
+    }
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -137,6 +207,7 @@ export default function LoanEligibilityResult() {
                 {...register("accountNumber", {
                   required: "Account number is required",
                 })}
+                type="number"
               />
               {errors.accountNumber && (
                 <p className="text-red-500 text-sm">
@@ -225,6 +296,13 @@ export default function LoanEligibilityResult() {
                 : "Pay ₹118 for Faster Processing"}
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
+            {/* <Button
+              onClick={handleDebugFasterProcessing}
+              className="w-full mt-4 bg-gray-500 hover:bg-gray-600 text-white"
+              type="button"
+            >
+              Debug: Force Update Faster Processing
+            </Button> */}
           </div>
         );
       default:
@@ -232,7 +310,7 @@ export default function LoanEligibilityResult() {
     }
   };
 
-  if (status !== "Approved") {
+  if (status !== "In Progress") {
     return (
       <div className="container mx-auto mt-10">
         <Card className="w-full max-w-md mx-auto">
@@ -328,6 +406,26 @@ export default function LoanEligibilityResult() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Sabpaisa Payment Gateway Modal */}
+      {showPaymentModal && paymentDetails && (
+        <SabpaisaPaymentGateway
+          clientCode={paymentDetails.clientCode}
+          transUserName={paymentDetails.transUserName}
+          transUserPassword={paymentDetails.transUserPassword}
+          authkey={paymentDetails.authkey}
+          authiv={paymentDetails.authiv}
+          payerName={paymentDetails.payerName}
+          payerEmail={paymentDetails.payerEmail}
+          payerMobile={paymentDetails.payerMobile}
+          clientTxnId={paymentDetails.clientTxnId}
+          amount={paymentDetails.amount}
+          payerAddress={paymentDetails.payerAddress}
+          callbackUrl={paymentDetails.callbackUrl}
+          isOpen={showPaymentModal}
+          onToggle={handlePaymentToggle}
+        />
+      )}
     </div>
   );
 }

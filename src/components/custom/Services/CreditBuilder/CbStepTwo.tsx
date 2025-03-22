@@ -294,13 +294,13 @@ const CbStepTwo: React.FC = () => {
                     {plan.label}
                   </h3>
                   <div className="flex flex-col items-baseline mb-4">
-                    {/* <span className="text-3xl font-extrabold text-white">
+                    <span className="text-3xl font-extrabold text-white">
                       ₹{baseAmount}
-                    </span> */}
+                    </span>
                     <div className="flex flex-col items-start">
-                      {/* <span className="text-sm text-white">
+                      <span className="text-sm text-white">
                         + ₹{gstAmount} GST
-                      </span> */}
+                      </span>
                       <span className="text-lg font-semibold text-white">
                         ₹{totalAmount}
                       </span>

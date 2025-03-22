@@ -14,7 +14,7 @@ export default async function ContactSubmissionsPage() {
   const initialSubmissions: ContactSubmission[] = await getContactSubmissions();
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
+    <div className="flex flex-col min-h-screen">
       <div className="flex-1 p-4 sm:p-6 md:p-8 lg:p-10 overflow-auto">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-4 sm:mb-6 text-blue-900">
           Contact Form Submissions

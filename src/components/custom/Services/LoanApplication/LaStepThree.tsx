@@ -14,11 +14,13 @@ import {
 } from "@/actions/loanApplicationActions";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, ChevronRight } from "lucide-react";
-import { initiatePhonePePayment } from "@/components/lib/phonePe";
 import { useUser } from "@clerk/nextjs";
-import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import SabpaisaPaymentGateway from "@/components/sabpaisa-payment-gateway";
+import { initiateSabpaisaPayment } from "@/components/lib/sabPaisa";
+
+// Define the FormValues type
 type FormValues = {
   fullName: string;
   phoneNo: string;
@@ -27,6 +29,31 @@ type FormValues = {
   aadharNo: string;
   membershipPlan: string;
 };
+
+// Define a mock function for updateLoanApplicationData
+// async function updateLoanApplicationData(id: string, data: any): Promise<any> {
+//   // Simulate an API call
+//   return new Promise((resolve) => {
+//     setTimeout(() => {
+//       resolve({ success: true, data: { id, ...data } })
+//     }, 500)
+//   })
+// }
+
+// Define a mock function for initiateSabpaisaPayment
+// async function initiateSabpaisaPayment(paymentDetails: any): Promise<any> {
+//   // Simulate an API call
+//   return new Promise((resolve) => {
+//     setTimeout(() => {
+//       resolve({ success: true, paymentDetails: { ...paymentDetails, transactionId: "12345" } })
+//     }, 500)
+//   })
+// }
+
+// Define a mock function for calculateAmounts
+// function calculateAmounts(discountedPrice: number): { totalAmount: string } {
+//   return { totalAmount: String(discountedPrice) }
+// }
 
 const calculateAmounts = (basePrice: number) => {
   const gstAmount = basePrice * 0.18;
@@ -54,6 +81,10 @@ const LaStepThree = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [eligibleAmount, setEligibleAmount] = useState<number | null>(null);
   const { user } = useUser();
+
+  // Sabpaisa payment state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -104,7 +135,6 @@ const LaStepThree = () => {
                       ? 1200
                       : 0,
             features: [
-              // "Pre-approved loan offer",
               "Instant processing",
               "Exclusive interest rates",
               "24/7 customer support",
@@ -138,7 +168,8 @@ const LaStepThree = () => {
           description: "Initiating payment...",
         });
 
-        const paymentResult = await initiatePhonePePayment({
+        // Replace PhonePe with Sabpaisa
+        const paymentResult = await initiateSabpaisaPayment({
           amount: Number.parseFloat(
             calculateAmounts(planDetails.discountedPrice).totalAmount
           ),
@@ -146,11 +177,13 @@ const LaStepThree = () => {
           customerName: data.fullName,
           customerPhone: data.phoneNo,
           customerEmail: data.emailID,
+          customerAddress: "Not Provided", // Add address field if needed
         });
 
-        if (paymentResult.success && paymentResult.paymentUrl) {
-          // Redirect to the payment URL
-          window.location.href = paymentResult.paymentUrl;
+        if (paymentResult.success && paymentResult.paymentDetails) {
+          // Set payment details and show the Sabpaisa payment modal
+          setPaymentDetails(paymentResult.paymentDetails);
+          setShowPaymentModal(true);
         } else {
           console.error("Payment initiation failed:", paymentResult.error);
           toast({
@@ -180,6 +213,11 @@ const LaStepThree = () => {
     }
   };
 
+  const handlePaymentToggle = () => {
+    setShowPaymentModal(false);
+    // Redirection will be handled by the SabpaisaPaymentGateway component
+  };
+
   return (
     <div className="mx-auto w-full max-w-4xl p-6 space-y-8">
       <Card className="border-2 border-orange-500 shadow-lg overflow-hidden">
@@ -189,42 +227,6 @@ const LaStepThree = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          {/* <div className="mb-8">
-            <Progress
-              value={(3 / 6) * 100}
-              className="w-full h-3 rounded-full bg-orange-200"
-            />
-            <div className="flex justify-between mt-4">
-              {[
-                "Loan Application",
-                "Eligibility",
-                "Membership",
-                "Loan Approval",
-                "Loan Agreement",
-                "Loan Disbursement",
-              ].map((step, index) => (
-                <div key={step} className="flex flex-col items-center">
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium
-                    ${index <= 2 ? "bg-orange-500 text-white" : "bg-orange-100 text-blue-950"}
-                    ${index === 2 ? "ring-4 ring-orange-500 ring-offset-2" : ""}`}
-                  >
-                    {index <= 2 ? (
-                      <CheckCircle2 className="w-6 h-6" />
-                    ) : (
-                      index + 1
-                    )}
-                  </div>
-                  <span
-                    className={`text-xs mt-2 ${index === 2 ? "font-semibold text-blue-950" : "text-gray-500"}`}
-                  >
-                    {step}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div> */}
-
           <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
             {eligibleAmount !== null && (
               <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
@@ -320,6 +322,26 @@ const LaStepThree = () => {
           </form>
         </CardContent>
       </Card>
+
+      {/* Sabpaisa Payment Gateway Modal */}
+      {showPaymentModal && paymentDetails && (
+        <SabpaisaPaymentGateway
+          clientCode={paymentDetails.clientCode}
+          transUserName={paymentDetails.transUserName}
+          transUserPassword={paymentDetails.transUserPassword}
+          authkey={paymentDetails.authkey}
+          authiv={paymentDetails.authiv}
+          payerName={paymentDetails.payerName}
+          payerEmail={paymentDetails.payerEmail}
+          payerMobile={paymentDetails.payerMobile}
+          clientTxnId={paymentDetails.clientTxnId}
+          amount={paymentDetails.amount}
+          payerAddress={paymentDetails.payerAddress}
+          callbackUrl={paymentDetails.callbackUrl}
+          isOpen={showPaymentModal}
+          onToggle={handlePaymentToggle}
+        />
+      )}
 
       <DevTool control={control} />
     </div>

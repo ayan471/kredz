@@ -402,7 +402,7 @@ export async function checkEligibility(applicationId: string) {
 
     await prisma.creditBuilderLoanApplication.update({
       where: { id: applicationId },
-      data: { status: "Approved", eligibleAmount },
+      data: { status: "In Progress", eligibleAmount },
     });
     return { success: true, eligibleAmount };
   } catch (error) {
@@ -429,5 +429,232 @@ export async function updateCreditBuilderLoanApplicationData(
   } catch (error) {
     console.error("Error updating Credit Builder Loan application:", error);
     throw new Error("Failed to update Credit Builder Loan application");
+  }
+}
+
+export async function makeUserEligible(id: string) {
+  try {
+    await prisma.creditBuilderLoanApplication.update({
+      where: { id },
+      data: { status: "Eligible" },
+    });
+    revalidatePath("/admin/credit-builder-loan");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to make user eligible:", error);
+    return { success: false, error: "Failed to make user eligible" };
+  }
+}
+
+export async function approveLoanWithDetails(
+  applicationId: string,
+  data: {
+    approvedAmount: string;
+    processingFees: string;
+    gst: string;
+    otherCharges: string;
+    rateOfInterest: string;
+    tenure: string;
+    netDisbursement: string;
+    disbursementAccount: string;
+    disbursementDate: string;
+    lender: string;
+    emi: string;
+  }
+) {
+  try {
+    const updatedLoan = await prisma.creditBuilderLoanApplication.update({
+      where: { id: applicationId },
+      data: {
+        status: "Approved",
+        approvedAmount: parseFloat(data.approvedAmount),
+        processingFees: parseFloat(data.processingFees),
+        gst: parseFloat(data.gst),
+        otherCharges: parseFloat(data.otherCharges),
+        rateOfInterest: parseFloat(data.rateOfInterest),
+        tenure: parseInt(data.tenure),
+        netDisbursement: parseFloat(data.netDisbursement),
+        disbursementAccount: data.disbursementAccount,
+        disbursementDate: new Date(data.disbursementDate),
+        lender: data.lender,
+        emi: parseFloat(data.emi),
+      },
+    });
+
+    console.log("Updated loan in database:", updatedLoan);
+    return { success: true, loan: updatedLoan };
+  } catch (error) {
+    console.error("Error approving loan:", error);
+    return { success: false, error: "Failed to approve loan" };
+  }
+}
+
+export async function updateEMIPaymentLink(
+  loanId: string,
+  emiPaymentLink: string
+) {
+  try {
+    const updatedLoan = await prisma.creditBuilderLoanApplication.update({
+      where: { id: loanId },
+      data: { emiPaymentLink },
+    });
+
+    console.log("Updated EMI payment link:", updatedLoan);
+    return { success: true, loan: updatedLoan };
+  } catch (error) {
+    console.error("Error updating EMI payment link:", error);
+    return { success: false, error: "Failed to update EMI payment link" };
+  }
+}
+
+export async function rejectLoan(id: string, reason: string) {
+  try {
+    await prisma.creditBuilderLoanApplication.update({
+      where: { id },
+      data: {
+        status: "Rejected",
+        rejectionReason: reason,
+      },
+    });
+    revalidatePath("/admin/credit-builder-loan");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to reject loan:", error);
+    return { success: false, error: "Failed to reject loan" };
+  }
+}
+
+export async function payEMI(loanId: string, amount: number) {
+  try {
+    const loan = await prisma.creditBuilderLoanApplication.findUnique({
+      where: { id: loanId },
+      include: { emiPayments: true },
+    });
+
+    if (!loan) {
+      throw new Error("Loan not found");
+    }
+
+    if (loan.emiPayments.length >= (loan.tenure || 0)) {
+      throw new Error("All EMIs have been paid for this loan");
+    }
+
+    if (!loan.emiPaymentLink) {
+      throw new Error("EMI payment link not available");
+    }
+
+    // Here, you would typically integrate with your payment gateway
+    // using the emiPaymentLink. For this example, we'll simulate a successful payment.
+
+    const payment = await prisma.eMIPayment.create({
+      data: {
+        loanId,
+        amount,
+        paymentDate: new Date(),
+      },
+    });
+
+    // After successful payment, you might want to update the emiPaymentLink
+    // for the next payment or mark it as used.
+    await prisma.creditBuilderLoanApplication.update({
+      where: { id: loanId },
+      data: {
+        emiPaymentLink: null, // or generate a new link for the next payment
+      },
+    });
+
+    revalidatePath(`/dashboard/credit-builder-loan/${loanId}`);
+
+    return { success: true, payment };
+  } catch (error) {
+    console.error("Error processing EMI payment:", error);
+    return { success: false, error: "Failed to process EMI payment" };
+  }
+}
+
+export async function updateFasterProcessingStatus(
+  applicationId: string,
+  isPaid: boolean
+) {
+  try {
+    console.log(
+      `DIRECT DB UPDATE: Updating faster processing status for application ${applicationId} to ${isPaid}`
+    );
+
+    // MongoDB requires ObjectId to be properly formatted
+    // Make sure the ID is valid before attempting the update
+    if (!applicationId || applicationId.length !== 24) {
+      console.error(`Invalid MongoDB ObjectId format: ${applicationId}`);
+      return {
+        success: false,
+        error: "Invalid application ID format",
+      };
+    }
+
+    // Add more detailed logging
+    const beforeUpdate = await prisma.creditBuilderLoanApplication.findUnique({
+      where: { id: applicationId },
+    });
+
+    if (!beforeUpdate) {
+      console.error(`Application not found with ID: ${applicationId}`);
+      return {
+        success: false,
+        error: "Application not found",
+      };
+    }
+
+    console.log("Before update:", {
+      id: beforeUpdate.id,
+      fullName: beforeUpdate.fullName,
+      fasterProcessingPaid: beforeUpdate.fasterProcessingPaid,
+    });
+
+    // Try a direct database update using Prisma's executeRaw for MongoDB
+    // This bypasses any potential Prisma caching or validation issues
+    const result = await prisma.$runCommandRaw({
+      update: "CreditBuilderLoanApplication",
+      updates: [
+        {
+          q: { _id: { $oid: applicationId } },
+          u: { $set: { fasterProcessingPaid: isPaid } },
+        },
+      ],
+    });
+
+    console.log("MongoDB direct update result:", result);
+
+    // Also try the standard Prisma update as a fallback
+    const updatedApplication = await prisma.creditBuilderLoanApplication.update(
+      {
+        where: { id: applicationId },
+        data: { fasterProcessingPaid: isPaid },
+      }
+    );
+
+    console.log("After update - Updated faster processing status:", {
+      id: updatedApplication.id,
+      fullName: updatedApplication.fullName,
+      fasterProcessingPaid: updatedApplication.fasterProcessingPaid,
+    });
+
+    // Revalidate multiple paths to ensure UI is updated
+    revalidatePath("/admin/credit-builder-loan");
+    revalidatePath("/admin/credit-builder-loans");
+    revalidatePath(`/admin/credit-builder-loans/${applicationId}`);
+
+    return { success: true, data: updatedApplication };
+  } catch (error) {
+    console.error("CRITICAL ERROR updating faster processing status:", error);
+    // Log more details about the error
+    if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
+    return {
+      success: false,
+      error: "Failed to update faster processing status",
+    };
   }
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useUser, UserButton } from "@clerk/nextjs";
@@ -16,6 +18,15 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import type { CreditBuilderSubscription } from "@prisma/client";
+
+// Update the NavigationItem interface to ensure all properties are properly defined
+interface NavigationItem {
+  href: string;
+  icon: React.ComponentType<any>;
+  label: string;
+  comingSoon?: boolean;
+  locked?: boolean;
+}
 
 interface SidebarProps {
   subscription: CreditBuilderSubscription | null;
@@ -42,30 +53,56 @@ export function Sidebar({ subscription }: SidebarProps) {
     return () => document.removeEventListener("click", handleOutsideClick);
   }, [isOpen]);
 
-  const isSubscriptionExpired =
-    subscription && subscription.expiryDate
-      ? new Date(subscription.expiryDate) < new Date()
-      : true;
+  // Update the hasActiveSubscription check to be more direct and explicit
+  const hasActiveSubscription =
+    subscription !== null && subscription.isActive === true;
 
-  const navigation = [
+  // Add more detailed logging to help debug the issue
+  console.log("Sidebar subscription check:", {
+    exists: !!subscription,
+    isActive: subscription?.isActive,
+    expiryDate: subscription?.expiryDate,
+    hasActiveSubscription,
+    subscriptionObject: subscription,
+  });
+
+  // Update the navigation array to use the simplified check
+  const navigation: NavigationItem[] = [
     { href: "/", icon: ArrowLeft, label: "Back to Home" },
     { href: "/dashboard", icon: Home, label: "Dashboard" },
     { href: "/dashboard/account", icon: User, label: "My Account" },
     { href: "/dashboard/loans", icon: FileText, label: "My Loans" },
+    {
+      href: "/dashboard/credit-builder-loan",
+      icon: FileText,
+      label: "Credit Builder Loans",
+    },
     { href: "/dashboard/membership", icon: Star, label: "My Membership" },
-    {
-      href: "/dashboard/subscription",
-      icon: BookOpen,
-      label: "My Subscription",
-    },
-    {
-      href: "/dashboard/credit-health",
-      icon: Activity,
-      label: "Credit Health Analysis",
-      locked: isSubscriptionExpired,
-    },
-    { href: "#", icon: Users, label: "Channel Partner", comingSoon: true },
   ];
+
+  // Only add subscription and credit health links if hasActiveSubscription is true
+  if (hasActiveSubscription) {
+    navigation.push(
+      {
+        href: "/dashboard/subscription",
+        icon: BookOpen,
+        label: "My Subscription",
+      },
+      {
+        href: "/dashboard/credit-health",
+        icon: Activity,
+        label: "Credit Health Analysis",
+      }
+    );
+  }
+
+  // Add the channel partner link at the end
+  navigation.push({
+    href: "#",
+    icon: Users,
+    label: "Channel Partner",
+    comingSoon: true,
+  });
 
   return (
     <>

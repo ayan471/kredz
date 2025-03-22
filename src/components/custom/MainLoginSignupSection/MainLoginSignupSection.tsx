@@ -59,12 +59,12 @@ const MainLoginSignupSection = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
               {isLoggedIn ? (
                 <>
-                  <Link href="#">
+                  <Link href="/consultancy-application">
                     <Button className="text-lg px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all duration-300 rounded-full shadow-lg hover:shadow-xl text-white transform hover:scale-105">
                       Apply Now
                     </Button>
                   </Link>
-                  <Link href="/credit-builder">
+                  <Link href="/credit-builder-plan">
                     <Button className="text-lg px-8 py-4 bg-gradient-to-r from-blue-800 to-blue-900 hover:from-blue-900 hover:to-blue-950 transition-all duration-300 rounded-full shadow-lg hover:shadow-xl text-white transform hover:scale-105">
                       Credit Builder
                     </Button>

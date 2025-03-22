@@ -682,3 +682,37 @@ export async function updateEMIPaymentLink(
     return { success: false, error: "Failed to update EMI payment link" };
   }
 }
+
+export async function toggleMembershipStatus(
+  applicationId: string,
+  isActive: boolean
+) {
+  try {
+    // Update the membership status directly in the LoanApplication model
+    const updatedApplication = await prisma.loanApplication.update({
+      where: { id: applicationId },
+      data: {
+        membershipActive: isActive,
+        membershipActivationDate: isActive ? new Date() : null,
+      },
+    });
+
+    // Revalidate any paths that might display membership status
+    revalidatePath("/admin/loans");
+    revalidatePath(`/admin/loans/${applicationId}`);
+    revalidatePath("/dashboard");
+
+    return {
+      success: true,
+      message: isActive
+        ? "Membership activated successfully"
+        : "Membership deactivated successfully",
+    };
+  } catch (error) {
+    console.error("Error toggling membership status:", error);
+    return {
+      success: false,
+      error: "Failed to update membership status",
+    };
+  }
+}

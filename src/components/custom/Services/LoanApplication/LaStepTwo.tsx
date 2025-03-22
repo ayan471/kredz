@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
@@ -91,6 +91,8 @@ const LaStepTwo = () => {
   const selectedTenure = watch("emiTenure");
   const [currentStep, setCurrentStep] = useState(1);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const fetchData = async () => {
       const id = searchParams.get("id");
@@ -126,6 +128,24 @@ const LaStepTwo = () => {
       setEmiDetails(details);
     }
   }, [eligibleAmount, selectedTenure]);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const activeStep = container.children[currentStep - 1] as HTMLElement;
+      if (activeStep) {
+        const containerWidth = container.offsetWidth;
+        const stepWidth = activeStep.offsetWidth;
+        const scrollLeft =
+          activeStep.offsetLeft - containerWidth / 2 + stepWidth / 2;
+
+        container.scrollTo({
+          left: scrollLeft,
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [currentStep]);
 
   const onSubmit = async (data: FormValues) => {
     const id = searchParams.get("id");
@@ -366,7 +386,7 @@ const LaStepTwo = () => {
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="accountNumber">Account Number</Label>
                 <Input
-                  type="text"
+                  type="number"
                   id="accountNumber"
                   {...register("accountNumber")}
                   required
@@ -440,11 +460,17 @@ const LaStepTwo = () => {
               value={(currentStep / 3) * 100}
               className="w-full h-3 rounded-full bg-orange-200"
             />
-            <div className="flex justify-between mt-4">
+            <div
+              ref={scrollContainerRef}
+              className="flex justify-between mt-4 overflow-x-auto pb-4 scrollbar-hide"
+            >
               {steps.map((step, index) => (
-                <div key={step} className="flex flex-col items-center">
+                <div
+                  key={step}
+                  className="flex flex-col items-center flex-shrink-0 px-2 min-w-[80px] mt-2"
+                >
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium
+                    className={`w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium mb-1
                     ${index < currentStep ? "bg-orange-500 text-white" : "bg-orange-100 text-blue-950"}
                     ${index === currentStep - 1 ? "ring-4 ring-orange-500 ring-offset-2" : ""}`}
                   >

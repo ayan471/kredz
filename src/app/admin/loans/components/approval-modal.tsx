@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { approveLoanWithDetails } from "@/actions/loanApplicationActions";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
 
 type ApprovalFormData = {
   approvedAmount: string;
@@ -141,135 +142,152 @@ export function ApprovalModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-orange-50 to-blue-50 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Approve Loan Application</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl font-bold text-blue-950">
+            Approve Loan Application
+          </DialogTitle>
+          <DialogDescription className="text-orange-700">
             Enter the loan approval details below. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="approvedAmount" className="text-right">
-              Approved Amount
-            </Label>
-            <Input
-              id="approvedAmount"
-              className="col-span-3"
-              {...register("approvedAmount", { required: true })}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="processingFees" className="text-right">
-              Processing Fees
-            </Label>
-            <Input
-              id="processingFees"
-              className="col-span-3"
-              {...register("processingFees", { required: true })}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="gst" className="text-right">
-              GST
-            </Label>
-            <Input
-              id="gst"
-              className="col-span-3"
-              {...register("gst")}
-              readOnly
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="otherCharges" className="text-right">
-              Other Charges
-            </Label>
-            <Input
-              id="otherCharges"
-              className="col-span-3"
-              {...register("otherCharges")}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="rateOfInterest" className="text-right">
-              Rate of Interest
-            </Label>
-            <Input
-              id="rateOfInterest"
-              className="col-span-3"
-              {...register("rateOfInterest", { required: true })}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="tenure" className="text-right">
-              Tenure (in months)
-            </Label>
-            <Input
-              id="tenure"
-              className="col-span-3"
-              {...register("tenure", {
-                required: true,
-                valueAsNumber: true,
-                validate: (value) =>
-                  (typeof value === "number" && value > 0) ||
-                  "Tenure must be greater than 0",
-              })}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="netDisbursement" className="text-right">
-              Net Disbursement
-            </Label>
-            <Input
-              id="netDisbursement"
-              className="col-span-3"
-              {...register("netDisbursement")}
-              readOnly
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="disbursementAccount" className="text-right">
-              Disbursement Account
-            </Label>
-            <Textarea
-              id="disbursementAccount"
-              className="col-span-3"
-              {...register("disbursementAccount", { required: true })}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="disbursementDate" className="text-right">
-              Disbursement Date
-            </Label>
-            <Input
-              id="disbursementDate"
-              type="date"
-              className="col-span-3"
-              {...register("disbursementDate", { required: true })}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="lender" className="text-right">
-              Lender
-            </Label>
-            <Input
-              id="lender"
-              className="col-span-3"
-              {...register("lender", { required: true })}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="emi" className="text-right">
-              EMI
-            </Label>
-            <Input
-              id="emi"
-              className="col-span-3"
-              {...register("emi")}
-              readOnly
-            />
-          </div>
-          <Button type="submit" disabled={isSubmitting}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6 max-h-[calc(90vh-120px)] overflow-y-auto scrollbar-hide lg:scrollbar-default"
+        >
+          <Card className="bg-white shadow-md relative">
+            <CardContent className="p-6 overflow-y-auto scrollbar-hide lg:scrollbar-default">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="approvedAmount" className="text-blue-950">
+                    Approved Amount
+                  </Label>
+                  <Input
+                    id="approvedAmount"
+                    className="border-orange-300 focus:border-orange-500 focus:ring-orange-500"
+                    {...register("approvedAmount", { required: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="processingFees" className="text-blue-950">
+                    Processing Fees
+                  </Label>
+                  <Input
+                    id="processingFees"
+                    className="border-orange-300 focus:border-orange-500 focus:ring-orange-500"
+                    {...register("processingFees", { required: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gst" className="text-blue-950">
+                    GST
+                  </Label>
+                  <Input
+                    id="gst"
+                    className="border-orange-300 bg-gray-100"
+                    {...register("gst")}
+                    readOnly
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="otherCharges" className="text-blue-950">
+                    Other Charges
+                  </Label>
+                  <Input
+                    id="otherCharges"
+                    className="border-orange-300 focus:border-orange-500 focus:ring-orange-500"
+                    {...register("otherCharges")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rateOfInterest" className="text-blue-950">
+                    Rate of Interest
+                  </Label>
+                  <Input
+                    id="rateOfInterest"
+                    className="border-orange-300 focus:border-orange-500 focus:ring-orange-500"
+                    {...register("rateOfInterest", { required: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tenure" className="text-blue-950">
+                    Tenure (in months)
+                  </Label>
+                  <Input
+                    id="tenure"
+                    className="border-orange-300 focus:border-orange-500 focus:ring-orange-500"
+                    {...register("tenure", {
+                      required: true,
+                      valueAsNumber: true,
+                      validate: (value) =>
+                        (typeof value === "number" && value > 0) ||
+                        "Tenure must be greater than 0",
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="netDisbursement" className="text-blue-950">
+                    Net Disbursement
+                  </Label>
+                  <Input
+                    id="netDisbursement"
+                    className="border-orange-300 bg-gray-100"
+                    {...register("netDisbursement")}
+                    readOnly
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emi" className="text-blue-950">
+                    EMI
+                  </Label>
+                  <Input
+                    id="emi"
+                    className="border-orange-300 bg-gray-100"
+                    {...register("emi")}
+                    readOnly
+                  />
+                </div>
+              </div>
+              <div className="space-y-2 mt-6">
+                <Label htmlFor="disbursementAccount" className="text-blue-950">
+                  Disbursement Account
+                </Label>
+                <Textarea
+                  id="disbursementAccount"
+                  className="border-orange-300 focus:border-orange-500 focus:ring-orange-500"
+                  {...register("disbursementAccount", { required: true })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-6 mt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="disbursementDate" className="text-blue-950">
+                    Disbursement Date
+                  </Label>
+                  <Input
+                    id="disbursementDate"
+                    type="date"
+                    className="border-orange-300 focus:border-orange-500 focus:ring-orange-500"
+                    {...register("disbursementDate", { required: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lender" className="text-blue-950">
+                    Lender
+                  </Label>
+                  <Input
+                    id="lender"
+                    className="border-orange-300 focus:border-orange-500 focus:ring-orange-500"
+                    {...register("lender", { required: true })}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300"
+          >
             {isSubmitting ? "Saving..." : "Save changes"}
           </Button>
         </form>

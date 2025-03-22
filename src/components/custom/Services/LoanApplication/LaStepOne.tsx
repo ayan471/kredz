@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { Input } from "@/components/ui/input";
@@ -132,6 +132,7 @@ const Step1Personal: React.FC<StepProps> = ({
   user,
   age,
   isRejected,
+  watch,
 }) => (
   <div className="space-y-6">
     <div className="grid w-full items-center gap-3">
@@ -424,158 +425,200 @@ const Step4Documents: React.FC<StepProps> = ({
   errors,
   isRejected,
   setValue,
-}) => (
-  <div className="space-y-6">
-    <div className="grid w-full items-center gap-3">
-      <Label htmlFor="aadharImgFront" className="text-base font-semibold">
-        Upload Aadhar Card (Front)
-      </Label>
-      <Input
-        id="aadharImgFront"
-        type="file"
-        {...register("aadharImgFront", {
-          required: "Aadhar card front image is required",
-        })}
-        className="w-full p-3"
-        accept=".jpg,.jpeg,.png"
-        disabled={isRejected}
-      />
-      {errors.aadharImgFront && (
-        <p className="text-red-500 text-sm">{errors.aadharImgFront.message}</p>
-      )}
-    </div>
-    <div className="grid w-full items-center gap-3">
-      <Label htmlFor="aadharImgBack" className="text-base font-semibold">
-        Upload Aadhar Card (Back)
-      </Label>
-      <Input
-        id="aadharImgBack"
-        type="file"
-        {...register("aadharImgBack", {
-          required: "Aadhar card back image is required",
-        })}
-        className="w-full p-3"
-        accept=".jpg,.jpeg,.png"
-        disabled={isRejected}
-      />
-      {errors.aadharImgBack && (
-        <p className="text-red-500 text-sm">{errors.aadharImgBack.message}</p>
-      )}
-    </div>
-    <div className="grid w-full items-center gap-3">
-      <Label htmlFor="aadharNo" className="text-base font-semibold">
-        Aadhar Number
-      </Label>
-      <Input
-        id="aadharNo"
-        type="text"
-        {...register("aadharNo", {
-          required: "Aadhar number is required",
-          pattern: {
-            value: /^\d{12}$/,
-            message: "Invalid Aadhar number, must be 12 digits",
-          },
-        })}
-        className="w-full p-3"
-        disabled={isRejected}
-      />
-      {errors.aadharNo && (
-        <p className="text-red-500 text-sm">{errors.aadharNo.message}</p>
-      )}
-    </div>
-    <div className="grid w-full items-center gap-3">
-      <Label htmlFor="panImgFront" className="text-base font-semibold">
-        Upload PAN Card (Front)
-      </Label>
-      <Input
-        id="panImgFront"
-        type="file"
-        {...register("panImgFront", { required: "PAN card image is required" })}
-        className="w-full p-3"
-        accept=".jpg,.jpeg,.png"
-        disabled={isRejected}
-      />
-      {errors.panImgFront && (
-        <p className="text-red-500 text-sm">{errors.panImgFront.message}</p>
-      )}
-    </div>
-    <div className="grid w-full items-center gap-3">
-      <Label htmlFor="panNo" className="text-base font-semibold">
-        PAN Number
-      </Label>
-      <Input
-        id="panNo"
-        type="text"
-        {...register("panNo", {
-          required: "PAN number is required",
-          pattern: {
-            value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-            message: "Invalid PAN number",
-          },
-        })}
-        className="w-full p-3"
-        disabled={isRejected}
-      />
-      {errors.panNo && (
-        <p className="text-red-500 text-sm">{errors.panNo.message}</p>
-      )}
-    </div>
-    <div className="grid w-full items-center gap-3">
-      <Label htmlFor="selfieImg" className="text-base font-semibold">
-        Upload your selfie
-      </Label>
-      <Input
-        id="selfieImg"
-        type="file"
-        {...register("selfieImg", { required: "Selfie image is required" })}
-        className="w-full p-3"
-        accept=".jpg,.jpeg,.png"
-        disabled={isRejected}
-      />
-      {errors.selfieImg && (
-        <p className="text-red-500 text-sm">{errors.selfieImg.message}</p>
-      )}
-    </div>
-    <div className="grid w-full items-center gap-3">
-      <Label htmlFor="bankStatmntImg" className="text-base font-semibold">
-        Upload Your Bank Statement
-      </Label>
-      <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-orange-500 rounded-lg bg-orange-50">
-        <UploadButton<OurFileRouter>
-          endpoint="pdfUploader"
-          onClientUploadComplete={(res) => {
-            const uploadedFiles = res as {
-              name: string;
-              url: string;
-              size: number;
-            }[];
-            if (uploadedFiles && uploadedFiles.length > 0) {
-              setValue("bankStatmntImg", uploadedFiles[0].url);
-            }
-          }}
-          onUploadError={(error: Error) => {
-            // Handle upload error
-            console.error("Upload error:", error);
-          }}
-          onUploadBegin={() => {
-            // Handle upload start
-          }}
-          appearance={{
-            button:
-              "ut-ready:bg-orange-500 ut-ready:hover:bg-orange-600 ut-ready:text-white ut-ready:font-semibold ut-ready:py-3 ut-ready:px-4 ut-ready:rounded-md ut-ready:transition-colors ut-ready:duration-200 ut-ready:text-lg",
-            allowedContent: "flex flex-col items-center justify-center gap-2",
-          }}
+}) => {
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "uploading" | "completed" | "error"
+  >("idle");
+
+  return (
+    <div className="space-y-6">
+      <div className="grid w-full items-center gap-3">
+        <Label htmlFor="aadharNo" className="text-base font-semibold">
+          Aadhar Number
+        </Label>
+        <Input
+          id="aadharNo"
+          type="number"
+          {...register("aadharNo", {
+            required: "Aadhar number is required",
+            pattern: {
+              value: /^\d{12}$/,
+              message: "Invalid Aadhar number, must be 12 digits",
+            },
+          })}
+          className="w-full p-3"
+          disabled={isRejected}
         />
-        <p className="text-sm text-muted-foreground mt-2">
-          ** Only PDF files are accepted
-        </p>
+        {errors.aadharNo && (
+          <p className="text-red-500 text-sm">{errors.aadharNo.message}</p>
+        )}
       </div>
-      {errors.bankStatmntImg && (
-        <p className="text-red-500 text-sm">{errors.bankStatmntImg.message}</p>
-      )}
+      <div className="grid w-full items-center gap-3">
+        <Label htmlFor="aadharImgFront" className="text-base font-semibold">
+          Upload Aadhar Card (Front)
+        </Label>
+        <Input
+          id="aadharImgFront"
+          type="file"
+          {...register("aadharImgFront", {
+            required: "Aadhar card front image is required",
+          })}
+          className="w-full p-3"
+          accept=".jpg,.jpeg,.png"
+          disabled={isRejected}
+        />
+        {errors.aadharImgFront && (
+          <p className="text-red-500 text-sm">
+            {errors.aadharImgFront.message}
+          </p>
+        )}
+      </div>
+      <div className="grid w-full items-center gap-3">
+        <Label htmlFor="aadharImgBack" className="text-base font-semibold">
+          Upload Aadhar Card (Back)
+        </Label>
+        <Input
+          id="aadharImgBack"
+          type="file"
+          {...register("aadharImgBack", {
+            required: "Aadhar card back image is required",
+          })}
+          className="w-full p-3"
+          accept=".jpg,.jpeg,.png"
+          disabled={isRejected}
+        />
+        {errors.aadharImgBack && (
+          <p className="text-red-500 text-sm">{errors.aadharImgBack.message}</p>
+        )}
+      </div>
+      <div className="grid w-full items-center gap-3">
+        <Label htmlFor="panNo" className="text-base font-semibold">
+          PAN Number
+        </Label>
+        <Input
+          id="panNo"
+          type="text"
+          {...register("panNo", {
+            required: "PAN number is required",
+            pattern: {
+              value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+              message: "Invalid PAN number",
+            },
+          })}
+          className="w-full p-3"
+          disabled={isRejected}
+        />
+        {errors.panNo && (
+          <p className="text-red-500 text-sm">{errors.panNo.message}</p>
+        )}
+      </div>
+      <div className="grid w-full items-center gap-3">
+        <Label htmlFor="panImgFront" className="text-base font-semibold">
+          Upload PAN Card (Front)
+        </Label>
+        <Input
+          id="panImgFront"
+          type="file"
+          {...register("panImgFront", {
+            required: "PAN card image is required",
+          })}
+          className="w-full p-3"
+          accept=".jpg,.jpeg,.png"
+          disabled={isRejected}
+        />
+        {errors.panImgFront && (
+          <p className="text-red-500 text-sm">{errors.panImgFront.message}</p>
+        )}
+      </div>
+
+      <div className="grid w-full items-center gap-3">
+        <Label htmlFor="selfieImg" className="text-base font-semibold">
+          Upload your selfie
+        </Label>
+        <Input
+          id="selfieImg"
+          type="file"
+          {...register("selfieImg", { required: "Selfie image is required" })}
+          className="w-full p-3"
+          accept=".jpg,.jpeg,.png"
+          disabled={isRejected}
+        />
+        {errors.selfieImg && (
+          <p className="text-red-500 text-sm">{errors.selfieImg.message}</p>
+        )}
+      </div>
+      <div className="grid w-full items-center gap-3">
+        <Label htmlFor="bankStatmntImg" className="text-base font-semibold">
+          Upload Your Bank Statement
+        </Label>
+        <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-orange-500 rounded-lg bg-orange-50">
+          <UploadButton<OurFileRouter>
+            endpoint="pdfUploader"
+            onClientUploadComplete={(res) => {
+              const uploadedFiles = res as {
+                name: string;
+                url: string;
+                size: number;
+              }[];
+              if (uploadedFiles && uploadedFiles.length > 0) {
+                setValue("bankStatmntImg", uploadedFiles[0].url);
+                setUploadStatus("completed");
+              }
+            }}
+            onUploadError={(error: Error) => {
+              console.error("Upload error:", error);
+              setUploadStatus("error");
+            }}
+            onUploadBegin={() => {
+              setUploadStatus("uploading");
+            }}
+            appearance={{
+              button:
+                "ut-ready:bg-orange-500 ut-ready:hover:bg-orange-600 ut-ready:text-white ut-ready:font-semibold ut-ready:py-3 ut-ready:px-4 ut-ready:rounded-md ut-ready:transition-colors ut-ready:duration-200 ut-ready:text-lg",
+              allowedContent: "flex flex-col items-center justify-center gap-2",
+            }}
+          />
+          <p className="text-sm text-muted-foreground mt-2">
+            ** Only PDF files are accepted
+          </p>
+
+          {uploadStatus === "uploading" && (
+            <div className="mt-4 flex items-center gap-2 text-orange-600">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-orange-600 border-t-transparent"></div>
+              <p>Uploading bank statement...</p>
+            </div>
+          )}
+
+          {uploadStatus === "completed" && (
+            <div className="mt-4 flex items-center gap-2 text-green-600">
+              <CheckCircle2 className="h-5 w-5" />
+              <p>Bank statement uploaded successfully!</p>
+            </div>
+          )}
+
+          {uploadStatus === "error" && (
+            <div className="mt-4 flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-5 w-5" />
+              <p>Failed to upload bank statement. Please try again.</p>
+            </div>
+          )}
+
+          {uploadStatus === "idle" && (
+            <p className="text-red-500 text-sm mt-2">
+              Please wait for <span className="font-bold">30seconds</span> to
+              upload the bank statement
+            </p>
+          )}
+        </div>
+        {errors.bankStatmntImg && (
+          <p className="text-red-500 text-sm">
+            {errors.bankStatmntImg.message}
+          </p>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Step5Financial: React.FC<StepProps> = ({
   control,
@@ -647,72 +690,92 @@ const Step5Financial: React.FC<StepProps> = ({
           {errors.totalActiveLoans.message}
         </p>
       )}
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="termsConfirmation"
+          {...register("termsConfirmation", {
+            required: "You must agree to the terms",
+          })}
+        />
+        <label
+          htmlFor="termsConfirmation"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          I confirm that all the provided details are correct, and if found to
+          be incorrect, my loan offer may be canceled.
+        </label>
+      </div>
+      {errors.termsConfirmation && (
+        <p className="text-red-500 text-sm">
+          {errors.termsConfirmation.message}
+        </p>
+      )}
     </div>
   </div>
 );
 
-const Step6Review: React.FC<StepProps> = ({ getValues, register, errors }) => (
-  <div className="space-y-6">
-    <div className="bg-orange-50 p-6 rounded-lg shadow-inner">
-      <h3 className="font-bold text-xl mb-4 text-blue-950">
-        Review Your Information
-      </h3>
-      <div className="grid grid-cols-2 gap-4">
-        <p>
-          <span className="font-semibold text-blue-950">Full Name:</span>{" "}
-          {getValues?.().fullName}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-950">Email:</span>{" "}
-          {getValues?.().email}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-950">Phone Number:</span>{" "}
-          {getValues?.().phoneNo}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-950">Amount Required:</span>{" "}
-          {getValues?.().amtRequired}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-950">Purpose of Loan:</span>{" "}
-          {getValues?.().prpseOfLoan}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-950">Credit Score:</span>{" "}
-          {getValues?.().creditScore}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-950">Employment Type:</span>{" "}
-          {getValues?.().empType}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-950">Monthly Income:</span>{" "}
-          {getValues?.().monIncome}
-        </p>
+const Step6Review: React.FC<StepProps> = ({
+  getValues,
+  register,
+  errors,
+  watch,
+}) => {
+  // Make sure we always call watch even if we don't use it
+  const watchedValues = watch ? watch() : {};
+
+  // Safely get values
+  const formValues: FormValues = getValues ? getValues() : ({} as FormValues);
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-orange-50 p-6 rounded-lg shadow-inner">
+        <h3 className="font-bold text-xl mb-4 text-blue-950">
+          Review Your Information
+        </h3>
+        <div className="grid grid-cols-2 gap-4">
+          <p>
+            <span className="font-semibold text-blue-950">Full Name:</span>{" "}
+            {formValues.fullName}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-950">Email:</span>{" "}
+            {formValues.email}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-950">Phone Number:</span>{" "}
+            {formValues.phoneNo}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-950">
+              Amount Required:
+            </span>{" "}
+            {formValues.amtRequired}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-950">
+              Purpose of Loan:
+            </span>{" "}
+            {formValues.prpseOfLoan}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-950">Credit Score:</span>{" "}
+            {formValues.creditScore}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-950">
+              Employment Type:
+            </span>{" "}
+            {formValues.empType}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-950">Monthly Income:</span>{" "}
+            {formValues.monIncome}
+          </p>
+        </div>
       </div>
     </div>
-
-    <div className="flex items-center space-x-2">
-      <Checkbox
-        id="termsConfirmation"
-        {...register("termsConfirmation", {
-          required: "You must agree to the terms",
-        })}
-      />
-      <label
-        htmlFor="termsConfirmation"
-        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
-        I confirm that all the provided details are correct, and if found to be
-        incorrect, my loan offer may be canceled.
-      </label>
-    </div>
-    {errors.termsConfirmation && (
-      <p className="text-red-500 text-sm">{errors.termsConfirmation.message}</p>
-    )}
-  </div>
-);
+  );
+};
 
 const LaStepOne: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -952,12 +1015,16 @@ const LaStepOne: React.FC = () => {
     }
   };
 
+  // Store the UI in variables instead of returning early
+  let existingApplicationUI = null;
+  let rejectionUI = null;
+
   if (
     hasExistingApplication &&
     existingApplicationData &&
     existingApplicationData.status !== "Eligible"
   ) {
-    return (
+    existingApplicationUI = (
       <div className="mx-auto w-full max-w-[520px]">
         <h2 className="text-2xl font-bold mb-4">Existing Loan Application</h2>
         <p className="mb-4">
@@ -982,7 +1049,36 @@ const LaStepOne: React.FC = () => {
   }
 
   if (isRejectedForCreditScore) {
-    return <RejectionMessage reason={rejectionReason || ""} />;
+    rejectionUI = <RejectionMessage reason={rejectionReason || ""} />;
+  }
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const activeStep = container.children[currentStep - 1] as HTMLElement;
+      if (activeStep) {
+        const containerWidth = container.offsetWidth;
+        const stepWidth = activeStep.offsetWidth;
+        const scrollLeft =
+          activeStep.offsetLeft - containerWidth / 2 + stepWidth / 2;
+
+        container.scrollTo({
+          left: scrollLeft,
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [currentStep]);
+
+  // At the end of the component, before the final return
+  if (existingApplicationUI) {
+    return existingApplicationUI;
+  }
+
+  if (rejectionUI) {
+    return rejectionUI;
   }
 
   return (
@@ -1000,21 +1096,29 @@ const LaStepOne: React.FC = () => {
               value={(currentStep / steps.length) * 100}
               className="w-full h-3 rounded-full bg-orange-200"
             />
-            <div className="flex justify-between mt-4">
+            <div
+              ref={scrollContainerRef}
+              className="flex justify-between mt-4 overflow-x-auto pb-4 scrollbar-hide"
+            >
               {steps.map((step, index) => (
-                <div key={step} className="flex flex-col items-center">
+                <div
+                  key={step}
+                  className="flex flex-col items-center flex-shrink-0 px-2 min-w-[80px] mt-2"
+                >
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium                    ${currentStep > index + 1 ? "bg-orange-500 text-white" : "bg-orange-100 text-blue-950"}
-                    ${currentStep === index + 1 ? "ring-4 ring-orange-500 ring-offset-2" : ""}`}
+                    className={`w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium mb-1
+                ${currentStep > index + 1 ? "bg-orange-500 text-white" : "bg-orange-100 text-blue-950"}
+                ${currentStep === index + 1 ? "ring-2 sm:ring-4 ring-orange-500 ring-offset-2" : ""}`}
                   >
                     {currentStep > index + 1 ? (
-                      <CheckCircle2 className="w-6 h-6" />
+                      <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6" />
                     ) : (
                       index + 1
                     )}
                   </div>
                   <span
-                    className={`text-xs mt-2 ${currentStep === index + 1 ? "font-semibold text-blue-950" : "text-gray-500"}`}
+                    className={`text-[10px] sm:text-xs mt-1 sm:mt-2 text-center whitespace-nowrap
+                ${currentStep === index + 1 ? "font-semibold text-blue-950" : "text-gray-500"}`}
                   >
                     {step}
                   </span>

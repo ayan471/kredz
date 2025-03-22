@@ -18,6 +18,8 @@ import {
   makeUserEligible,
   updateEMIPaymentLink,
 } from "@/actions/loanApplicationActions";
+import { CreditCard, RefreshCw } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 type EMIFormData = {
   emiPaymentLink: string;
@@ -130,80 +132,109 @@ export function EMIModal({ isOpen, onClose, application }: EMIModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-orange-50 to-blue-50 max-h-[90vh] overflow-y-auto scrollbar-hide lg:scrollbar-default">
         <DialogHeader>
-          <DialogTitle>Manage EMI for Loan Application</DialogTitle>
-          <DialogDescription>
-            Update the EMI payment link for this approved loan.
+          <DialogTitle className="text-2xl font-bold text-blue-950 flex items-center">
+            <CreditCard className="w-6 h-6 text-orange-500 mr-2" />
+            Manage EMI for Loan Application
+          </DialogTitle>
+          <DialogDescription className="text-orange-700">
+            Update the EMI payment link and view loan details for this approved
+            application.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="approvedAmount" className="text-right">
-              Approved Amount
-            </Label>
-            <Input
-              id="approvedAmount"
-              className="col-span-3"
-              value={application.approvedAmount.toString()}
-              readOnly
-            />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
+          <Card className="bg-white shadow-md">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-4 gap-6">
+                <div className="col-span-2 space-y-2">
+                  <Label
+                    htmlFor="approvedAmount"
+                    className="text-blue-950 font-semibold"
+                  >
+                    Approved Amount
+                  </Label>
+                  <Input
+                    id="approvedAmount"
+                    className="border-orange-300 bg-orange-50"
+                    value={application.approvedAmount.toString()}
+                    readOnly
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label
+                    htmlFor="totalTenure"
+                    className="text-blue-950 font-semibold"
+                  >
+                    Total Tenure
+                  </Label>
+                  <Input
+                    id="totalTenure"
+                    className="border-orange-300 bg-orange-50"
+                    value={
+                      application.tenure !== null &&
+                      application.tenure !== undefined
+                        ? `${application.tenure} months`
+                        : "N/A"
+                    }
+                    readOnly
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label
+                    htmlFor="remainingTenure"
+                    className="text-blue-950 font-semibold"
+                  >
+                    Remaining Tenure
+                  </Label>
+                  <Input
+                    id="remainingTenure"
+                    className="border-orange-300 bg-orange-50"
+                    value={
+                      remainingTenure !== null && remainingTenure !== undefined
+                        ? `${remainingTenure} months`
+                        : "N/A"
+                    }
+                    readOnly
+                  />
+                </div>
+                <div className="col-span-4 space-y-2">
+                  <Label
+                    htmlFor="emiPaymentLink"
+                    className="text-blue-950 font-semibold"
+                  >
+                    EMI Payment Link
+                  </Label>
+                  <Input
+                    id="emiPaymentLink"
+                    className="border-orange-300 focus:border-orange-500 focus:ring-orange-500"
+                    {...register("emiPaymentLink", {
+                      required: "EMI payment link is required",
+                    })}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <div className="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4">
+            <Button
+              onClick={handleMakeEligible}
+              type="button"
+              variant="outline"
+              className="border-orange-500 text-orange-500 hover:bg-orange-50"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Make User Eligible Again
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300"
+            >
+              {isSubmitting ? "Updating..." : "Update EMI Payment Link"}
+            </Button>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="totalTenure" className="text-right">
-              Total Tenure
-            </Label>
-            <Input
-              id="totalTenure"
-              className="col-span-3"
-              value={
-                application.tenure !== null && application.tenure !== undefined
-                  ? `${application.tenure} months`
-                  : "N/A"
-              }
-              readOnly
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="remainingTenure" className="text-right">
-              Remaining Tenure
-            </Label>
-            <Input
-              id="remainingTenure"
-              className="col-span-3"
-              value={
-                remainingTenure !== null && remainingTenure !== undefined
-                  ? `${remainingTenure} months`
-                  : "N/A"
-              }
-              readOnly
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="emiPaymentLink" className="text-right">
-              EMI Payment Link
-            </Label>
-            <Input
-              id="emiPaymentLink"
-              className="col-span-3"
-              {...register("emiPaymentLink", {
-                required: "EMI payment link is required",
-              })}
-            />
-          </div>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Updating..." : "Update EMI Payment Link"}
-          </Button>
         </form>
-        <div className="mt-4">
-          <Button
-            onClick={handleMakeEligible}
-            variant="outline"
-            className="w-full"
-          >
-            Make User Eligible Again
-          </Button>
-        </div>
       </DialogContent>
     </Dialog>
   );

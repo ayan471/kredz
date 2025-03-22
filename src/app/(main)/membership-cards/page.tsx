@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Sparkles, CreditCard, Zap, Shield, Clock } from "lucide-react";
+import { Check, Sparkles, CreditCard, Zap, Shield } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader from "./components/Loader";
+import SabpaisaPaymentGateway from "@/components/sabpaisa-payment-gateway";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type FormValues = {
   plan: string;
@@ -85,6 +87,8 @@ const planOptions: PlanOption[] = [
 
 const MembershipCardsPage: React.FC = () => {
   const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const { user, isLoaded } = useUser();
   const [userDetails, setUserDetails] = useState({
@@ -92,6 +96,10 @@ const MembershipCardsPage: React.FC = () => {
     phoneNumber: "",
     email: "",
   });
+
+  // Sabpaisa payment state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState<any>(null);
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -102,10 +110,19 @@ const MembershipCardsPage: React.FC = () => {
 
   const selectedPlan = watch("plan");
 
+  // Check for payment response in URL
+  useEffect(() => {
+    const encResponse = searchParams.get("encResponse");
+    if (encResponse) {
+      // Payment response detected - this will be handled by PaymentStatusListener
+      console.log("Payment response detected, waiting for redirection...");
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (user) {
       setUserDetails({
-        fullName: `${user.firstName} ${user.lastName}`,
+        fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
         phoneNumber: user.phoneNumbers[0]?.phoneNumber || "",
         email: user.emailAddresses[0]?.emailAddress || "",
       });
@@ -140,7 +157,8 @@ const MembershipCardsPage: React.FC = () => {
         38
       );
 
-      const response = await fetch("/api/initiate-phonepe-payment", {
+      // Replace PhonePe with Sabpaisa
+      const response = await fetch("/api/initiate-sabpaisa-payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -151,6 +169,7 @@ const MembershipCardsPage: React.FC = () => {
           customerName: userDetails.fullName,
           customerPhone: userDetails.phoneNumber,
           customerEmail: userDetails.email,
+          planDetails: `${selectedPlanOption.label} Plan - ₹${selectedPlanOption.discountedPrice.toFixed(2)}`,
         }),
       });
 
@@ -161,8 +180,10 @@ const MembershipCardsPage: React.FC = () => {
 
       const paymentData = await response.json();
 
-      if (paymentData.success && paymentData.paymentUrl) {
-        window.location.href = paymentData.paymentUrl;
+      if (paymentData.success && paymentData.paymentDetails) {
+        // Set payment details and show the Sabpaisa payment modal
+        setPaymentDetails(paymentData.paymentDetails);
+        setShowPaymentModal(true);
       } else {
         throw new Error(paymentData.error || "Failed to initiate payment");
       }
@@ -179,6 +200,12 @@ const MembershipCardsPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePaymentToggle = () => {
+    setShowPaymentModal(false);
+    // You might want to redirect to a success/failure page based on payment status
+    // This would typically be handled by the callback URL
   };
 
   if (!isLoaded) {
@@ -371,6 +398,26 @@ const MembershipCardsPage: React.FC = () => {
           </motion.div>
         </form>
       </motion.div>
+
+      {/* Sabpaisa Payment Gateway Modal */}
+      {showPaymentModal && paymentDetails && (
+        <SabpaisaPaymentGateway
+          clientCode={paymentDetails.clientCode}
+          transUserName={paymentDetails.transUserName}
+          transUserPassword={paymentDetails.transUserPassword}
+          authkey={paymentDetails.authkey}
+          authiv={paymentDetails.authiv}
+          payerName={paymentDetails.payerName}
+          payerEmail={paymentDetails.payerEmail}
+          payerMobile={paymentDetails.payerMobile}
+          clientTxnId={paymentDetails.clientTxnId}
+          amount={paymentDetails.amount}
+          payerAddress={paymentDetails.payerAddress}
+          callbackUrl={paymentDetails.callbackUrl}
+          isOpen={showPaymentModal}
+          onToggle={handlePaymentToggle}
+        />
+      )}
     </div>
   );
 };

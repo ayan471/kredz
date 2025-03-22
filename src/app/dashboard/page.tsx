@@ -46,9 +46,13 @@ async function getUserData(userId: string) {
     approvedAmount?: string;
   } | null;
 
+  // Only fetch active subscriptions (where isActive is true)
   const creditBuilderSubscription =
     await prisma.creditBuilderSubscription.findFirst({
-      where: { userId },
+      where: {
+        userId,
+        isActive: true, // Only get active subscriptions
+      },
       orderBy: { createdAt: "desc" },
     });
 

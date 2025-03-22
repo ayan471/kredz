@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function HeroSection() {
   return (
@@ -34,9 +35,12 @@ export default function HeroSection() {
           animate={{ scale: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
         >
-          <Button className="bg-white text-orange-600 hover:bg-orange-100 text-lg px-8 py-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105">
+          <Link
+            href={"#services"}
+            className="bg-white text-orange-600 hover:bg-orange-100 text-lg px-8 py-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
             Explore Our Services
-          </Button>
+          </Link>
         </motion.div>
       </div>
     </motion.div>

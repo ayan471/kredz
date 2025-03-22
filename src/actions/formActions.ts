@@ -430,6 +430,40 @@ export async function getAdminDashboardData() {
   }
 }
 
+// Add this new server action to toggle subscription status
+export async function toggleSubscriptionStatus(
+  subscriptionId: string,
+  isActive: boolean
+) {
+  try {
+    // Update the subscription status in the database
+    const updatedSubscription = await prisma.creditBuilderSubscription.update({
+      where: {
+        id: subscriptionId,
+      },
+      data: {
+        isActive: isActive,
+      },
+    });
+
+    // Revalidate relevant paths to update the UI
+    revalidatePath("/admin/credit-builder/subscriptions");
+    revalidatePath("/dashboard");
+    revalidatePath(`/admin/credit-builder/subscription/${subscriptionId}`);
+
+    return {
+      success: true,
+      data: updatedSubscription,
+    };
+  } catch (error) {
+    console.error("Error toggling subscription status:", error);
+    return {
+      success: false,
+      error: "Failed to update subscription status",
+    };
+  }
+}
+
 export async function initiateCashfreePayment(amount: number, orderId: string) {
   try {
     const { userId } = auth();

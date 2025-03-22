@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -76,6 +76,8 @@ const CreditBuilderLoanForm: React.FC = () => {
 
   const employmentType = watch("employmentType");
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const fetchRejectedApplication = async () => {
       if (user?.id) {
@@ -130,6 +132,24 @@ const CreditBuilderLoanForm: React.FC = () => {
 
     fetchRejectedApplication();
   }, [user, reset, toast]);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const activeStep = container.children[currentStep - 1] as HTMLElement;
+      if (activeStep) {
+        const containerWidth = container.offsetWidth;
+        const stepWidth = activeStep.offsetWidth;
+        const scrollLeft =
+          activeStep.offsetLeft - containerWidth / 2 + stepWidth / 2;
+
+        container.scrollTo({
+          left: scrollLeft,
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [currentStep]);
 
   const calculateAge = (birthDate: string) => {
     const today = new Date();
@@ -208,7 +228,7 @@ const CreditBuilderLoanForm: React.FC = () => {
               : "",
             status: eligibilityResult.message
               ? "Partially Approved"
-              : "Approved",
+              : "In Progress",
             message: eligibilityResult.message || "",
             applicationId: result.data.id,
             customerName: data.fullName,
@@ -293,15 +313,15 @@ const CreditBuilderLoanForm: React.FC = () => {
                 Basic Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
                   id="fullName"
                   {...register("fullName", { required: true })}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -309,14 +329,14 @@ const CreditBuilderLoanForm: React.FC = () => {
                   {...register("email", { required: true })}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="mobileNumber">Mobile Number</Label>
                 <Input
                   id="mobileNumber"
                   {...register("mobileNumber", { required: true })}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="dateOfBirth">Date of Birth</Label>
                 <Input
                   id="dateOfBirth"
@@ -328,7 +348,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                   })}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="age">Age</Label>
                 <Input
                   id="age"
@@ -349,7 +369,7 @@ const CreditBuilderLoanForm: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="loanAmountRequired">Loan Amount Required</Label>
                 <Input
                   id="loanAmountRequired"
@@ -357,7 +377,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                   {...register("loanAmountRequired", { required: true })}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="purpose">Purpose of Loan</Label>
                 <Controller
                   name="purpose"
@@ -408,14 +428,15 @@ const CreditBuilderLoanForm: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="aadharNumber">Aadhaar Number</Label>
                 <Input
                   id="aadharNumber"
                   {...register("aadharNumber", { required: true })}
+                  type="number"
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="aadharFront">Upload Aadhaar Front</Label>
                 <Input
                   id="aadharFront"
@@ -426,7 +447,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                   }}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="aadharBack">Upload Aadhaar Back</Label>
                 <Input
                   id="aadharBack"
@@ -437,14 +458,14 @@ const CreditBuilderLoanForm: React.FC = () => {
                   }}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="panNumber">PAN Number</Label>
                 <Input
                   id="panNumber"
                   {...register("panNumber", { required: true })}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="panCard">Upload PAN Card</Label>
                 <Input
                   id="panCard"
@@ -455,7 +476,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                   }}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
                 <Input
                   id="address"
@@ -474,7 +495,7 @@ const CreditBuilderLoanForm: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="employmentType">Employment Type</Label>
                 <Controller
                   name="employmentType"
@@ -507,7 +528,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                       Do you have salary slip?
                     </Label>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="salaryReceiveMethod">
                       You receive Salary In
                     </Label>
@@ -580,14 +601,14 @@ const CreditBuilderLoanForm: React.FC = () => {
                 </>
               )}
               {employmentType === "Others" && (
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="EmpOthers">
                     Specify Other Employment Type
                   </Label>
                   <Input id="EmpOthers" {...register("EmpOthers")} />
                 </div>
               )}
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="monthlyIncome">Monthly Income</Label>
                 <Input
                   id="monthlyIncome"
@@ -607,7 +628,7 @@ const CreditBuilderLoanForm: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="creditScore">Credit Score</Label>
                 <Input
                   id="creditScore"
@@ -615,7 +636,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                   {...register("creditScore", { required: true })}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="currentActiveEmis">Current EMIs</Label>
                 <Input
                   id="currentActiveEmis"
@@ -623,7 +644,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                   {...register("currentActiveEmis", { required: true })}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="currentActiveOverdues">
                   Total Active Loans
                 </Label>
@@ -670,6 +691,10 @@ const CreditBuilderLoanForm: React.FC = () => {
                   <p className="mt-4 text-sm text-gray-600 text-center">
                     Upload your bank statement in PDF format (Max size: 10MB)
                   </p>
+                  <p className="text-red-500 text-sm text-center">
+                    Please wait for <span className="font-bold">30seconds</span>{" "}
+                    to upload the bank statement
+                  </p>
                   {watch("bankStatement") && (
                     <div className="mt-4 p-3 bg-green-100 border border-green-300 rounded-md flex items-center justify-between">
                       <span className="text-green-700 font-medium">
@@ -702,7 +727,10 @@ const CreditBuilderLoanForm: React.FC = () => {
               value={(currentStep / 5) * 100}
               className="w-full h-3 rounded-full bg-orange-200"
             />
-            <div className="flex justify-between mt-4">
+            <div
+              ref={scrollContainerRef}
+              className="flex justify-between mt-4 overflow-x-auto pb-4 scrollbar-hide"
+            >
               {[
                 "Basic Info",
                 "Loan Details",
@@ -710,9 +738,12 @@ const CreditBuilderLoanForm: React.FC = () => {
                 "Employment",
                 "Financial",
               ].map((step, index) => (
-                <div key={step} className="flex flex-col items-center">
+                <div
+                  key={step}
+                  className="flex flex-col items-center flex-shrink-0 px-2 min-w-[80px] mt-2"
+                >
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium mb-1
                     ${index < currentStep ? "bg-orange-500 text-white" : "bg-orange-100 text-blue-950"}
                     ${index === currentStep - 1 ? "ring-4 ring-orange-500 ring-offset-2" : ""}`}
                   >
@@ -723,7 +754,8 @@ const CreditBuilderLoanForm: React.FC = () => {
                     )}
                   </div>
                   <span
-                    className={`text-xs mt-2 ${index === currentStep - 1 ? "font-semibold text-blue-950" : "text-gray-500"}`}
+                    className={`text-[10px] sm:text-xs mt-1 sm:mt-2 text-center whitespace-nowrap
+                    ${index === currentStep - 1 ? "font-semibold text-blue-950" : "text-gray-500"}`}
                   >
                     {step}
                   </span>
@@ -735,12 +767,12 @@ const CreditBuilderLoanForm: React.FC = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             {renderStep()}
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col sm:flex-row justify-between mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
               {currentStep > 1 && (
                 <Button
                   type="button"
                   onClick={prevStep}
-                  className="bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  className="bg-gray-200 text-gray-800 hover:bg-gray-300 w-full sm:w-auto"
                 >
                   <ChevronLeft className="w-4 h-4 mr-2" />
                   Previous
@@ -750,7 +782,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                 <Button
                   type="button"
                   onClick={nextStep}
-                  className="bg-orange-500 hover:bg-orange-600 text-white ml-auto"
+                  className="bg-orange-500 hover:bg-orange-600 text-white w-auto sm:w-auto sm:ml-auto"
                 >
                   Next
                   <ChevronRight className="w-4 h-4 ml-2" />
@@ -758,7 +790,7 @@ const CreditBuilderLoanForm: React.FC = () => {
               ) : (
                 <Button
                   type="submit"
-                  className="bg-orange-500 hover:bg-orange-600 text-white ml-auto"
+                  className="bg-orange-500 hover:bg-orange-600 text-white w-auto sm:w-auto sm:ml-auto"
                 >
                   Submit Application
                   <ChevronRight className="w-4 h-4 ml-2" />

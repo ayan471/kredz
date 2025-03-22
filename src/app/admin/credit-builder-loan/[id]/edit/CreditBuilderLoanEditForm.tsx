@@ -51,7 +51,7 @@ export function CreditBuilderLoanEditForm({
     accountNumber: application.accountNumber ?? "",
     bankName: application.bankName ?? "",
     ifscCode: application.ifscCode ?? "",
-    status: application.status,
+    status: application.status ?? "In Progress",
   });
 
   const handleChange = (

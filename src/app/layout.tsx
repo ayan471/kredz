@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 import CrispProvider from "@/components/providers/CrispProvider";
+import ClientLayout from "@/components/ClientLayout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,7 +23,7 @@ export default function RootLayout({
       <html lang="en" className="scroll-smooth">
         <body className={inter.className}>
           <CrispProvider />
-          {children}
+          <ClientLayout>{children}</ClientLayout>
           <Toaster />
         </body>
       </html>

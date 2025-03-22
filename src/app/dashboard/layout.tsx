@@ -1,5 +1,6 @@
+import type React from "react";
 import { auth } from "@clerk/nextjs/server";
-import { getUserSubscription } from "@/actions/formActions";
+import { prisma } from "@/components/lib/prisma";
 import { Sidebar } from "./components/sidebar";
 
 export default async function DashboardLayout({
@@ -8,7 +9,28 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { userId } = auth();
-  const subscription = userId ? await getUserSubscription(userId) : null;
+
+  // Add debug logging
+  console.log("Dashboard layout - userId:", userId);
+
+  // Replace the entire getUserSubscription call with this direct database query
+  const subscription = userId
+    ? await prisma.creditBuilderSubscription.findFirst({
+        where: {
+          userId,
+          isActive: true, // Only get active subscriptions
+        },
+        orderBy: { createdAt: "desc" },
+      })
+    : null;
+
+  // Add debug logging
+  console.log("Dashboard layout - direct query result:", {
+    exists: !!subscription,
+    isActive: subscription?.isActive,
+    plan: subscription?.plan,
+    expiryDate: subscription?.expiryDate,
+  });
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
