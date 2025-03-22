@@ -695,11 +695,17 @@ const Step5Financial: React.FC<StepProps> = ({
         </p>
       )}
       <div className="flex items-center space-x-2">
-        <Checkbox
-          id="termsConfirmation"
-          {...register("termsConfirmation", {
-            required: "You must agree to the terms",
-          })}
+        <Controller
+          name="termsConfirmation"
+          control={control}
+          rules={{ required: "You must agree to the terms" }}
+          render={({ field }) => (
+            <Checkbox
+              id="termsConfirmation"
+              checked={field.value || false}
+              onCheckedChange={field.onChange}
+            />
+          )}
         />
         <label
           htmlFor="termsConfirmation"
