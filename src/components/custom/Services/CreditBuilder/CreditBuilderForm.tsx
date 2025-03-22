@@ -255,10 +255,6 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
               id="phoneNo"
               {...register("phoneNo", {
                 required: "Phone number is required",
-                pattern: {
-                  value: /^[0-9]{10}$/,
-                  message: "Please enter a valid 10-digit phone number",
-                },
               })}
             />
             {errors.phoneNo && (
@@ -271,7 +267,7 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="aadharNo">Aadhar Number</Label>
             <Input
-              type="text"
+              type="number"
               id="aadharNo"
               {...register("aadharNo", {
                 required: "Aadhar number is required",
