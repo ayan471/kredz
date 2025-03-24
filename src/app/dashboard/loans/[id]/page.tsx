@@ -110,18 +110,18 @@ export default async function LoanDetailsPage({
           </Button>
         </Link>
         <Card className="overflow-hidden shadow-lg mb-6 border-orange-300">
-          <CardHeader className="bg-orange-500 text-white p-6">
-            <div className="flex justify-between items-center">
+          <CardHeader className="bg-orange-500 text-white p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
               <div>
-                <CardTitle className="text-3xl font-bold mb-2">
+                <CardTitle className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">
                   {loan.prpseOfLoan}
                 </CardTitle>
-                <CardDescription className="text-orange-100 text-lg">
+                <CardDescription className="text-orange-100 text-base sm:text-lg">
                   Application ID: {loan.id}
                 </CardDescription>
               </div>
               <Badge
-                className={`text-sm px-3 py-1 rounded-full ${statusColor}`}
+                className={`text-sm px-3 py-1 rounded-full ${statusColor} self-start sm:self-auto mt-2 sm:mt-0`}
               >
                 {loan.status}
               </Badge>

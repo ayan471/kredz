@@ -194,16 +194,15 @@ export default async function MembershipPage() {
                 </CardContent>
               </Card>
             </div>
-
             <Card className="shadow-lg border-orange-300">
-              <CardHeader className="bg-blue-900 border-b border-orange-300">
-                <CardTitle className="text-xl text-white flex items-center space-x-2">
-                  <PieChart className="w-6 h-6" />
+              <CardHeader className="bg-blue-900 border-b border-orange-300 p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl text-white flex items-center space-x-2">
+                  <PieChart className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
                   <span>Loan Status</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 bg-white">
-                <div className="flex items-center justify-between">
+              <CardContent className="p-4 sm:p-6 bg-white">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <p className="text-sm text-blue-700 mb-1">Current Status</p>
                     <Badge
@@ -212,34 +211,23 @@ export default async function MembershipPage() {
                           ? "success"
                           : "secondary"
                       }
-                      className="text-lg font-semibold bg-orange-500 text-white"
+                      className="text-base sm:text-lg font-semibold bg-orange-500 text-white px-3 py-1"
                     >
                       {loanApplication.membershipActive ? "Active" : "Inactive"}
                     </Badge>
                   </div>
-                  <Button
-                    asChild
-                    className="bg-orange-500 hover:bg-orange-600 text-white"
-                  >
-                    <Link
-                      href="/dashboard"
-                      className="flex items-center space-x-2"
-                    >
-                      <span>View Dashboard</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </Button>
+
                   {!loanApplication.membershipActive && (
                     <Button
                       asChild
-                      className="mt-4 bg-blue-900 hover:bg-blue-800 text-white"
+                      className="bg-blue-900 hover:bg-blue-800 text-white w-full sm:w-auto mt-2 sm:mt-0"
                     >
                       <Link
                         href="/consultancy-application"
-                        className="flex items-center space-x-2"
+                        className="flex items-center justify-center space-x-2 py-2 px-4"
                       >
                         <span>Activate Membership</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-4 h-4 ml-2" />
                       </Link>
                     </Button>
                   )}
