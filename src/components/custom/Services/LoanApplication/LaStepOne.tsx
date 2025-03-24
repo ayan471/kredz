@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import React from "react";
 import { useState, useEffect, useRef } from "react";
 import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
@@ -425,10 +425,21 @@ const Step4Documents: React.FC<StepProps> = ({
   errors,
   isRejected,
   setValue,
+  watch,
 }) => {
   const [uploadStatus, setUploadStatus] = useState<
     "idle" | "uploading" | "completed" | "error"
   >("idle");
+
+  // Register the bankStatmntImg field with required validation
+  React.useEffect(() => {
+    register("bankStatmntImg", {
+      required: "Bank statement is required",
+    });
+  }, [register]);
+
+  // Watch the bankStatmntImg value to know if it's been set
+  const bankStatmntImg = watch("bankStatmntImg");
 
   return (
     <div className="space-y-6">
@@ -481,10 +492,10 @@ const Step4Documents: React.FC<StepProps> = ({
           id="aadharImgBack"
           type="file"
           {...register("aadharImgBack", {
-            required: "Aadhar number is required",
+            required: "Aadhar card back image is required",
             pattern: {
-              value: /^[0-9]{12}$/,
-              message: "Please enter a valid 12-digit Aadhar number",
+              value: /\.(jpg|jpeg|png)$/i,
+              message: "Only JPG, JPEG, and PNG files are allowed",
             },
           })}
           className="w-full p-3"
@@ -553,7 +564,7 @@ const Step4Documents: React.FC<StepProps> = ({
       </div>
       <div className="grid w-full items-center gap-3">
         <Label htmlFor="bankStatmntImg" className="text-base font-semibold">
-          Upload Your Bank Statement
+          Upload Your Bank Statement <span className="text-red-500">*</span>
         </Label>
         <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-orange-500 rounded-lg bg-orange-50">
           <UploadButton<OurFileRouter>
@@ -738,55 +749,80 @@ const Step6Review: React.FC<StepProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="bg-orange-50 p-6 rounded-lg shadow-inner">
+      <div className="bg-orange-50 p-4 sm:p-6 rounded-lg shadow-inner">
         <h3 className="font-bold text-xl mb-4 text-blue-950">
           Review Your Information
         </h3>
-        <div className="grid grid-cols-2 gap-4">
-          <p>
-            <span className="font-semibold text-blue-950">Full Name:</span>{" "}
-            {formValues.fullName}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-950">Email:</span>{" "}
-            {formValues.email}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-950">Phone Number:</span>{" "}
-            {formValues.phoneNo}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-950">
-              Amount Required:
-            </span>{" "}
-            {formValues.amtRequired}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-950">
-              Purpose of Loan:
-            </span>{" "}
-            {formValues.prpseOfLoan}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-950">Credit Score:</span>{" "}
-            {formValues.creditScore}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-950">
-              Employment Type:
-            </span>{" "}
-            {formValues.empType}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-950">Monthly Income:</span>{" "}
-            {formValues.monIncome}
-          </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-2 bg-white bg-opacity-50 rounded">
+            <p className="break-words">
+              <span className="font-semibold text-blue-950 block sm:inline">
+                Full Name:
+              </span>{" "}
+              <span className="text-blue-800">{formValues.fullName}</span>
+            </p>
+          </div>
+          <div className="p-2 bg-white bg-opacity-50 rounded">
+            <p className="break-words">
+              <span className="font-semibold text-blue-950 block sm:inline">
+                Email:
+              </span>{" "}
+              <span className="text-blue-800">{formValues.email}</span>
+            </p>
+          </div>
+          <div className="p-2 bg-white bg-opacity-50 rounded">
+            <p className="break-words">
+              <span className="font-semibold text-blue-950 block sm:inline">
+                Phone Number:
+              </span>{" "}
+              <span className="text-blue-800">{formValues.phoneNo}</span>
+            </p>
+          </div>
+          <div className="p-2 bg-white bg-opacity-50 rounded">
+            <p className="break-words">
+              <span className="font-semibold text-blue-950 block sm:inline">
+                Amount Required:
+              </span>{" "}
+              <span className="text-blue-800">₹{formValues.amtRequired}</span>
+            </p>
+          </div>
+          <div className="p-2 bg-white bg-opacity-50 rounded">
+            <p className="break-words">
+              <span className="font-semibold text-blue-950 block sm:inline">
+                Purpose of Loan:
+              </span>{" "}
+              <span className="text-blue-800">{formValues.prpseOfLoan}</span>
+            </p>
+          </div>
+          <div className="p-2 bg-white bg-opacity-50 rounded">
+            <p className="break-words">
+              <span className="font-semibold text-blue-950 block sm:inline">
+                Credit Score:
+              </span>{" "}
+              <span className="text-blue-800">{formValues.creditScore}</span>
+            </p>
+          </div>
+          <div className="p-2 bg-white bg-opacity-50 rounded">
+            <p className="break-words">
+              <span className="font-semibold text-blue-950 block sm:inline">
+                Employment Type:
+              </span>{" "}
+              <span className="text-blue-800">{formValues.empType}</span>
+            </p>
+          </div>
+          <div className="p-2 bg-white bg-opacity-50 rounded">
+            <p className="break-words">
+              <span className="font-semibold text-blue-950 block sm:inline">
+                Monthly Income:
+              </span>{" "}
+              <span className="text-blue-800">₹{formValues.monIncome}</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
-
 const LaStepOne: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);

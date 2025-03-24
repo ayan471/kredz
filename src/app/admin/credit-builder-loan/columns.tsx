@@ -217,11 +217,19 @@ export const columns: ColumnDef<CreditBuilderLoanApplication>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
+    cell: function ActionCell({ row }) {
       const application = row.original;
       const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
       const [isRejectedModalOpen, setIsRejectedModalOpen] = useState(false);
       const [isEMIModalOpen, setIsEMIModalOpen] = useState(false);
+
+      const handleOpenEMIModal = () => {
+        setIsEMIModalOpen(true);
+      };
+
+      const handleCloseEMIModal = () => {
+        setIsEMIModalOpen(false);
+      };
 
       return (
         <>
@@ -247,7 +255,7 @@ export const columns: ColumnDef<CreditBuilderLoanApplication>[] = [
               </DropdownMenuItem>
               {application.status === "Approved" ? (
                 <>
-                  <DropdownMenuItem onClick={() => setIsEMIModalOpen(true)}>
+                  <DropdownMenuItem onClick={handleOpenEMIModal}>
                     <CreditCard className="mr-2 h-4 w-4 text-blue-600" />
                     Manage EMI
                   </DropdownMenuItem>
@@ -282,6 +290,8 @@ export const columns: ColumnDef<CreditBuilderLoanApplication>[] = [
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Modals */}
           <ApprovalModal
             isOpen={isApprovalModalOpen}
             onClose={() => setIsApprovalModalOpen(false)}
@@ -294,7 +304,7 @@ export const columns: ColumnDef<CreditBuilderLoanApplication>[] = [
           />
           <EMIModal
             isOpen={isEMIModalOpen}
-            onClose={() => setIsEMIModalOpen(false)}
+            onClose={handleCloseEMIModal}
             application={{
               ...application,
               tenure: application.emiTenure || 0,

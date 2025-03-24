@@ -83,8 +83,19 @@ const LaStepTwo = () => {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const form = useForm<FormValues>();
-  const { register, control, handleSubmit, setValue, watch } = form;
+  const form = useForm<FormValues>({
+    defaultValues: {
+      eMandate: false,
+    },
+  });
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = form;
   const [eligibleAmount, setEligibleAmount] = useState<number | null>(null);
   const [emiDetails, setEmiDetails] = useState<EMIDetails | null>(null);
   const { user } = useUser();
@@ -158,15 +169,6 @@ const LaStepTwo = () => {
       return;
     }
 
-    if (!data.eMandate) {
-      toast({
-        title: "Error",
-        description: "E-mandate is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const result = await updateLoanApplicationData(id, {
       ...data,
       step: 2,
@@ -221,40 +223,71 @@ const LaStepTwo = () => {
                 <Input
                   type="text"
                   id="fullName"
-                  {...register("fullName")}
-                  required
+                  {...register("fullName", {
+                    required: "Full name is required",
+                  })}
                 />
+                {errors.fullName && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.fullName.message}
+                  </p>
+                )}
               </div>
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="phoneNo">Phone No</Label>
                 <Input
                   type="tel"
                   id="phoneNo"
-                  {...register("phoneNo")}
-                  required
+                  {...register("phoneNo", {
+                    required: "Phone number is required",
+                  })}
                 />
+                {errors.phoneNo && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.phoneNo.message}
+                  </p>
+                )}
               </div>
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="emailID">Email ID</Label>
                 <Input
                   type="email"
                   id="emailID"
-                  {...register("emailID")}
-                  required
+                  {...register("emailID", { required: "Email is required" })}
                 />
+                {errors.emailID && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.emailID.message}
+                  </p>
+                )}
               </div>
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="panNo">PAN No</Label>
-                <Input type="text" id="panNo" {...register("panNo")} required />
+                <Input
+                  type="text"
+                  id="panNo"
+                  {...register("panNo", { required: "PAN number is required" })}
+                />
+                {errors.panNo && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.panNo.message}
+                  </p>
+                )}
               </div>
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="aadharNo">Aadhar No</Label>
                 <Input
                   type="text"
                   id="aadharNo"
-                  {...register("aadharNo")}
-                  required
+                  {...register("aadharNo", {
+                    required: "Aadhar number is required",
+                  })}
                 />
+                {errors.aadharNo && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.aadharNo.message}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -277,10 +310,13 @@ const LaStepTwo = () => {
               </Card>
             )}
             <div className="grid w-full items-center gap-4">
-              <Label htmlFor="emiTenure">Select EMI Tenure</Label>
+              <Label htmlFor="emiTenure">
+                Select EMI Tenure <span className="text-red-500">*</span>
+              </Label>
               <Controller
                 name="emiTenure"
                 control={control}
+                rules={{ required: "Please select an EMI tenure" }}
                 render={({ field }) => (
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -294,7 +330,11 @@ const LaStepTwo = () => {
                       return (
                         <div
                           key={months}
-                          className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                          className={`flex items-center justify-between p-4 rounded-lg border ${
+                            field.value === months.toString()
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-200 hover:bg-gray-50"
+                          } transition-colors`}
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem
@@ -319,6 +359,11 @@ const LaStepTwo = () => {
                   </RadioGroup>
                 )}
               />
+              {errors.emiTenure && (
+                <p className="text-sm text-red-500 mt-1">
+                  {errors.emiTenure.message}
+                </p>
+              )}
             </div>
             <AnimatePresence mode="wait">
               {emiDetails && (
@@ -384,62 +429,102 @@ const LaStepTwo = () => {
             <h3 className="text-2xl font-semibold">Account Information</h3>
             <div className="grid gap-6">
               <div className="grid w-full items-center gap-1.5">
-                <Label htmlFor="accountNumber">Account Number</Label>
+                <Label htmlFor="accountNumber">
+                  Account Number <span className="text-red-500">*</span>
+                </Label>
                 <Input
-                  type="number"
+                  type="text"
                   id="accountNumber"
-                  {...register("accountNumber")}
-                  required
+                  {...register("accountNumber", {
+                    required: "Account number is required",
+                    pattern: {
+                      value: /^\d+$/,
+                      message:
+                        "Please enter a valid account number (numbers only)",
+                    },
+                  })}
                 />
+                {errors.accountNumber && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.accountNumber.message}
+                  </p>
+                )}
               </div>
+
               <div className="grid w-full items-center gap-1.5">
-                <Label htmlFor="bankName">Bank Name</Label>
+                <Label htmlFor="bankName">
+                  Bank Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   type="text"
                   id="bankName"
-                  {...register("bankName")}
-                  required
+                  {...register("bankName", {
+                    required: "Bank name is required",
+                  })}
                 />
+                {errors.bankName && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.bankName.message}
+                  </p>
+                )}
               </div>
+
               <div className="grid w-full items-center gap-1.5">
-                <Label htmlFor="ifscCode">IFSC Code</Label>
+                <Label htmlFor="ifscCode">
+                  IFSC Code <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   type="text"
                   id="ifscCode"
-                  {...register("ifscCode")}
-                  required
+                  {...register("ifscCode", {
+                    required: "IFSC code is required",
+                    pattern: {
+                      value: /^[A-Z]{4}0[A-Z0-9]{6}$/,
+                      message:
+                        "Please enter a valid IFSC code (e.g., SBIN0123456)",
+                    },
+                  })}
                 />
+                {errors.ifscCode && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.ifscCode.message}
+                  </p>
+                )}
               </div>
-              <div className="flex items-center space-x-2">
-                <Controller
-                  name="eMandate"
-                  control={control}
-                  rules={{ required: "E-mandate is required" }}
-                  render={({ field }) => (
-                    <Checkbox
-                      id="eMandate"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      required
-                    />
+
+              <div className="flex items-start space-x-2">
+                <div className="mt-1">
+                  <Controller
+                    name="eMandate"
+                    control={control}
+                    rules={{ required: "E-mandate is required" }}
+                    render={({ field }) => (
+                      <Checkbox
+                        id="eMandate"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
+                  />
+                </div>
+                <div>
+                  <Label
+                    htmlFor="eMandate"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    E-mandate/Auto Debit will be activated on the same account{" "}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  {errors.eMandate && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.eMandate.message}
+                    </p>
                   )}
-                />
-                <Label
-                  htmlFor="eMandate"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  E-mandate/Auto Debit will be activated on the same account
-                  (required)
-                </Label>
+                  <p className="text-sm text-red-500 mt-2">
+                    Some charges may be applicable for this procedure
+                  </p>
+                </div>
               </div>
-              {form.formState.errors.eMandate && (
-                <p className="text-sm text-red-500 mt-1">
-                  {form.formState.errors.eMandate.message}
-                </p>
-              )}
-              <p className="text-sm text-red-500">
-                Some charges may be applicable for this procedure
-              </p>
             </div>
           </div>
         );

@@ -27,11 +27,13 @@ import { useToast } from "@/components/ui/use-toast";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  filterColumn?: string; // Make the filter column configurable
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  filterColumn = "phoneNo", // Default to phoneNo, which is likely the column name in your data
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -54,19 +56,48 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  // Find the first available column that could be a phone number
+  const findPhoneColumn = () => {
+    const possibleColumns = [
+      "phoneNo",
+      "mobileNumber",
+      "phone",
+      "mobile",
+      "contact",
+    ];
+    for (const colName of possibleColumns) {
+      const column = table.getColumn(colName);
+      if (column) {
+        return column;
+      }
+    }
+    return null;
+  };
+
+  const phoneColumn = table.getColumn(filterColumn) || findPhoneColumn();
+
   return (
     <div className="w-full">
       <div className="flex flex-col sm:flex-row items-center justify-between py-4 gap-4">
-        <Input
-          placeholder="Filter by Mobile Number..."
-          value={
-            (table.getColumn("mobileNumber")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("mobileNumber")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm w-full"
-        />
+        {phoneColumn ? (
+          <Input
+            placeholder="Filter by Mobile Number..."
+            value={(phoneColumn.getFilterValue() as string) ?? ""}
+            onChange={(event) => phoneColumn.setFilterValue(event.target.value)}
+            className="max-w-sm w-full"
+          />
+        ) : (
+          <div className="max-w-sm w-full">
+            <Input
+              placeholder="Filter by Mobile Number..."
+              disabled
+              className="max-w-sm w-full"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Mobile number filtering not available for this table.
+            </p>
+          </div>
+        )}
       </div>
       <div className="rounded-md border overflow-x-auto">
         <Table>
@@ -117,6 +148,9 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredRowModel().rows.length} of {data.length} records
+        </div>
         <Button
           variant="outline"
           size="sm"
