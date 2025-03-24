@@ -69,14 +69,28 @@ const CreditBuilderLoanForm: React.FC = () => {
   const { toast } = useToast();
   const { user } = useUser();
 
-  const { register, control, handleSubmit, watch, setValue, reset, trigger } =
-    useForm<FormData>({
-      defaultValues: formData,
-    });
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    trigger,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: formData,
+    mode: "onBlur", // Validate on blur for better user experience
+  });
 
   const employmentType = watch("employmentType");
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Register the purpose field with validation
+    register("purpose", { required: "Purpose of loan is required" });
+  }, [register]);
 
   useEffect(() => {
     const fetchRejectedApplication = async () => {
@@ -131,7 +145,7 @@ const CreditBuilderLoanForm: React.FC = () => {
     };
 
     fetchRejectedApplication();
-  }, [user, reset, toast]);
+  }, [user, reset, toast, register]);
 
   useEffect(() => {
     if (scrollContainerRef.current) {
@@ -165,6 +179,12 @@ const CreditBuilderLoanForm: React.FC = () => {
     return age.toString();
   };
 
+  const clearFormDataFromLocalStorage = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("creditBuilderLoanFormData");
+    }
+  };
+
   const onSubmit = async (data: FormData) => {
     try {
       const formData = new FormData();
@@ -196,7 +216,11 @@ const CreditBuilderLoanForm: React.FC = () => {
 
       const result = await saveCreditBuilderLoanApplication(formData);
 
+      // After successful submission
       if (result.success && result.data) {
+        // Clear saved form data after successful submission
+        clearFormDataFromLocalStorage();
+
         const eligibilityResult = await checkEligibility(result.data.id);
 
         toast({
@@ -277,13 +301,16 @@ const CreditBuilderLoanForm: React.FC = () => {
   const nextStep = async () => {
     const fields = {
       1: ["fullName", "email", "mobileNumber", "dateOfBirth", "age"],
-      2: ["loanAmountRequired", "purpose"],
+      2: ["loanAmountRequired", "purpose"], // Make sure purpose is included here
       3: ["aadharNumber", "panNumber", "address"],
       4: ["employmentType", "monthlyIncome"],
       5: ["creditScore", "currentActiveEmis", "currentActiveOverdues"],
     }[currentStep];
 
+    console.log("Validating fields:", fields); // Add debugging
     const isValid = await trigger(fields as any);
+    console.log("Validation result:", isValid, "Errors:", Object.keys(errors)); // Add debugging
+
     if (isValid) {
       const currentFormData = watch();
       setFormData((prevData) => ({ ...prevData, ...currentFormData }));
@@ -315,47 +342,106 @@ const CreditBuilderLoanForm: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName">
+                  Full Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="fullName"
-                  {...register("fullName", { required: true })}
+                  {...register("fullName", {
+                    required: "Full name is required",
+                    minLength: {
+                      value: 3,
+                      message: "Full name must be at least 3 characters",
+                    },
+                  })}
                 />
+                {errors.fullName && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.fullName.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">
+                  Email <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="email"
                   type="email"
-                  {...register("email", { required: true })}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address",
+                    },
+                  })}
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="mobileNumber">Mobile Number</Label>
+                <Label htmlFor="mobileNumber">
+                  Mobile Number <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="mobileNumber"
-                  {...register("mobileNumber", { required: true })}
+                  {...register("mobileNumber", {
+                    required: "Mobile number is required",
+                  })}
                 />
+                {errors.mobileNumber && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.mobileNumber.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Label htmlFor="dateOfBirth">
+                  Date of Birth <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="dateOfBirth"
                   type="date"
                   {...register("dateOfBirth", {
-                    required: true,
+                    required: "Date of birth is required",
                     onChange: (e) =>
                       setValue("age", calculateAge(e.target.value)),
                   })}
                 />
+                {errors.dateOfBirth && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.dateOfBirth.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
+                <Label htmlFor="age">
+                  Age <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="age"
                   type="number"
-                  {...register("age", { required: true })}
+                  {...register("age", {
+                    required: "Age is required",
+                    min: {
+                      value: 18,
+                      message: "You must be at least 18 years old",
+                    },
+                    max: {
+                      value: 65,
+                      message: "Age must be less than 65 years",
+                    },
+                  })}
                   readOnly
                 />
+                {errors.age && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.age.message}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -370,49 +456,87 @@ const CreditBuilderLoanForm: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="loanAmountRequired">Loan Amount Required</Label>
+                <Label htmlFor="loanAmountRequired">
+                  Loan Amount Required <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="loanAmountRequired"
                   type="number"
-                  {...register("loanAmountRequired", { required: true })}
+                  {...register("loanAmountRequired", {
+                    required: "Loan amount is required",
+                    min: {
+                      value: 5000,
+                      message: "Minimum loan amount is ₹5,000",
+                    },
+                    max: {
+                      value: 500000,
+                      message: "Maximum loan amount is ₹5,00,000",
+                    },
+                  })}
                 />
+                {errors.loanAmountRequired && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.loanAmountRequired.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="purpose">Purpose of Loan</Label>
+                <Label htmlFor="purpose">
+                  Purpose of Loan <span className="text-red-500">*</span>
+                </Label>
                 <Controller
                   name="purpose"
                   control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select purpose" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Personal Use">
-                          Personal Use
-                        </SelectItem>
-                        <SelectItem value="Business Expansion">
-                          Business Expansion
-                        </SelectItem>
-                        <SelectItem value="Medical Issue">
-                          Medical Issue
-                        </SelectItem>
-                        <SelectItem value="House Renovation">
-                          House Renovation
-                        </SelectItem>
-                        <SelectItem value="Debt Consolidation">
-                          Debt Consolidation
-                        </SelectItem>
-                        <SelectItem value="Travel Expense">
-                          Travel Expense
-                        </SelectItem>
-                        <SelectItem value="Self Marriage">
-                          Self Marriage
-                        </SelectItem>
-                        <SelectItem value="Others">Others</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  rules={{
+                    required: "Purpose of loan is required",
+                  }}
+                  render={({ field, fieldState }) => (
+                    <>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          // Manually trigger validation after change
+                          trigger("purpose");
+                        }}
+                        value={field.value || ""}
+                      >
+                        <SelectTrigger
+                          id="purpose"
+                          className={fieldState.error ? "border-red-500" : ""}
+                        >
+                          <SelectValue placeholder="Select purpose" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Personal Use">
+                            Personal Use
+                          </SelectItem>
+                          <SelectItem value="Business Expansion">
+                            Business Expansion
+                          </SelectItem>
+                          <SelectItem value="Medical Issue">
+                            Medical Issue
+                          </SelectItem>
+                          <SelectItem value="House Renovation">
+                            House Renovation
+                          </SelectItem>
+                          <SelectItem value="Debt Consolidation">
+                            Debt Consolidation
+                          </SelectItem>
+                          <SelectItem value="Travel Expense">
+                            Travel Expense
+                          </SelectItem>
+                          <SelectItem value="Self Marriage">
+                            Self Marriage
+                          </SelectItem>
+                          <SelectItem value="Others">Others</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.purpose && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {errors.purpose.message}
+                        </p>
+                      )}
+                    </>
                   )}
                 />
               </div>
@@ -429,15 +553,31 @@ const CreditBuilderLoanForm: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="aadharNumber">Aadhaar Number</Label>
+                <Label htmlFor="aadharNumber">
+                  Aadhaar Number <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="aadharNumber"
-                  {...register("aadharNumber", { required: true })}
-                  type="number"
+                  {...register("aadharNumber", {
+                    required: "Aadhaar number is required",
+                    pattern: {
+                      value: /^\d{12}$/,
+                      message: "Please enter a valid 12-digit Aadhaar number",
+                    },
+                  })}
+                  type="text"
+                  maxLength={12}
                 />
+                {errors.aadharNumber && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.aadharNumber.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="aadharFront">Upload Aadhaar Front</Label>
+                <Label htmlFor="aadharFront">
+                  Upload Aadhaar Front <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="aadharFront"
                   type="file"
@@ -445,10 +585,21 @@ const CreditBuilderLoanForm: React.FC = () => {
                     const file = e.target.files?.[0] || null;
                     setValue("aadharFront", file);
                   }}
+                  accept="image/jpeg,image/png,image/jpg"
                 />
+                {errors.aadharFront && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.aadharFront.message}
+                  </p>
+                )}
+                <p className="text-xs text-gray-500">
+                  Accepted formats: JPG, JPEG, PNG
+                </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="aadharBack">Upload Aadhaar Back</Label>
+                <Label htmlFor="aadharBack">
+                  Upload Aadhaar Back <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="aadharBack"
                   type="file"
@@ -456,17 +607,43 @@ const CreditBuilderLoanForm: React.FC = () => {
                     const file = e.target.files?.[0] || null;
                     setValue("aadharBack", file);
                   }}
+                  accept="image/jpeg,image/png,image/jpg"
                 />
+                {errors.aadharBack && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.aadharBack.message}
+                  </p>
+                )}
+                <p className="text-xs text-gray-500">
+                  Accepted formats: JPG, JPEG, PNG
+                </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="panNumber">PAN Number</Label>
+                <Label htmlFor="panNumber">
+                  PAN Number <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="panNumber"
-                  {...register("panNumber", { required: true })}
+                  {...register("panNumber", {
+                    required: "PAN number is required",
+                    pattern: {
+                      value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+                      message:
+                        "Please enter a valid PAN number (e.g., ABCDE1234F)",
+                    },
+                  })}
+                  maxLength={10}
                 />
+                {errors.panNumber && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.panNumber.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="panCard">Upload PAN Card</Label>
+                <Label htmlFor="panCard">
+                  Upload PAN Card <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="panCard"
                   type="file"
@@ -474,14 +651,36 @@ const CreditBuilderLoanForm: React.FC = () => {
                     const file = e.target.files?.[0] || null;
                     setValue("panCard", file);
                   }}
+                  accept="image/jpeg,image/png,image/jpg"
                 />
+                {errors.panCard && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.panCard.message}
+                  </p>
+                )}
+                <p className="text-xs text-gray-500">
+                  Accepted formats: JPG, JPEG, PNG
+                </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="address">
+                  Address <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="address"
-                  {...register("address", { required: true })}
+                  {...register("address", {
+                    required: "Address is required",
+                    minLength: {
+                      value: 10,
+                      message: "Please enter a complete address",
+                    },
+                  })}
                 />
+                {errors.address && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.address.message}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -496,11 +695,13 @@ const CreditBuilderLoanForm: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="employmentType">Employment Type</Label>
+                <Label htmlFor="employmentType">
+                  Employment Type <span className="text-red-500">*</span>
+                </Label>
                 <Controller
                   name="employmentType"
                   control={control}
-                  rules={{ required: true }}
+                  rules={{ required: "Employment type is required" }}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
@@ -516,6 +717,11 @@ const CreditBuilderLoanForm: React.FC = () => {
                     </Select>
                   )}
                 />
+                {errors.employmentType && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.employmentType.message}
+                  </p>
+                )}
               </div>
               {employmentType === "Salaried" && (
                 <>
@@ -530,12 +736,18 @@ const CreditBuilderLoanForm: React.FC = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="salaryReceiveMethod">
-                      You receive Salary In
+                      You receive Salary In{" "}
+                      <span className="text-red-500">*</span>
                     </Label>
                     <Controller
                       name="salaryReceiveMethod"
                       control={control}
-                      rules={{ required: employmentType === "Salaried" }}
+                      rules={{
+                        required:
+                          employmentType === "Salaried"
+                            ? "Please select how you receive your salary"
+                            : false,
+                      }}
                       render={({ field }) => (
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -552,6 +764,11 @@ const CreditBuilderLoanForm: React.FC = () => {
                         </RadioGroup>
                       )}
                     />
+                    {errors.salaryReceiveMethod && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {errors.salaryReceiveMethod.message}
+                      </p>
+                    )}
                   </div>
                 </>
               )}
@@ -566,14 +783,20 @@ const CreditBuilderLoanForm: React.FC = () => {
                       Do you have Income Tax Return?
                     </Label>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="businessRegistration">
-                      Business registration you have
+                      Business registration you have{" "}
+                      <span className="text-red-500">*</span>
                     </Label>
                     <Controller
                       name="businessRegistration"
                       control={control}
-                      rules={{ required: employmentType === "Self Employed" }}
+                      rules={{
+                        required:
+                          employmentType === "Self Employed"
+                            ? "Business registration is required"
+                            : false,
+                      }}
                       render={({ field }) => (
                         <Select
                           onValueChange={field.onChange}
@@ -597,24 +820,56 @@ const CreditBuilderLoanForm: React.FC = () => {
                         </Select>
                       )}
                     />
+                    {errors.businessRegistration && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {errors.businessRegistration.message}
+                      </p>
+                    )}
                   </div>
                 </>
               )}
               {employmentType === "Others" && (
                 <div className="space-y-2">
                   <Label htmlFor="EmpOthers">
-                    Specify Other Employment Type
+                    Specify Other Employment Type{" "}
+                    <span className="text-red-500">*</span>
                   </Label>
-                  <Input id="EmpOthers" {...register("EmpOthers")} />
+                  <Input
+                    id="EmpOthers"
+                    {...register("EmpOthers", {
+                      required:
+                        employmentType === "Others"
+                          ? "Please specify your employment type"
+                          : false,
+                    })}
+                  />
+                  {errors.EmpOthers && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.EmpOthers.message}
+                    </p>
+                  )}
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="monthlyIncome">Monthly Income</Label>
+                <Label htmlFor="monthlyIncome">
+                  Monthly Income <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="monthlyIncome"
                   type="number"
-                  {...register("monthlyIncome", { required: true })}
+                  {...register("monthlyIncome", {
+                    required: "Monthly income is required",
+                    min: {
+                      value: 5000,
+                      message: "Monthly income must be at least ₹5,000",
+                    },
+                  })}
                 />
+                {errors.monthlyIncome && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.monthlyIncome.message}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -629,37 +884,78 @@ const CreditBuilderLoanForm: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="creditScore">Credit Score</Label>
+                <Label htmlFor="creditScore">
+                  Credit Score <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="creditScore"
                   type="number"
-                  {...register("creditScore", { required: true })}
+                  {...register("creditScore", {
+                    required: "Credit score is required",
+                    min: {
+                      value: 300,
+                      message: "Credit score must be at least 300",
+                    },
+                    max: {
+                      value: 900,
+                      message: "Credit score cannot exceed 900",
+                    },
+                  })}
                 />
+                {errors.creditScore && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.creditScore.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="currentActiveEmis">Current EMIs</Label>
+                <Label htmlFor="currentActiveEmis">
+                  Current EMIs <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="currentActiveEmis"
                   type="number"
-                  {...register("currentActiveEmis", { required: true })}
+                  {...register("currentActiveEmis", {
+                    required: "Current EMIs information is required",
+                    min: {
+                      value: 0,
+                      message: "Value cannot be negative",
+                    },
+                  })}
                 />
+                {errors.currentActiveEmis && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.currentActiveEmis.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="currentActiveOverdues">
-                  Total Active Loans
+                  Total Active Loans <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="currentActiveOverdues"
                   type="number"
-                  {...register("currentActiveOverdues", { required: true })}
+                  {...register("currentActiveOverdues", {
+                    required: "Total active loans information is required",
+                    min: {
+                      value: 0,
+                      message: "Value cannot be negative",
+                    },
+                  })}
                 />
+                {errors.currentActiveOverdues && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.currentActiveOverdues.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-4">
                 <Label
                   htmlFor="bankStatement"
                   className="text-lg font-semibold"
                 >
-                  Upload Bank Statement
+                  Upload Bank Statement <span className="text-red-500">*</span>
                 </Label>
                 <div className="border-2 border-dashed border-orange-300 rounded-lg p-6 bg-orange-50">
                   <UploadButton<OurFileRouter>
@@ -668,6 +964,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                       console.log("Files: ", res);
                       if (res && res.length > 0) {
                         setValue("bankStatement", res[0].url);
+                        trigger("bankStatement");
                       }
                       toast({
                         title: "Upload Completed",
@@ -702,6 +999,11 @@ const CreditBuilderLoanForm: React.FC = () => {
                       </span>
                       <CheckCircle2 className="w-5 h-5 text-green-600" />
                     </div>
+                  )}
+                  {errors.bankStatement && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.bankStatement.message}
+                    </p>
                   )}
                 </div>
               </div>

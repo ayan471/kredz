@@ -26,6 +26,33 @@ type FormValues = {
   plan: string;
 };
 
+// Utility functions for form data persistence
+const saveFormDataToLocalStorage = (data: Partial<FormValues>) => {
+  try {
+    localStorage.setItem("creditBuilderFormData", JSON.stringify(data));
+  } catch (error) {
+    console.error("Error saving form data to localStorage:", error);
+  }
+};
+
+const getFormDataFromLocalStorage = (): Partial<FormValues> | null => {
+  try {
+    const savedData = localStorage.getItem("creditBuilderFormData");
+    return savedData ? JSON.parse(savedData) : null;
+  } catch (error) {
+    console.error("Error retrieving form data from localStorage:", error);
+    return null;
+  }
+};
+
+const clearFormDataFromLocalStorage = () => {
+  try {
+    localStorage.removeItem("creditBuilderFormData");
+  } catch (error) {
+    console.error("Error clearing form data from localStorage:", error);
+  }
+};
+
 interface CreditBuilderFormProps {
   selectedPlan: string | null;
 }
@@ -75,6 +102,35 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
       }
     }
   }, [user, setValue]);
+
+  // Load saved form data when component mounts
+  useEffect(() => {
+    const savedData = getFormDataFromLocalStorage();
+    if (savedData) {
+      // Populate form with saved data
+      Object.entries(savedData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          setValue(key as keyof FormValues, value);
+        }
+      });
+
+      toast({
+        title: "Form Data Restored",
+        description: "Your previously entered information has been restored.",
+      });
+    }
+  }, [setValue, toast]);
+
+  // Save form data whenever it changes
+  useEffect(() => {
+    const subscription = form.watch((formData) => {
+      if (formData && Object.keys(formData).length > 0) {
+        saveFormDataToLocalStorage(formData);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   // Find the onSubmit function and update it to include plan details
   const onSubmit = async (data: FormValues) => {
@@ -191,6 +247,9 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
       // Store the new transaction ID in localStorage
       localStorage.setItem("creditBuilderTxnId", orderId);
       localStorage.setItem("lastSabpaisaTxnId", orderId);
+
+      // Clear saved form data after successful payment initiation
+      clearFormDataFromLocalStorage();
 
       // Initiate Sabpaisa payment
       const paymentResult = await initiateSabpaisaPayment({

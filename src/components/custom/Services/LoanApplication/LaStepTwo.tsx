@@ -48,6 +48,35 @@ type EMIDetails = {
   interestRate: number;
 };
 
+// Utility functions for form data persistence
+const saveFormDataToLocalStorage = (data: Partial<FormValues>, id: string) => {
+  try {
+    localStorage.setItem(`loanApplicationStepTwo_${id}`, JSON.stringify(data));
+  } catch (error) {
+    console.error("Error saving form data to localStorage:", error);
+  }
+};
+
+const getFormDataFromLocalStorage = (
+  id: string
+): Partial<FormValues> | null => {
+  try {
+    const savedData = localStorage.getItem(`loanApplicationStepTwo_${id}`);
+    return savedData ? JSON.parse(savedData) : null;
+  } catch (error) {
+    console.error("Error retrieving form data from localStorage:", error);
+    return null;
+  }
+};
+
+const clearFormDataFromLocalStorage = (id: string) => {
+  try {
+    localStorage.removeItem(`loanApplicationStepTwo_${id}`);
+  } catch (error) {
+    console.error("Error clearing form data from localStorage:", error);
+  }
+};
+
 const calculateEligibleAmount = (salary: number, age: number): number => {
   if (age < 23) {
     if (salary <= 10000) return 7000;
@@ -101,6 +130,7 @@ const LaStepTwo = () => {
   const { user } = useUser();
   const selectedTenure = watch("emiTenure");
   const [currentStep, setCurrentStep] = useState(1);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -108,27 +138,68 @@ const LaStepTwo = () => {
     const fetchData = async () => {
       const id = searchParams.get("id");
       if (id) {
+        setApplicationId(id);
+
+        // First check if there's any saved data in localStorage
+        const savedData = getFormDataFromLocalStorage(id);
+
+        // Then fetch data from the server
         const result = await getLoanApplicationData(id);
+
         if (result.success && result.data) {
           const applicationData = result.data;
+
+          // Populate form with server data
           Object.entries(applicationData).forEach(([key, value]) => {
             if (key in form.getValues() && value !== null) {
               setValue(key as keyof FormValues, value as string);
             }
           });
+
+          // Calculate eligible amount
           const calculatedEligibleAmount = calculateEligibleAmount(
             Number.parseFloat(applicationData.monIncome || "0"),
             applicationData.age || 0
           );
           setEligibleAmount(calculatedEligibleAmount);
+
+          // If we have saved data in localStorage, override with that data
+          if (savedData) {
+            Object.entries(savedData).forEach(([key, value]) => {
+              if (value !== undefined && value !== null) {
+                setValue(key as keyof FormValues, value as any);
+              }
+            });
+
+            toast({
+              title: "Form Data Restored",
+              description:
+                "Your previously entered information has been restored.",
+            });
+          }
         }
       }
+
       if (user) {
         setValue("emailID", user.emailAddresses[0]?.emailAddress || "");
       }
     };
+
     fetchData();
-  }, [searchParams, setValue, form, user]);
+  }, [searchParams, setValue, form, user, toast]);
+
+  // Save form data whenever it changes
+  useEffect(() => {
+    if (applicationId) {
+      const subscription = watch((formData) => {
+        if (formData && Object.keys(formData).length > 0) {
+          saveFormDataToLocalStorage(formData, applicationId);
+        }
+      });
+
+      return () => subscription.unsubscribe();
+    }
+  }, [watch, applicationId]);
 
   useEffect(() => {
     if (eligibleAmount && selectedTenure) {
@@ -175,6 +246,9 @@ const LaStepTwo = () => {
     });
 
     if (result.success) {
+      // Clear saved form data after successful submission
+      clearFormDataFromLocalStorage(id);
+
       toast({
         title: "Eligibility Submitted!",
         description: "Your loan eligibility has been determined.",
