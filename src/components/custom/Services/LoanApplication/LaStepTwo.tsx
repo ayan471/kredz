@@ -51,9 +51,12 @@ type EMIDetails = {
 // Utility functions for form data persistence
 const saveFormDataToLocalStorage = (data: Partial<FormValues>, id: string) => {
   try {
-    localStorage.setItem(`loanApplicationStepTwo_${id}`, JSON.stringify(data));
+    sessionStorage.setItem(
+      `loanApplicationStepTwo_${id}`,
+      JSON.stringify(data)
+    );
   } catch (error) {
-    console.error("Error saving form data to localStorage:", error);
+    console.error("Error saving form data to sessionStorage:", error);
   }
 };
 
@@ -61,19 +64,19 @@ const getFormDataFromLocalStorage = (
   id: string
 ): Partial<FormValues> | null => {
   try {
-    const savedData = localStorage.getItem(`loanApplicationStepTwo_${id}`);
+    const savedData = sessionStorage.getItem(`loanApplicationStepTwo_${id}`);
     return savedData ? JSON.parse(savedData) : null;
   } catch (error) {
-    console.error("Error retrieving form data from localStorage:", error);
+    console.error("Error retrieving form data from sessionStorage:", error);
     return null;
   }
 };
 
 const clearFormDataFromLocalStorage = (id: string) => {
   try {
-    localStorage.removeItem(`loanApplicationStepTwo_${id}`);
+    sessionStorage.removeItem(`loanApplicationStepTwo_${id}`);
   } catch (error) {
-    console.error("Error clearing form data from localStorage:", error);
+    console.error("Error clearing form data from sessionStorage:", error);
   }
 };
 

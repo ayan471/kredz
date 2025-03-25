@@ -123,27 +123,27 @@ const saveFormDataToLocalStorage = (data: Partial<FormValues>) => {
       }
     });
 
-    localStorage.setItem("loanApplicationData", JSON.stringify(dataToSave));
+    sessionStorage.setItem("loanApplicationData", JSON.stringify(dataToSave));
   } catch (error) {
-    console.error("Error saving form data to localStorage:", error);
+    console.error("Error saving form data to sessionStorage:", error);
   }
 };
 
 const getFormDataFromLocalStorage = (): Partial<FormValues> | null => {
   try {
-    const savedData = localStorage.getItem("loanApplicationData");
+    const savedData = sessionStorage.getItem("loanApplicationData");
     return savedData ? JSON.parse(savedData) : null;
   } catch (error) {
-    console.error("Error retrieving form data from localStorage:", error);
+    console.error("Error retrieving form data from sessionStorage:", error);
     return null;
   }
 };
 
 const clearFormDataFromLocalStorage = () => {
   try {
-    localStorage.removeItem("loanApplicationData");
+    sessionStorage.removeItem("loanApplicationData");
   } catch (error) {
-    console.error("Error clearing form data from localStorage:", error);
+    console.error("Error clearing form data from sessionStorage:", error);
   }
 };
 

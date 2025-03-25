@@ -181,7 +181,7 @@ const CreditBuilderLoanForm: React.FC = () => {
 
   const clearFormDataFromLocalStorage = () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("creditBuilderLoanFormData");
+      sessionStorage.removeItem("creditBuilderLoanFormData");
     }
   };
 

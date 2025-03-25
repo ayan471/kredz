@@ -29,27 +29,27 @@ type FormValues = {
 // Utility functions for form data persistence
 const saveFormDataToLocalStorage = (data: Partial<FormValues>) => {
   try {
-    localStorage.setItem("creditBuilderFormData", JSON.stringify(data));
+    sessionStorage.setItem("creditBuilderFormData", JSON.stringify(data));
   } catch (error) {
-    console.error("Error saving form data to localStorage:", error);
+    console.error("Error saving form data to sessionStorage:", error);
   }
 };
 
 const getFormDataFromLocalStorage = (): Partial<FormValues> | null => {
   try {
-    const savedData = localStorage.getItem("creditBuilderFormData");
+    const savedData = sessionStorage.getItem("creditBuilderFormData");
     return savedData ? JSON.parse(savedData) : null;
   } catch (error) {
-    console.error("Error retrieving form data from localStorage:", error);
+    console.error("Error retrieving form data from sessionStorage:", error);
     return null;
   }
 };
 
 const clearFormDataFromLocalStorage = () => {
   try {
-    localStorage.removeItem("creditBuilderFormData");
+    sessionStorage.removeItem("creditBuilderFormData");
   } catch (error) {
-    console.error("Error clearing form data from localStorage:", error);
+    console.error("Error clearing form data from sessionStorage:", error);
   }
 };
 
