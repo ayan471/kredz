@@ -63,10 +63,8 @@ export default function FasterProcessingFailure() {
           </CardContent>
           <CardFooter className="flex justify-center gap-4">
             {applicationId ? (
-              <Link
-                href={`/loan-eligibility-result?applicationId=${applicationId}&status=In%20Progress`}
-              >
-                <Button variant="outline">Try Again</Button>
+              <Link href={`/contact`}>
+                <Button variant="outline">Contact Support</Button>
               </Link>
             ) : (
               <Link href="/dashboard">

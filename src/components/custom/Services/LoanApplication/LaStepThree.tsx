@@ -248,25 +248,48 @@ const LaStepThree = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="text-3xl font-bold">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+                  <div className="text-3xl font-bold mb-4 md:mb-0">
                     ₹{calculateAmounts(planDetails.discountedPrice).basePrice}
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm">
-                      + ₹
-                      {calculateAmounts(planDetails.discountedPrice).gstAmount}{" "}
-                      GST
+                  <div className="bg-orange-50 p-3 rounded-lg border border-orange-100 w-full md:w-auto">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm text-gray-600 mr-4">
+                        Base Price:
+                      </span>
+                      <span className="font-medium">
+                        ₹
+                        {
+                          calculateAmounts(planDetails.discountedPrice)
+                            .basePrice
+                        }
+                      </span>
                     </div>
-                    <div className="text-lg font-semibold">
-                      Total: ₹
-                      {
-                        calculateAmounts(planDetails.discountedPrice)
-                          .totalAmount
-                      }
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm text-gray-600 mr-4">
+                        GST (18%):
+                      </span>
+                      <span className="font-medium">
+                        ₹
+                        {
+                          calculateAmounts(planDetails.discountedPrice)
+                            .gstAmount
+                        }
+                      </span>
                     </div>
-                    <div className="text-sm line-through text-gray-500">
-                      ₹{planDetails.realPrice}
+                    <div className="border-t border-orange-200 my-2"></div>
+                    <div className="flex justify-between items-center mt-2 p-2 bg-orange-100 rounded-md">
+                      <span className="font-bold text-blue-900">Total:</span>
+                      <span className="font-bold text-lg text-orange-600">
+                        ₹
+                        {
+                          calculateAmounts(planDetails.discountedPrice)
+                            .totalAmount
+                        }
+                      </span>
+                    </div>
+                    <div className="text-sm text-right mt-1 line-through text-gray-500">
+                      Original: ₹{planDetails.realPrice}
                     </div>
                   </div>
                 </div>

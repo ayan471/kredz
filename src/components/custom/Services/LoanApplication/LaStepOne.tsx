@@ -1312,7 +1312,7 @@ const LaStepOne: React.FC = () => {
                 />
               )}
 
-              <div className="flex justify-between mt-8">
+              <div className="flex justify-between mt-8  sm:flex-row sm:gap-4">
                 {currentStep > 1 && (
                   <Button
                     type="button"

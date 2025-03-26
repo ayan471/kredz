@@ -179,9 +179,22 @@ export default function SignInPage() {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full lg:w-1/2 bg-white p-8 flex items-center justify-center"
+        className="w-full lg:w-1/2 bg-white flex flex-col items-center justify-center px-4 py-8 sm:px-6 md:px-8"
       >
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-sm sm:max-w-md">
+          <div className="flex justify-center mb-6 lg:hidden">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", duration: 0.8 }}
+              className="flex items-center gap-2"
+            >
+              <Sparkles className="w-10 h-10 text-orange-500" />
+              <span className="text-xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 text-transparent bg-clip-text">
+                Kredz
+              </span>
+            </motion.div>
+          </div>
           <SignIn
             appearance={{
               elements: {
@@ -193,8 +206,9 @@ export default function SignInPage() {
                 formFieldLabel: "text-gray-700",
                 headerTitle: "text-2xl font-bold text-gray-900",
                 headerSubtitle: "text-gray-600",
-                card: "shadow-none",
+                card: "shadow-none w-full",
                 footer: "text-gray-600",
+                rootBox: "w-full",
               },
               layout: {
                 socialButtonsPlacement: "bottom",

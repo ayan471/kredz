@@ -13,11 +13,17 @@ interface ServiceCardProps {
     features: string[];
     buttonText: string;
     buttonLink: string;
+    comingSoon?: boolean;
   };
   index: number;
+  onChannelPartnerClick?: () => void;
 }
 
-export default function ServiceCard({ service, index }: ServiceCardProps) {
+export default function ServiceCard({
+  service,
+  index,
+  onChannelPartnerClick,
+}: ServiceCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -40,11 +46,21 @@ export default function ServiceCard({ service, index }: ServiceCardProps) {
             </li>
           ))}
         </ul>
-        <Link href={service.buttonLink} className="mt-auto">
-          <button className="w-full bg-orange-500 text-white py-2 px-4 hover:bg-orange-600 transition-colors duration-300 rounded-full">
+
+        {service.comingSoon ? (
+          <button
+            onClick={onChannelPartnerClick}
+            className="w-full bg-orange-500 text-white py-2 px-4 hover:bg-orange-600 transition-colors duration-300 rounded-full mt-auto"
+          >
             {service.buttonText}
           </button>
-        </Link>
+        ) : (
+          <Link href={service.buttonLink} className="mt-auto">
+            <button className="w-full bg-orange-500 text-white py-2 px-4 hover:bg-orange-600 transition-colors duration-300 rounded-full">
+              {service.buttonText}
+            </button>
+          </Link>
+        )}
       </div>
     </motion.div>
   );

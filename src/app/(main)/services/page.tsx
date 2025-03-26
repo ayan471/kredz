@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import ServiceCard from "./ServiceCard";
 import ContactSection from "./ContactSection";
 import HeroSection from "./HeroSection";
@@ -85,6 +86,7 @@ const services = [
     ],
     buttonText: "Apply Now",
     buttonLink: "#",
+    comingSoon: true,
   },
   {
     title: "Why Choose Kredz?",
@@ -105,8 +107,18 @@ const services = [
 ];
 
 export default function ServicesPage() {
+  const [showPopup, setShowPopup] = useState(false);
+
+  const handleChannelPartnerClick = () => {
+    setShowPopup(true);
+    // Auto-hide popup after 3 seconds
+    setTimeout(() => {
+      setShowPopup(false);
+    }, 3000);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-100 text-blue-900">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-100 text-blue-900 relative">
       <HeroSection />
       <motion.div
         initial={{ opacity: 0 }}
@@ -122,11 +134,44 @@ export default function ServicesPage() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
-            <ServiceCard key={index} service={service} index={index} />
+            <ServiceCard
+              key={index}
+              service={service}
+              index={index}
+              onChannelPartnerClick={
+                service.comingSoon ? handleChannelPartnerClick : undefined
+              }
+            />
           ))}
         </div>
         <ContactSection />
       </motion.div>
+
+      {/* Coming Soon Popup */}
+      <AnimatePresence>
+        {showPopup && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ type: "spring", damping: 15 }}
+            className="fixed inset-x-0 bottom-10 mx-auto w-full max-w-sm z-50 flex justify-center"
+          >
+            <div className="bg-gradient-to-r from-blue-900 to-orange-500 text-white px-6 py-4 rounded-full shadow-lg flex items-center justify-between">
+              <div className="flex items-center">
+                <span className="text-2xl mr-3">🚀</span>
+                <span className="font-semibold">Coming Soon! Stay tuned.</span>
+              </div>
+              <button
+                onClick={() => setShowPopup(false)}
+                className="ml-4 text-white hover:text-orange-200 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

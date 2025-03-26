@@ -42,14 +42,20 @@ export default async function LoansPage() {
   const loans = await getUserLoans(userId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="container mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-blue-900">My Loans</h1>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 py-8 px-3 sm:py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-7xl mx-auto">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-blue-900">
+          My Loans
+        </h1>
         {loans.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {loans.map((loan) => (
-              <Link href={`/dashboard/loans/${loan.id}`} key={loan.id}>
-                <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer border-orange-300">
+              <Link
+                href={`/dashboard/loans/${loan.id}`}
+                key={loan.id}
+                className="block w-full"
+              >
+                <Card className="w-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer border-orange-300">
                   <CardHeader className="bg-orange-500 text-white p-4">
                     <CardTitle className="text-xl font-semibold mb-1">
                       {loan.prpseOfLoan}
@@ -58,7 +64,7 @@ export default async function LoansPage() {
                       Application ID: {loan.id}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="p-4 bg-white">
+                  <CardContent className="p-5 bg-white">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center text-blue-800">
@@ -141,7 +147,7 @@ export default async function LoansPage() {
             ))}
           </div>
         ) : (
-          <Card className="bg-white border border-orange-200 shadow-md">
+          <Card className="w-full bg-white border border-orange-200 shadow-md">
             <CardContent className="flex items-center justify-center h-32">
               <p className="text-blue-800 text-lg">
                 You have no completed loan applications.
