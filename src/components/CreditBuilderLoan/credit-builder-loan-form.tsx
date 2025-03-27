@@ -82,6 +82,26 @@ const getFormDataFromSessionStorage = (): Partial<FormData> | null => {
   }
 };
 
+// Add this function right after the getFormDataFromSessionStorage function
+const sanitizeFormData = (data: Partial<FormData>) => {
+  // Create a copy of the data
+  const sanitizedData = { ...data };
+
+  // Check if aadharNumber matches loanAmountRequired and clear it if it does
+  if (
+    sanitizedData.aadharNumber &&
+    sanitizedData.loanAmountRequired &&
+    sanitizedData.aadharNumber === sanitizedData.loanAmountRequired
+  ) {
+    console.log(
+      "Sanitizing: Detected aadharNumber matches loanAmountRequired, clearing aadharNumber"
+    );
+    sanitizedData.aadharNumber = "";
+  }
+
+  return sanitizedData;
+};
+
 const CreditBuilderLoanForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<FormData>>({});
@@ -117,8 +137,11 @@ const CreditBuilderLoanForm: React.FC = () => {
   useEffect(() => {
     const savedData = getFormDataFromSessionStorage();
     if (savedData) {
-      setFormData(savedData);
-      Object.entries(savedData).forEach(([key, value]) => {
+      // Sanitize the data before using it
+      const sanitizedData = sanitizeFormData(savedData);
+
+      setFormData(sanitizedData);
+      Object.entries(sanitizedData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           setValue(key as any, value);
         }
@@ -364,6 +387,7 @@ const CreditBuilderLoanForm: React.FC = () => {
     }
   };
 
+  // Modify the nextStep function to sanitize data before saving to session storage
   const nextStep = async () => {
     const fields = {
       1: ["fullName", "email", "mobileNumber", "dateOfBirth", "age"],
@@ -379,14 +403,24 @@ const CreditBuilderLoanForm: React.FC = () => {
       // Create a complete snapshot of all current form values
       const allCurrentValues = getValues();
 
-      // Update the form data state with all current values
-      setFormData(allCurrentValues);
+      // Sanitize the data before saving
+      const sanitizedValues = sanitizeFormData(allCurrentValues);
 
-      // Save all form values to session storage
+      // If we're moving to step 3 (Aadhaar details), ensure the Aadhaar field is clean
+      if (currentStep === 2) {
+        console.log("Moving to Aadhaar step, ensuring Aadhaar field is clean");
+        setValue("aadharNumber", "");
+        sanitizedValues.aadharNumber = "";
+      }
+
+      // Update the form data state with sanitized values
+      setFormData(sanitizedValues);
+
+      // Save sanitized values to session storage
       try {
         sessionStorage.setItem(
           "creditBuilderLoanFormData",
-          JSON.stringify(allCurrentValues)
+          JSON.stringify(sanitizedValues)
         );
       } catch (error) {
         console.error("Error saving form data to sessionStorage:", error);
@@ -403,18 +437,22 @@ const CreditBuilderLoanForm: React.FC = () => {
     }
   };
 
+  // Modify the prevStep function to also sanitize data
   const prevStep = () => {
     // Create a complete snapshot of all current form values
     const allCurrentValues = getValues();
 
-    // Update the form data state with all current values
-    setFormData(allCurrentValues);
+    // Sanitize the data before saving
+    const sanitizedValues = sanitizeFormData(allCurrentValues);
 
-    // Save all form values to session storage
+    // Update the form data state with sanitized values
+    setFormData(sanitizedValues);
+
+    // Save sanitized values to session storage
     try {
       sessionStorage.setItem(
         "creditBuilderLoanFormData",
-        JSON.stringify(allCurrentValues)
+        JSON.stringify(sanitizedValues)
       );
     } catch (error) {
       console.error("Error saving form data to sessionStorage:", error);
@@ -429,7 +467,16 @@ const CreditBuilderLoanForm: React.FC = () => {
   useEffect(() => {
     // When step changes, reset the form with the current formData
     if (Object.keys(formData).length > 0) {
-      reset(formData);
+      // Sanitize the data before resetting the form
+      const sanitizedData = sanitizeFormData(formData);
+
+      // If we're on step 3 (Aadhaar details), ensure the Aadhaar field is clean
+      if (currentStep === 3) {
+        console.log("On Aadhaar step, ensuring Aadhaar field is clean");
+        sanitizedData.aadharNumber = "";
+      }
+
+      reset(sanitizedData);
     }
   }, [currentStep, reset, formData]);
 
@@ -681,6 +728,15 @@ const CreditBuilderLoanForm: React.FC = () => {
                       // Ensure we're only storing numeric values
                       return value ? value.replace(/\D/g, "") : value;
                     },
+                    validate: {
+                      notLoanAmount: (value) => {
+                        const loanAmount = getValues("loanAmountRequired");
+                        return (
+                          value !== loanAmount ||
+                          "Aadhaar number cannot be the same as loan amount"
+                        );
+                      },
+                    },
                     onChange: (e) => {
                       // Only allow numeric input
                       const value = e.target.value;
@@ -691,6 +747,9 @@ const CreditBuilderLoanForm: React.FC = () => {
                       // Check if the value matches the loan amount and clear if it does
                       const loanAmount = getValues("loanAmountRequired");
                       if (value === loanAmount && loanAmount !== "") {
+                        console.log(
+                          "Detected aadharNumber input matches loan amount, clearing"
+                        );
                         e.target.value = "";
                         setValue("aadharNumber", "");
                       }
@@ -703,6 +762,9 @@ const CreditBuilderLoanForm: React.FC = () => {
                     const value = e.target.value;
                     const loanAmount = getValues("loanAmountRequired");
                     if (value === loanAmount && loanAmount !== "") {
+                      console.log(
+                        "Focus: Detected aadharNumber contains loan amount, clearing"
+                      );
                       e.target.value = "";
                       setValue("aadharNumber", "");
                     }
