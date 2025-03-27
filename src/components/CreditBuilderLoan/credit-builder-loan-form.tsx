@@ -132,42 +132,67 @@ const CreditBuilderLoanForm: React.FC = () => {
         try {
           const result = await getCreditBuilderLoanApplication(user.id);
           if (result.success && result.data) {
-            const fetchedData: Partial<FormData> = {
-              fullName: result.data.fullName || "",
-              email: result.data.email || "",
-              mobileNumber: result.data.phoneNo || "",
-              dateOfBirth: result.data.dateOfBirth
-                ? new Date(result.data.dateOfBirth).toISOString().split("T")[0]
-                : "",
-              loanAmountRequired: result.data.amtRequired?.toString() || "",
-              purpose: result.data.prpseOfLoan || "",
-              aadharNumber: result.data.aadharNo || "", // Make sure this is correctly mapped
-              panNumber: result.data.panNo || "",
-              creditScore: result.data.creditScore?.toString() || "",
-              employmentType: result.data.empType || "",
-              monthlyIncome: result.data.monIncome?.toString() || "",
-              currentActiveEmis: result.data.currEmis?.toString() || "",
-              currentActiveOverdues:
-                result.data.totalActiveLoans?.toString() || "",
-              address: result.data.address || "",
-            };
+            // First, log the raw data to see what we're working with
+            console.log("Raw API response data:", result.data);
 
-            // Log the data to verify correct mapping
-            console.log("Fetched application data:", result.data);
-            console.log("Mapped form data:", fetchedData);
+            // Create a clean object with explicit field mapping
+            const fetchedData: Partial<FormData> = {};
 
+            // Map basic fields
+            fetchedData.fullName = result.data.fullName || "";
+            fetchedData.email = result.data.email || "";
+            fetchedData.mobileNumber = result.data.phoneNo || "";
+
+            // Handle date of birth
             if (result.data.dateOfBirth) {
-              const calculatedAge = calculateAge(
-                new Date(result.data.dateOfBirth).toISOString().split("T")[0]
-              );
+              fetchedData.dateOfBirth = new Date(result.data.dateOfBirth)
+                .toISOString()
+                .split("T")[0];
+              // Calculate age
+              const calculatedAge = calculateAge(fetchedData.dateOfBirth);
               fetchedData.age = calculatedAge;
             }
+
+            // Map loan details - IMPORTANT: ensure these are correctly mapped
+            fetchedData.loanAmountRequired =
+              result.data.amtRequired?.toString() || "";
+            fetchedData.purpose = result.data.prpseOfLoan || "";
+
+            // Map personal details - IMPORTANT: ensure aadharNo is correctly mapped
+            fetchedData.aadharNumber = result.data.aadharNo || "";
+            fetchedData.panNumber = result.data.panNo || "";
+            fetchedData.address = result.data.address || "";
+
+            // Map employment and financial details
+            fetchedData.employmentType = result.data.empType || "";
+            fetchedData.monthlyIncome = result.data.monIncome?.toString() || "";
+            fetchedData.creditScore = result.data.creditScore?.toString() || "";
+            fetchedData.currentActiveEmis =
+              result.data.currEmis?.toString() || "";
+            fetchedData.currentActiveOverdues =
+              result.data.totalActiveLoans?.toString() || "";
+
+            // Log the mapped data to verify
+            console.log("Mapped form data:", fetchedData);
+
+            // Update state and form
             setFormData(fetchedData);
+
+            // Reset the form with the fetched data
             reset(fetchedData);
-            console.log(
-              "Application data fetched and form pre-filled",
-              fetchedData
-            );
+
+            // Force clear the aadharNumber field if it contains the loan amount
+            if (
+              fetchedData.aadharNumber === fetchedData.loanAmountRequired &&
+              fetchedData.loanAmountRequired !== ""
+            ) {
+              console.log(
+                "Detected aadharNumber field contains loan amount, clearing it"
+              );
+              setValue("aadharNumber", "");
+            }
+
+            console.log("Application data fetched and form pre-filled");
           } else {
             console.log("No rejected application found or error occurred");
           }
@@ -184,7 +209,7 @@ const CreditBuilderLoanForm: React.FC = () => {
     };
 
     fetchRejectedApplication();
-  }, [user, reset, toast, register]);
+  }, [user, reset, toast, register, setValue]);
 
   useEffect(() => {
     if (scrollContainerRef.current) {
@@ -652,16 +677,36 @@ const CreditBuilderLoanForm: React.FC = () => {
                       value: /^\d{12}$/,
                       message: "Please enter a valid 12-digit Aadhaar number",
                     },
+                    setValueAs: (value) => {
+                      // Ensure we're only storing numeric values
+                      return value ? value.replace(/\D/g, "") : value;
+                    },
                     onChange: (e) => {
                       // Only allow numeric input
                       const value = e.target.value;
                       if (value && !/^\d*$/.test(value)) {
                         e.target.value = value.replace(/[^\d]/g, "");
                       }
+
+                      // Check if the value matches the loan amount and clear if it does
+                      const loanAmount = getValues("loanAmountRequired");
+                      if (value === loanAmount && loanAmount !== "") {
+                        e.target.value = "";
+                        setValue("aadharNumber", "");
+                      }
                     },
                   })}
                   type="text"
                   maxLength={12}
+                  onFocus={(e) => {
+                    // When the field gets focus, check if it contains the loan amount
+                    const value = e.target.value;
+                    const loanAmount = getValues("loanAmountRequired");
+                    if (value === loanAmount && loanAmount !== "") {
+                      e.target.value = "";
+                      setValue("aadharNumber", "");
+                    }
+                  }}
                 />
                 {errors.aadharNumber && (
                   <p className="text-sm text-red-500 mt-1">
