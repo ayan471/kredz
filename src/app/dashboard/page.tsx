@@ -203,7 +203,7 @@ export default async function DashboardPage() {
                 <div className="text-center py-8">
                   <CreditCard className="h-12 w-12 text-blue-900 mx-auto mb-4" />
                   <p className="text-blue-800">No active subscription found</p>
-                  <Link href={"/credit-builder"}>
+                  <Link href={"/credit-builder-plan"}>
                     <button className="mt-4 px-4 py-2 bg-blue-900 text-white rounded-md hover:bg-blue-800 transition-colors">
                       Explore Plans
                     </button>
