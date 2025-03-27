@@ -62,6 +62,26 @@ type FormData = {
   age: string;
 };
 
+// Function to save form data to session storage
+const saveFormDataToSessionStorage = (data: Partial<FormData>) => {
+  try {
+    sessionStorage.setItem("creditBuilderLoanFormData", JSON.stringify(data));
+  } catch (error) {
+    console.error("Error saving form data to sessionStorage:", error);
+  }
+};
+
+// Function to get form data from session storage
+const getFormDataFromSessionStorage = (): Partial<FormData> | null => {
+  try {
+    const savedData = sessionStorage.getItem("creditBuilderLoanFormData");
+    return savedData ? JSON.parse(savedData) : null;
+  } catch (error) {
+    console.error("Error retrieving form data from sessionStorage:", error);
+    return null;
+  }
+};
+
 const CreditBuilderLoanForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<FormData>>({});
@@ -77,6 +97,7 @@ const CreditBuilderLoanForm: React.FC = () => {
     setValue,
     reset,
     trigger,
+    getValues,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: formData,
@@ -91,6 +112,19 @@ const CreditBuilderLoanForm: React.FC = () => {
     // Register the purpose field with validation
     register("purpose", { required: "Purpose of loan is required" });
   }, [register]);
+
+  // Load saved form data from session storage on initial load
+  useEffect(() => {
+    const savedData = getFormDataFromSessionStorage();
+    if (savedData) {
+      setFormData(savedData);
+      Object.entries(savedData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          setValue(key as any, value);
+        }
+      });
+    }
+  }, [setValue]);
 
   useEffect(() => {
     const fetchRejectedApplication = async () => {
@@ -258,6 +292,7 @@ const CreditBuilderLoanForm: React.FC = () => {
             customerName: data.fullName,
             customerPhone: data.mobileNumber,
             customerEmail: data.email,
+            preventRedirect: "true", // Add this parameter
           }).toString();
 
           router.push(
@@ -272,6 +307,7 @@ const CreditBuilderLoanForm: React.FC = () => {
             customerName: data.fullName,
             customerPhone: data.mobileNumber,
             customerEmail: data.email,
+            preventRedirect: "true", // Add this parameter
           }).toString();
 
           router.push(
@@ -301,19 +337,32 @@ const CreditBuilderLoanForm: React.FC = () => {
   const nextStep = async () => {
     const fields = {
       1: ["fullName", "email", "mobileNumber", "dateOfBirth", "age"],
-      2: ["loanAmountRequired", "purpose"], // Make sure purpose is included here
+      2: ["loanAmountRequired", "purpose"],
       3: ["aadharNumber", "panNumber", "address"],
       4: ["employmentType", "monthlyIncome"],
       5: ["creditScore", "currentActiveEmis", "currentActiveOverdues"],
     }[currentStep];
 
-    console.log("Validating fields:", fields); // Add debugging
     const isValid = await trigger(fields as any);
-    console.log("Validation result:", isValid, "Errors:", Object.keys(errors)); // Add debugging
 
     if (isValid) {
-      const currentFormData = watch();
-      setFormData((prevData) => ({ ...prevData, ...currentFormData }));
+      // Create a complete snapshot of all current form values
+      const allCurrentValues = getValues();
+
+      // Update the form data state with all current values
+      setFormData(allCurrentValues);
+
+      // Save all form values to session storage
+      try {
+        sessionStorage.setItem(
+          "creditBuilderLoanFormData",
+          JSON.stringify(allCurrentValues)
+        );
+      } catch (error) {
+        console.error("Error saving form data to sessionStorage:", error);
+      }
+
+      // Move to the next step
       setCurrentStep((prev) => Math.min(prev + 1, 5));
     } else {
       toast({
@@ -325,10 +374,34 @@ const CreditBuilderLoanForm: React.FC = () => {
   };
 
   const prevStep = () => {
-    const currentFormData = watch();
-    setFormData((prevData) => ({ ...prevData, ...currentFormData }));
+    // Create a complete snapshot of all current form values
+    const allCurrentValues = getValues();
+
+    // Update the form data state with all current values
+    setFormData(allCurrentValues);
+
+    // Save all form values to session storage
+    try {
+      sessionStorage.setItem(
+        "creditBuilderLoanFormData",
+        JSON.stringify(allCurrentValues)
+      );
+    } catch (error) {
+      console.error("Error saving form data to sessionStorage:", error);
+    }
+
+    // Move to the previous step
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
+
+  // Also, add this useEffect to reset the form with the saved data when the step changes
+  // Add this after your other useEffects
+  useEffect(() => {
+    // When step changes, reset the form with the current formData
+    if (Object.keys(formData).length > 0) {
+      reset(formData);
+    }
+  }, [currentStep, reset, formData]);
 
   const renderStep = () => {
     switch (currentStep) {

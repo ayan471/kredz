@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,36 @@ type FormData = {
   emiTenure: string;
 };
 
+// Function to save form data to session storage
+const saveFormDataToSessionStorage = (
+  data: Partial<FormData>,
+  applicationId: string
+) => {
+  try {
+    sessionStorage.setItem(
+      `loanEligibilityResult_${applicationId}`,
+      JSON.stringify(data)
+    );
+  } catch (error) {
+    console.error("Error saving form data to sessionStorage:", error);
+  }
+};
+
+// Function to get form data from session storage
+const getFormDataFromSessionStorage = (
+  applicationId: string
+): Partial<FormData> | null => {
+  try {
+    const savedData = sessionStorage.getItem(
+      `loanEligibilityResult_${applicationId}`
+    );
+    return savedData ? JSON.parse(savedData) : null;
+  } catch (error) {
+    console.error("Error retrieving form data from sessionStorage:", error);
+    return null;
+  }
+};
+
 export default function LoanEligibilityResult() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -31,10 +61,12 @@ export default function LoanEligibilityResult() {
   const customerName = searchParams.get("customerName") || "";
   const customerPhone = searchParams.get("customerPhone") || "";
   const customerEmail = searchParams.get("customerEmail") || "";
+  const preventRedirect = searchParams.get("preventRedirect") === "true";
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Sabpaisa payment state
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -45,6 +77,7 @@ export default function LoanEligibilityResult() {
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
@@ -54,6 +87,57 @@ export default function LoanEligibilityResult() {
       emiTenure: "",
     },
   });
+
+  // Prevent automatic redirection
+  useEffect(() => {
+    // Set a flag in localStorage to prevent redirection
+    if (preventRedirect && applicationId) {
+      localStorage.setItem(`processed_${applicationId}`, "true");
+    }
+
+    // Load saved form data if available
+    if (applicationId) {
+      const savedData = getFormDataFromSessionStorage(applicationId);
+      if (savedData) {
+        // Populate form with saved data
+        Object.entries(savedData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            setValue(key as keyof FormData, value as string);
+          }
+        });
+
+        // If we have saved data and all required fields are filled, move to step 2
+        if (
+          savedData.accountNumber &&
+          savedData.bankName &&
+          savedData.ifscCode &&
+          savedData.emiTenure
+        ) {
+          setCurrentStep(2);
+        }
+
+        toast({
+          title: "Form Data Restored",
+          description: "Your previously entered information has been restored.",
+        });
+      }
+    }
+
+    setIsInitialized(true);
+  }, [preventRedirect, applicationId, setValue, toast]);
+
+  // Save form data whenever it changes
+  useEffect(() => {
+    if (applicationId) {
+      const subscription = watch((formData) => {
+        if (formData && Object.keys(formData).length > 0) {
+          saveFormDataToSessionStorage(formData, applicationId);
+        }
+      });
+
+      return () => subscription.unsubscribe();
+    }
+  }, [watch, applicationId]);
 
   const watchAllFields = watch();
 
@@ -101,6 +185,8 @@ export default function LoanEligibilityResult() {
 
       // Store the application ID in localStorage for recovery if needed
       localStorage.setItem("lastFasterProcessingApplication", applicationId);
+      // Mark this application as processed to prevent automatic redirection
+      localStorage.setItem(`processed_${applicationId}`, "true");
 
       // Replace PhonePe with Sabpaisa
       const response = await fetch("/api/initiate-sabpaisa-payment", {
@@ -150,50 +236,14 @@ export default function LoanEligibilityResult() {
     // Redirection will be handled by the PaymentStatusListener component
   };
 
-  // Add this debug function to your loan-eligibility-result.tsx file
-  // Place it inside the component but outside any other functions
-
-  const handleDebugFasterProcessing = async () => {
-    if (!applicationId) {
-      toast({
-        title: "Error",
-        description: "Application ID not found",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Call the direct DB update API
-      const response = await fetch(
-        `/api/direct-db-update?applicationId=${applicationId}`,
-        {
-          method: "GET",
-        }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        toast({
-          title: "Debug Success",
-          description: `Update attempted. Current value: ${result.data.fasterProcessingPaid}`,
-        });
-      } else {
-        toast({
-          title: "Debug Error",
-          description: "Failed to update faster processing status",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Debug error:", error);
-      toast({
-        title: "Debug Error",
-        description: "An error occurred during debug",
-        variant: "destructive",
-      });
-    }
-  };
+  // If not initialized yet, show a loading state
+  if (!isInitialized) {
+    return (
+      <div className="container mx-auto mt-10 flex justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
 
   const renderStep = () => {
     switch (currentStep) {
@@ -296,13 +346,6 @@ export default function LoanEligibilityResult() {
                 : "Pay ₹118 for Faster Processing"}
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
-            {/* <Button
-              onClick={handleDebugFasterProcessing}
-              className="w-full mt-4 bg-gray-500 hover:bg-gray-600 text-white"
-              type="button"
-            >
-              Debug: Force Update Faster Processing
-            </Button> */}
           </div>
         );
       default:

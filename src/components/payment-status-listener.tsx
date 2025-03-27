@@ -18,6 +18,17 @@ export default function PaymentStatusListener() {
       console.log("URL parameters detected:", { pathname, params: allParams });
     }
 
+    // Skip processing if we're on the loan eligibility result page with preventRedirect parameter
+    if (
+      pathname.includes("/loan-eligibility-result") &&
+      searchParams.get("preventRedirect") === "true"
+    ) {
+      console.log(
+        "Skipping payment status processing due to preventRedirect parameter"
+      );
+      return;
+    }
+
     // Check if we have payment response parameters
     const encResponse = searchParams.get("encResponse");
     const clientCode = searchParams.get("clientCode");
@@ -228,6 +239,14 @@ export default function PaymentStatusListener() {
 
       // Handle loan eligibility result page specifically
       if (pathname.includes("/loan-eligibility-result")) {
+        // Check if this page should be skipped due to preventRedirect
+        if (searchParams.get("preventRedirect") === "true") {
+          console.log(
+            "Skipping payment status processing due to preventRedirect parameter"
+          );
+          return;
+        }
+
         console.log("Detected loan eligibility payment response");
 
         // Extract application ID from the URL or from the transaction ID
