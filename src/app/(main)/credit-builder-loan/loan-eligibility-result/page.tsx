@@ -185,6 +185,9 @@ export default function LoanEligibilityResult() {
 
       // Store the application ID in localStorage for recovery if needed
       localStorage.setItem("lastFasterProcessingApplication", applicationId);
+
+      const timestamp = Date.now();
+      const uniqueOrderId = `FASTER-${applicationId}-${timestamp}`;
       // Mark this application as processed to prevent automatic redirection
       localStorage.setItem(`processed_${applicationId}`, "true");
 
@@ -196,7 +199,7 @@ export default function LoanEligibilityResult() {
         },
         body: JSON.stringify({
           amount: 118,
-          orderId: `FASTER-${applicationId}`,
+          orderId: uniqueOrderId,
           customerName,
           customerPhone,
           customerEmail,
@@ -431,6 +434,9 @@ export default function LoanEligibilityResult() {
           <p className="mb-4">
             You are eligible for a pre-approved Credit Builder Loan of up to ₹
             {Number.parseInt(eligibleAmount || "0").toLocaleString()}.
+            <br />
+            Our executive will contact you within 48 hours to complete the
+            process.
           </p>
 
           {renderStep()}

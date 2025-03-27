@@ -23,11 +23,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Hardcoded values for Sabpaisa credentials
-    const clientCode = "TM001";
-    const transUserName = "spuser_2013";
-    const transUserPassword = "RIADA_SP336";
-    const authkey = "kaY9AIhuJZNvKGp2";
-    const authiv = "YN2v8qQcU3rGfA1y";
+    const clientCode = process.env.NEXT_PUBLIC_SABPAISA_CLIENT_CODE;
+    const transUserName = process.env.NEXT_PUBLIC_SABPAISA_USER_NAME;
+    const transUserPassword = process.env.NEXT_PUBLIC_SABPAISA_USER_PASSWORD;
+    const authkey = process.env.SABPAISA_AUTH_KEY;
+    const authiv = process.env.SABPAISA_AUTH_IV;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     // Set the callback URL to point directly to the appropriate processing endpoint
@@ -50,9 +50,11 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now();
     const randomStr1 = Math.random().toString(36).substring(2, 8);
     const randomStr2 = Math.random().toString(36).substring(2, 8);
+    const randomStr3 = Math.random().toString(36).substring(2, 6);
+    const randomStr4 = Math.random().toString(36).substring(2, 6);
     const clientTxnId = cleanOrderId
-      ? `${cleanOrderId}-${timestamp}-${randomStr1}`.slice(0, 38)
-      : `${uniqid()}-${timestamp}-${randomStr2}`.slice(0, 38);
+      ? `${cleanOrderId}-${timestamp}-${randomStr1}-${randomStr3}`.slice(0, 38)
+      : `${uniqid()}-${timestamp}-${randomStr2}-${randomStr4}`.slice(0, 38);
 
     console.log("API generated unique transaction ID:", clientTxnId);
 
