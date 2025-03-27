@@ -185,9 +185,6 @@ export default function LoanEligibilityResult() {
 
       // Store the application ID in localStorage for recovery if needed
       localStorage.setItem("lastFasterProcessingApplication", applicationId);
-
-      const timestamp = Date.now();
-      const uniqueOrderId = `FASTER-${applicationId}-${timestamp}`;
       // Mark this application as processed to prevent automatic redirection
       localStorage.setItem(`processed_${applicationId}`, "true");
 
@@ -199,7 +196,7 @@ export default function LoanEligibilityResult() {
         },
         body: JSON.stringify({
           amount: 118,
-          orderId: uniqueOrderId,
+          orderId: `FASTER-${applicationId}`,
           customerName,
           customerPhone,
           customerEmail,
@@ -239,6 +236,48 @@ export default function LoanEligibilityResult() {
     // Redirection will be handled by the PaymentStatusListener component
   };
 
+  const handleDebugFasterProcessing = async () => {
+    if (!applicationId) {
+      toast({
+        title: "Error",
+        description: "Application ID not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Call the direct DB update API
+      const response = await fetch(
+        `/api/direct-db-update?applicationId=${applicationId}`,
+        {
+          method: "GET",
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "Debug Success",
+          description: `Update attempted. Current value: ${result.data.fasterProcessingPaid}`,
+        });
+      } else {
+        toast({
+          title: "Debug Error",
+          description: "Failed to update faster processing status",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Debug error:", error);
+      toast({
+        title: "Debug Error",
+        description: "An error occurred during debug",
+        variant: "destructive",
+      });
+    }
+  };
+
   // If not initialized yet, show a loading state
   if (!isInitialized) {
     return (
@@ -253,6 +292,16 @@ export default function LoanEligibilityResult() {
       case 1:
         return (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <h3 className="text-xl font-bold text-green-700">
+                Congratulations!
+              </h3>
+              <p className="text-green-700">
+                You are eligible for a pre-approved Credit Builder Loan of up to
+                ₹{Number.parseInt(eligibleAmount || "0").toLocaleString()}.
+              </p>
+            </div>
+
             <div>
               <Label htmlFor="accountNumber">Account Number</Label>
               <Input
@@ -321,7 +370,18 @@ export default function LoanEligibilityResult() {
       case 2:
         return (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Review Your Information</h3>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-4">
+              <h3 className="text-xl font-bold text-green-700 mb-2">
+                Thank You for Applying!
+              </h3>
+              <p className="text-green-700">
+                Your loan application has been successfully submitted. Our
+                executive will contact you within 48 hours to complete the
+                process.
+              </p>
+            </div>
+
+            <h3 className="text-xl font-semibold">Your Bank Details</h3>
             <div className="bg-orange-50 p-4 rounded-lg">
               <p>
                 <strong>Account Number:</strong> {watchAllFields.accountNumber}
@@ -336,27 +396,26 @@ export default function LoanEligibilityResult() {
                 <strong>EMI Tenure:</strong> {watchAllFields.emiTenure} months
               </p>
             </div>
-            <p className="text-sm text-gray-600 mb-2">
-              Your loan application have been successfully submitted. Our
-              executive will contact you within 48 hours to complete the
-              process.
-            </p>
+
             <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-              <Link href={"/dashboard"}>Go to Dashboard</Link>
+              <Link href="/dashboard">Go to Dashboard</Link>
             </Button>
-            <p className="text-sm text-gray-600 mb-2">
-              For faster processing, you can pay a fee of ₹118.
-            </p>
-            <Button
-              onClick={handlePayment}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-              disabled={isProcessing}
-            >
-              {isProcessing
-                ? "Processing..."
-                : "Pay ₹118 for Faster Processing"}
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
+
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-600 mb-2">
+                For faster processing, you can pay a fee of ₹118.
+              </p>
+              <Button
+                onClick={handlePayment}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                disabled={isProcessing}
+              >
+                {isProcessing
+                  ? "Processing..."
+                  : "Pay ₹118 for Faster Processing"}
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
           </div>
         );
       default:
@@ -436,16 +495,12 @@ export default function LoanEligibilityResult() {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-green-600 mb-4">
-            Congratulations!
-          </h2>
-          <p className="mb-4">
-            You are eligible for a pre-approved Credit Builder Loan of up to ₹
-            {Number.parseInt(eligibleAmount || "0").toLocaleString()}.
-            <br />
-            Our executive will contact you within 48 hours to complete the
-            process.
-          </p>
+          {currentStep === 1 ? (
+            <p className="mb-4">
+              Please provide your bank details to proceed with your loan
+              application.
+            </p>
+          ) : null}
 
           {renderStep()}
 
