@@ -337,6 +337,14 @@ export default function LoanEligibilityResult() {
               </p>
             </div>
             <p className="text-sm text-gray-600 mb-2">
+              Your loan application have been successfully submitted. Our
+              executive will contact you within 48 hours to complete the
+              process.
+            </p>
+            <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+              <Link href={"/dashboard"}>Go to Dashboard</Link>
+            </Button>
+            <p className="text-sm text-gray-600 mb-2">
               For faster processing, you can pay a fee of ₹118.
             </p>
             <Button

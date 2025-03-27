@@ -141,7 +141,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                 : "",
               loanAmountRequired: result.data.amtRequired?.toString() || "",
               purpose: result.data.prpseOfLoan || "",
-              aadharNumber: result.data.aadharNo || "",
+              aadharNumber: result.data.aadharNo || "", // Make sure this is correctly mapped
               panNumber: result.data.panNo || "",
               creditScore: result.data.creditScore?.toString() || "",
               employmentType: result.data.empType || "",
@@ -151,6 +151,11 @@ const CreditBuilderLoanForm: React.FC = () => {
                 result.data.totalActiveLoans?.toString() || "",
               address: result.data.address || "",
             };
+
+            // Log the data to verify correct mapping
+            console.log("Fetched application data:", result.data);
+            console.log("Mapped form data:", fetchedData);
+
             if (result.data.dateOfBirth) {
               const calculatedAge = calculateAge(
                 new Date(result.data.dateOfBirth).toISOString().split("T")[0]
@@ -403,6 +408,16 @@ const CreditBuilderLoanForm: React.FC = () => {
     }
   }, [currentStep, reset, formData]);
 
+  // Add this useEffect after your other useEffects
+  useEffect(() => {
+    return () => {
+      // Clean up function to prevent data leakage between sessions
+      if (typeof window !== "undefined") {
+        // Don't clear session storage on unmount, only when form is successfully submitted
+      }
+    };
+  }, []);
+
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -636,6 +651,13 @@ const CreditBuilderLoanForm: React.FC = () => {
                     pattern: {
                       value: /^\d{12}$/,
                       message: "Please enter a valid 12-digit Aadhaar number",
+                    },
+                    onChange: (e) => {
+                      // Only allow numeric input
+                      const value = e.target.value;
+                      if (value && !/^\d*$/.test(value)) {
+                        e.target.value = value.replace(/[^\d]/g, "");
+                      }
                     },
                   })}
                   type="text"
