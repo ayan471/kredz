@@ -276,7 +276,7 @@ export default async function LoanDetailsPage({
                 </div>
               </div>
               <div className="mt-4">
-                <Link href="/credit-builder">
+                <Link href="/credit-builder-plan">
                   <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
                     Buy Credit Builder Plan
                   </Button>
