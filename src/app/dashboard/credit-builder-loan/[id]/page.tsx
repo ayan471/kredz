@@ -23,8 +23,10 @@ import {
   Clock,
   Percent,
   Wallet,
+  Zap,
 } from "lucide-react";
 import EMIPayButton from "../EMIPayButton";
+import FasterProcessingButton from "../FasterProcessingButton";
 
 const prisma = new PrismaClient();
 
@@ -65,7 +67,7 @@ export default async function LoanDetailsPage({
         <p className="text-blue-800">
           The requested loan application could not be found.
         </p>
-        <Link href="/dashboard/credit-builer-loan">
+        <Link href="/dashboard/credit-builder-loan">
           <Button
             variant="outline"
             className="mt-4 text-blue-900 border-blue-900 hover:bg-blue-100"
@@ -101,7 +103,7 @@ export default async function LoanDetailsPage({
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <Link href="/dashboard/loans">
+        <Link href="/dashboard/credit-builder-loan">
           <Button
             variant="outline"
             className="mb-6 text-blue-900 border-blue-900 hover:bg-blue-100"
@@ -212,6 +214,37 @@ export default async function LoanDetailsPage({
             </div>
           </CardFooter>
         </Card>
+
+        {/* Faster Processing Card - Only show if status is "In Progress" and faster processing is not paid */}
+        {loan.status === "In Progress" &&
+          loan.fasterProcessingPaid === false && (
+            <Card className="overflow-hidden shadow-lg mb-6 border-orange-300">
+              <CardHeader className="bg-yellow-500 text-white p-6">
+                <CardTitle className="text-2xl font-bold flex items-center">
+                  <Zap className="mr-2 h-6 w-6" />
+                  Faster Processing
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 bg-white">
+                <div className="bg-yellow-50 rounded-lg p-6 mb-6">
+                  <h3 className="text-xl font-semibold mb-2 text-yellow-800">
+                    Speed Up Your Application
+                  </h3>
+                  <p className="text-gray-700 mb-4">
+                    Pay a small fee of ₹118 to get your loan application
+                    processed on priority. This will help you get a faster
+                    response on your application.
+                  </p>
+                </div>
+                <FasterProcessingButton
+                  applicationId={loan.id}
+                  customerName={loan.fullName}
+                  customerPhone={loan.mobileNumber}
+                  customerEmail={loan.email || ""}
+                />
+              </CardContent>
+            </Card>
+          )}
 
         {loan.approvedAmount && (
           <Card className="overflow-hidden shadow-lg mb-6 border-orange-300">

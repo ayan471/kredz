@@ -44,7 +44,9 @@ export default async function LoansPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-blue-900">My Loans</h1>
+        <h1 className="text-4xl font-bold mb-8 text-blue-900">
+          My Credit Builder Loans
+        </h1>
         {loans.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {loans.map((loan) => (
