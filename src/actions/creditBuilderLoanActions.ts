@@ -658,3 +658,28 @@ export async function updateFasterProcessingStatus(
     };
   }
 }
+
+export async function fetchCreditBuilderLoanApplication(userId: string) {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return { success: false, error: "User not authenticated" };
+    }
+
+    // Query the CreditBuilderLoanApplication model
+    const application = await prisma.creditBuilderLoanApplication.findFirst({
+      where: { userId: userId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!application) {
+      return { success: false, error: "No application found" };
+    }
+
+    console.log("Fetched credit builder loan application:", application);
+    return { success: true, data: application };
+  } catch (error) {
+    console.error("Error fetching credit builder loan application:", error);
+    return { success: false, error: "Failed to fetch application data" };
+  }
+}

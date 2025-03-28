@@ -22,14 +22,49 @@ import {
   saveCreditBuilderLoanApplication,
   checkEligibility,
   getCreditBuilderLoanApplication,
+  fetchCreditBuilderLoanApplication,
 } from "@/actions/creditBuilderLoanActions";
 import { useUser } from "@clerk/nextjs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { sendWhatsAppNotification } from "../lib/sendWhatsAppNotification";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronRight,
+  ChevronLeft,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 import { DevTool } from "@hookform/devtools";
+
+// Update the ApplicationStatus type to include status field
+type ApplicationStatus = {
+  id: string;
+  status?: string;
+  fullName?: string;
+  email?: string;
+  phoneNo?: string;
+  dateOfBirth?: Date;
+  amtRequired?: string | number;
+  prpseOfLoan?: string;
+  aadharNo?: string;
+  panNo?: string;
+  creditScore?: string;
+  empType?: string;
+  EmpOthers?: string;
+  monIncomeRange?: string;
+  monIncome?: string | number;
+  currEmis?: string;
+  totalActiveLoans?: string;
+  rejectionReason?: string;
+  address?: string;
+  hasSalarySlip?: boolean;
+  salaryReceiveMethod?: string;
+  hasIncomeTaxReturn?: boolean;
+  businessRegistration?: string;
+  createdAt?: string;
+};
 
 type FormData = {
   fullName: string;
@@ -105,6 +140,10 @@ const sanitizeFormData = (data: Partial<FormData>) => {
 const CreditBuilderLoanForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<FormData>>({});
+  // Replace the existing application state and related code
+  const [existingApplication, setExistingApplication] =
+    useState<ApplicationStatus | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useUser();
@@ -133,6 +172,56 @@ const CreditBuilderLoanForm: React.FC = () => {
     register("purpose", { required: "Purpose of loan is required" });
   }, [register]);
 
+  // In the useEffect for checking existing application, update the data mapping:
+  // Update the useEffect for checking existing application
+  useEffect(() => {
+    const checkExistingApplication = async () => {
+      if (user?.id) {
+        setIsLoading(true);
+        try {
+          const result = await fetchCreditBuilderLoanApplication(user.id);
+          if (result.success && result.data) {
+            // Create a properly structured application object from the returned data
+            setExistingApplication({
+              id: result.data.id,
+              fullName: result.data.fullName || "",
+              email: result.data.email || "",
+              phoneNo: result.data.mobileNumber || "",
+              dateOfBirth: result.data.dateOfBirth,
+              amtRequired: result.data.loanAmountRequired || "",
+              prpseOfLoan: result.data.purpose || "",
+              aadharNo: result.data.aadharNumber || "",
+              panNo: result.data.panNumber || "",
+              creditScore: result.data.creditScore?.toString() || "",
+              empType: result.data.employmentType || "",
+
+              monIncome: result.data.monthlyIncome || "",
+
+              rejectionReason: result.data.rejectionReason || "",
+              address: result.data.address || "",
+              hasSalarySlip: result.data.hasSalarySlip || false,
+              salaryReceiveMethod: result.data.salaryReceiveMethod || "",
+              hasIncomeTaxReturn: result.data.hasIncomeTaxReturn || false,
+              businessRegistration: result.data.businessRegistration || "",
+              createdAt: result.data.createdAt
+                ? new Date(result.data.createdAt).toISOString()
+                : new Date().toISOString(),
+              status: result.data.status || "",
+            });
+          }
+        } catch (error) {
+          console.error("Error checking existing application:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    checkExistingApplication();
+  }, [user]);
+
   // Load saved form data from session storage on initial load
   useEffect(() => {
     const savedData = getFormDataFromSessionStorage();
@@ -149,9 +238,11 @@ const CreditBuilderLoanForm: React.FC = () => {
     }
   }, [setValue]);
 
+  // Update the fetchRejectedApplication function to remove the isEligible check
+  // Update the fetchRejectedApplication function
   useEffect(() => {
     const fetchRejectedApplication = async () => {
-      if (user?.id) {
+      if (user?.id && existingApplication) {
         try {
           const result = await getCreditBuilderLoanApplication(user.id);
           if (result.success && result.data) {
@@ -176,12 +267,12 @@ const CreditBuilderLoanForm: React.FC = () => {
               fetchedData.age = calculatedAge;
             }
 
-            // Map loan details - IMPORTANT: ensure these are correctly mapped
+            // Map loan details
             fetchedData.loanAmountRequired =
               result.data.amtRequired?.toString() || "";
             fetchedData.purpose = result.data.prpseOfLoan || "";
 
-            // Map personal details - IMPORTANT: ensure aadharNo is correctly mapped
+            // Map personal details
             fetchedData.aadharNumber = result.data.aadharNo || "";
             fetchedData.panNumber = result.data.panNo || "";
             fetchedData.address = result.data.address || "";
@@ -232,7 +323,7 @@ const CreditBuilderLoanForm: React.FC = () => {
     };
 
     fetchRejectedApplication();
-  }, [user, reset, toast, register, setValue]);
+  }, [user, reset, toast, register, setValue, existingApplication]);
 
   useEffect(() => {
     if (scrollContainerRef.current) {
@@ -489,6 +580,130 @@ const CreditBuilderLoanForm: React.FC = () => {
       }
     };
   }, []);
+
+  // Replace the renderLockedApplicationStatus function with this simpler version
+  // Update the renderLockedApplicationStatus function
+  const renderLockedApplicationStatus = () => {
+    if (!existingApplication) return null;
+
+    const formatDate = (dateString?: string | Date) => {
+      if (!dateString) return "N/A";
+      try {
+        return new Date(dateString).toLocaleDateString();
+      } catch (e) {
+        return String(dateString);
+      }
+    };
+
+    // Get the current status from the application
+    const status =
+      existingApplication.status ||
+      (existingApplication.rejectionReason ? "Rejected" : "Pending");
+
+    return (
+      <Card className="border-2 border-orange-500 shadow-lg overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-orange-500 to-blue-950 text-white p-6">
+          <CardTitle className="text-3xl font-bold text-center">
+            Credit Builder Loan Application Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Application Details</h3>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`font-medium ${status === "Rejected" ? "text-red-600" : status === "Eligible" ? "text-green-600" : "text-blue-600"}`}
+                >
+                  {status}
+                </span>
+                {status === "Rejected" ? (
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                ) : status === "Eligible" ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                ) : (
+                  <Clock className="w-5 h-5 text-blue-600" />
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-orange-50 p-4 rounded-lg">
+              <div>
+                <p className="text-sm text-gray-500">Applicant Name</p>
+                <p className="font-medium">
+                  {existingApplication.fullName || "N/A"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Loan Amount</p>
+                <p className="font-medium">
+                  ₹
+                  {Number(
+                    existingApplication.amtRequired || 0
+                  ).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Purpose of Loan</p>
+                <p className="font-medium">
+                  {existingApplication.prpseOfLoan || "N/A"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Application Date</p>
+                <p className="font-medium">
+                  {formatDate(existingApplication.createdAt)}
+                </p>
+              </div>
+              {existingApplication.rejectionReason && (
+                <div className="col-span-2">
+                  <p className="text-sm text-gray-500">Rejection Reason</p>
+                  <p className="font-medium text-red-600">
+                    {existingApplication.rejectionReason}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {status === "Eligible" ? (
+                <p className="text-green-600 font-medium">
+                  You are now eligible to apply for a new loan. Please proceed
+                  to the dashboard to start a new application.
+                </p>
+              ) : (
+                <p className="text-gray-600">
+                  You already have an active loan application. You cannot submit
+                  a new application until the current one is processed or you
+                  are made eligible again.
+                </p>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                  onClick={() => router.push("/dashboard")}
+                >
+                  Go to Dashboard
+                </Button>
+                {status === "Eligible" && (
+                  <Button
+                    className="bg-green-500 hover:bg-green-600 text-white"
+                    onClick={() => {
+                      // Clear existing application data from state to show the form
+                      setExistingApplication(null);
+                    }}
+                  >
+                    Apply for New Loan
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -1217,93 +1432,135 @@ const CreditBuilderLoanForm: React.FC = () => {
     }
   };
 
+  // Show loading state while checking for existing application
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[300px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
+
+  // Update the return statement to check for status correctly
+  // Update the return statement to check for eligibility status
+  // Update the return statement to check for eligibility status
   return (
     <div className="mx-auto w-full max-w-4xl p-6 space-y-8">
-      <Card className="border-2 border-orange-500 shadow-lg overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-orange-500 to-blue-950 text-white p-6">
-          <CardTitle className="text-3xl font-bold text-center">
-            Credit Builder Loan Application
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="mb-8">
-            <Progress
-              value={(currentStep / 5) * 100}
-              className="w-full h-3 rounded-full bg-orange-200"
-            />
-            <div
-              ref={scrollContainerRef}
-              className="flex justify-between mt-4 overflow-x-auto pb-4 scrollbar-hide"
-            >
-              {[
-                "Basic Info",
-                "Loan Details",
-                "Personal Details",
-                "Employment",
-                "Financial",
-              ].map((step, index) => (
+      {/* Show loading state */}
+      {isLoading && (
+        <div className="flex justify-center items-center min-h-[300px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+        </div>
+      )}
+
+      {/* Show locked application status if user has an existing application */}
+      {!isLoading &&
+        existingApplication &&
+        existingApplication.status !== "Eligible" &&
+        renderLockedApplicationStatus()}
+
+      {/* Show the form only if user doesn't have any application */}
+      {!isLoading &&
+        (!existingApplication || existingApplication.status === "Eligible") && (
+          <Card className="border-2 border-orange-500 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-orange-500 to-blue-950 text-white p-6">
+              <CardTitle className="text-3xl font-bold text-center">
+                Credit Builder Loan Application
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="mb-8">
+                <Progress
+                  value={(currentStep / 5) * 100}
+                  className="w-full h-3 rounded-full bg-orange-200"
+                />
                 <div
-                  key={step}
-                  className="flex flex-col items-center flex-shrink-0 px-2 min-w-[80px] mt-2"
+                  ref={scrollContainerRef}
+                  className="flex justify-between mt-4 overflow-x-auto pb-4 scrollbar-hide"
                 >
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium mb-1
-                    ${index < currentStep ? "bg-orange-500 text-white" : "bg-orange-100 text-blue-950"}
-                    ${index === currentStep - 1 ? "ring-4 ring-orange-500 ring-offset-2" : ""}`}
-                  >
-                    {index < currentStep ? (
-                      <CheckCircle2 className="w-6 h-6" />
-                    ) : (
-                      index + 1
-                    )}
-                  </div>
-                  <span
-                    className={`text-[10px] sm:text-xs mt-1 sm:mt-2 text-center whitespace-nowrap
-                    ${index === currentStep - 1 ? "font-semibold text-blue-950" : "text-gray-500"}`}
-                  >
-                    {step}
-                  </span>
+                  {[
+                    "Basic Info",
+                    "Loan Details",
+                    "Personal Details",
+                    "Employment",
+                    "Financial",
+                  ].map((step, index) => (
+                    <div
+                      key={step}
+                      className="flex flex-col items-center flex-shrink-0 px-2 min-w-[80px] mt-2"
+                    >
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium mb-1
+            ${index < currentStep ? "bg-orange-500 text-white" : "bg-orange-100 text-blue-950"}
+            ${index === currentStep - 1 ? "ring-4 ring-orange-500 ring-offset-2" : ""}`}
+                      >
+                        {index < currentStep ? (
+                          <CheckCircle2 className="w-6 h-6" />
+                        ) : (
+                          index + 1
+                        )}
+                      </div>
+                      <span
+                        className={`text-[10px] sm:text-xs mt-1 sm:mt-2 text-center whitespace-nowrap
+            ${index === currentStep - 1 ? "font-semibold text-blue-950" : "text-gray-500"}`}
+                      >
+                        {step}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            {renderStep()}
+              {existingApplication &&
+                existingApplication.status === "Eligible" && (
+                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <p className="font-medium text-green-800">
+                        You are now eligible to apply for a new loan. Please
+                        fill out the form below.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
-            <div className="flex flex-col sm:flex-row justify-between mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
-              {currentStep > 1 && (
-                <Button
-                  type="button"
-                  onClick={prevStep}
-                  className="bg-gray-200 text-gray-800 hover:bg-gray-300 w-full sm:w-auto"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Previous
-                </Button>
-              )}
-              {currentStep < 5 ? (
-                <Button
-                  type="button"
-                  onClick={nextStep}
-                  className="bg-orange-500 hover:bg-orange-600 text-white w-auto sm:w-auto sm:ml-auto"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  className="bg-orange-500 hover:bg-orange-600 text-white w-auto sm:w-auto sm:ml-auto"
-                >
-                  Submit Application
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                {renderStep()}
+
+                <div className="flex flex-col sm:flex-row justify-between mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
+                  {currentStep > 1 && (
+                    <Button
+                      type="button"
+                      onClick={prevStep}
+                      className="bg-gray-200 text-gray-800 hover:bg-gray-300 w-full sm:w-auto"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-2" />
+                      Previous
+                    </Button>
+                  )}
+                  {currentStep < 5 ? (
+                    <Button
+                      type="button"
+                      onClick={nextStep}
+                      className="bg-orange-500 hover:bg-orange-600 text-white w-auto sm:w-auto sm:ml-auto"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      className="bg-orange-500 hover:bg-orange-600 text-white w-auto sm:w-auto sm:ml-auto"
+                    >
+                      Submit Application
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
       <DevTool control={control} />
     </div>
