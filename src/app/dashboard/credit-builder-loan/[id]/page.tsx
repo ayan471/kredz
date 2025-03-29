@@ -113,7 +113,7 @@ export default async function LoanDetailsPage({
         </Link>
         <Card className="overflow-hidden shadow-lg mb-6 border-orange-300">
           <CardHeader className="bg-orange-500 text-white p-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
               <div>
                 <CardTitle className="text-3xl font-bold mb-2">
                   {loan.purpose}
@@ -123,7 +123,7 @@ export default async function LoanDetailsPage({
                 </CardDescription>
               </div>
               <Badge
-                className={`text-sm px-3 py-1 rounded-full ${statusColor}`}
+                className={`text-sm px-3 py-1 rounded-full ${statusColor} self-start sm:self-center`}
               >
                 {loan.status}
               </Badge>

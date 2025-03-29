@@ -35,8 +35,10 @@ import {
   ChevronLeft,
   Clock,
   AlertCircle,
+  Zap,
 } from "lucide-react";
 import { DevTool } from "@hookform/devtools";
+import FasterProcessingButton from "./FasterProcessingButton";
 
 // Update the ApplicationStatus type to include status field
 type ApplicationStatus = {
@@ -64,6 +66,7 @@ type ApplicationStatus = {
   hasIncomeTaxReturn?: boolean;
   businessRegistration?: string;
   createdAt?: string;
+  fasterProcessingPaid?: boolean;
 };
 
 type FormData = {
@@ -207,6 +210,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                 ? new Date(result.data.createdAt).toISOString()
                 : new Date().toISOString(),
               status: result.data.status || "",
+              fasterProcessingPaid: result.data.fasterProcessingPaid || false,
             });
           }
         } catch (error) {
@@ -600,6 +604,11 @@ const CreditBuilderLoanForm: React.FC = () => {
       existingApplication.status ||
       (existingApplication.rejectionReason ? "Rejected" : "Pending");
 
+    // Check if the application is in progress and faster processing fee is not paid
+    const showFasterProcessing =
+      status === "In Progress" &&
+      existingApplication.fasterProcessingPaid === false;
+
     return (
       <Card className="border-2 border-orange-500 shadow-lg overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-orange-500 to-blue-950 text-white p-6">
@@ -664,6 +673,28 @@ const CreditBuilderLoanForm: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Faster Processing Card - Only show if application is in progress and fee not paid */}
+            {showFasterProcessing && (
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-lg p-4 mt-4 shadow-md">
+                <h4 className="text-lg font-semibold text-yellow-800 mb-2 flex items-center">
+                  <Zap className="w-5 h-5 mr-2 text-yellow-600" />
+                  Speed Up Your Application
+                </h4>
+                <p className="text-sm text-yellow-700 mb-4">
+                  Pay a small fee to get your loan application processed faster.
+                  Get priority review and quicker approval.
+                </p>
+                <div className="mt-4">
+                  <FasterProcessingButton
+                    applicationId={existingApplication.id}
+                    customerName={existingApplication.fullName || ""}
+                    customerPhone={existingApplication.phoneNo || ""}
+                    customerEmail={existingApplication.email || ""}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col gap-4">
               {status === "Eligible" ? (
