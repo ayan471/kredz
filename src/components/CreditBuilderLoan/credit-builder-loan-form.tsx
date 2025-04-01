@@ -587,22 +587,6 @@ const CreditBuilderLoanForm: React.FC = () => {
     if (currentStep === 4) {
       // Check employment type specific validations
       if (employmentType === "Salaried") {
-        // Check if hasSalarySlip is checked
-        const hasSalarySlip = getValues("hasSalarySlip");
-        console.log("hasSalarySlip value:", hasSalarySlip);
-        if (hasSalarySlip !== true) {
-          setError("hasSalarySlip", {
-            type: "required",
-            message: "Please indicate if you have a salary slip",
-          });
-          toast({
-            title: "Validation Error",
-            description: "Please check the salary slip checkbox",
-            variant: "destructive",
-          });
-          return;
-        }
-
         // Check salaryReceiveMethod (already implemented)
         const salaryReceiveMethod = getValues("salaryReceiveMethod");
         if (!salaryReceiveMethod) {
@@ -618,22 +602,6 @@ const CreditBuilderLoanForm: React.FC = () => {
           return;
         }
       } else if (employmentType === "Self Employed") {
-        // Check if hasIncomeTaxReturn is checked
-        const hasIncomeTaxReturn = getValues("hasIncomeTaxReturn");
-        console.log("hasIncomeTaxReturn value:", hasIncomeTaxReturn);
-        if (hasIncomeTaxReturn !== true) {
-          setError("hasIncomeTaxReturn", {
-            type: "required",
-            message: "Please indicate if you have Income Tax Return",
-          });
-          toast({
-            title: "Validation Error",
-            description: "Please check the Income Tax Return checkbox",
-            variant: "destructive",
-          });
-          return;
-        }
-
         // Check businessRegistration
         const businessRegistration = getValues("businessRegistration");
         if (!businessRegistration) {
@@ -1417,27 +1385,13 @@ const CreditBuilderLoanForm: React.FC = () => {
                       <Controller
                         name="hasSalarySlip"
                         control={control}
-                        rules={{
-                          required:
-                            employmentType === "Salaried"
-                              ? "Please indicate if you have a salary slip"
-                              : false,
-                          validate: (value) =>
-                            employmentType === "Salaried"
-                              ? value === true || "You must check this box"
-                              : true,
-                        }}
                         render={({ field }) => (
                           <Checkbox
                             id="hasSalarySlip"
                             checked={field.value === true}
                             onCheckedChange={(checked) => {
                               field.onChange(checked === true);
-                              if (checked) clearErrors("hasSalarySlip");
                             }}
-                            className={
-                              errors.hasSalarySlip ? "border-red-500" : ""
-                            }
                           />
                         )}
                       />
@@ -1508,27 +1462,13 @@ const CreditBuilderLoanForm: React.FC = () => {
                       <Controller
                         name="hasIncomeTaxReturn"
                         control={control}
-                        rules={{
-                          required:
-                            employmentType === "Self Employed"
-                              ? "Please indicate if you have Income Tax Return"
-                              : false,
-                          validate: (value) =>
-                            employmentType === "Self Employed"
-                              ? value === true || "You must check this box"
-                              : true,
-                        }}
                         render={({ field }) => (
                           <Checkbox
                             id="hasIncomeTaxReturn"
                             checked={field.value === true}
                             onCheckedChange={(checked) => {
                               field.onChange(checked === true);
-                              if (checked) clearErrors("hasIncomeTaxReturn");
                             }}
-                            className={
-                              errors.hasIncomeTaxReturn ? "border-red-500" : ""
-                            }
                           />
                         )}
                       />
