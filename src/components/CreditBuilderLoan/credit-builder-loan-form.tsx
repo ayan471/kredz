@@ -160,20 +160,26 @@ const CreditBuilderLoanForm: React.FC = () => {
     reset,
     trigger,
     getValues,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: formData,
+    defaultValues: {
+      ...formData,
+      purpose: "Personal Use",
+    },
     mode: "onBlur", // Validate on blur for better user experience
   });
+
+  useEffect(() => {
+    // Force set the purpose field to "Personal Use" when the component mounts
+    setValue("purpose", "Personal Use");
+    console.log("Setting default purpose to Personal Use");
+  }, [setValue]);
 
   const employmentType = watch("employmentType");
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Register the purpose field with validation
-    register("purpose", { required: "Purpose of loan is required" });
-  }, [register]);
 
   // In the useEffect for checking existing application, update the data mapping:
   // Update the useEffect for checking existing application
@@ -327,7 +333,7 @@ const CreditBuilderLoanForm: React.FC = () => {
     };
 
     fetchRejectedApplication();
-  }, [user, reset, toast, register, setValue, existingApplication]);
+  }, [user, reset, toast, register, setValue, existingApplication, setError]);
 
   useEffect(() => {
     if (scrollContainerRef.current) {
@@ -483,20 +489,210 @@ const CreditBuilderLoanForm: React.FC = () => {
   };
 
   // Modify the nextStep function to sanitize data before saving to session storage
+  // Modify the nextStep function to sanitize data before saving to session storage
   const nextStep = async () => {
+    // If we're on step 2, specifically check the purpose field first
+    if (currentStep === 2) {
+      const purposeValue = getValues("purpose");
+      console.log("Current purpose value:", purposeValue);
+
+      // Check if purpose is empty or undefined
+      if (!purposeValue || purposeValue.trim() === "") {
+        // Force set the purpose field to "Personal Use"
+        await setValue("purpose", "Personal Use", { shouldValidate: true });
+        console.log("Purpose was empty, set to Personal Use");
+
+        // Show a toast to inform the user
+        toast({
+          title: "Default Purpose Set",
+          description: "Purpose of loan has been set to 'Personal Use'",
+        });
+      }
+    }
+
+    // Continue with validation for other fields in the current step
     const fields = {
       1: ["fullName", "email", "mobileNumber", "dateOfBirth", "age"],
       2: ["loanAmountRequired", "purpose"],
-      3: ["aadharNumber", "panNumber", "address"],
-      4: ["employmentType", "monthlyIncome"],
+      3: [
+        "aadharNumber",
+        "panNumber",
+        "address",
+        "aadharFront",
+        "aadharBack",
+        "panCard",
+      ],
+      4: [
+        "employmentType",
+        "monthlyIncome",
+        ...(employmentType === "Salaried"
+          ? ["hasSalarySlip", "salaryReceiveMethod"]
+          : []),
+        ...(employmentType === "Self Employed"
+          ? ["hasIncomeTaxReturn", "businessRegistration"]
+          : []),
+        ...(employmentType === "Others" ? ["EmpOthers"] : []),
+      ],
       5: ["creditScore", "currentActiveEmis", "currentActiveOverdues"],
     }[currentStep];
+
+    // Special handling for file inputs in step 3
+    if (currentStep === 3) {
+      const aadharFront = getValues("aadharFront");
+      const aadharBack = getValues("aadharBack");
+      const panCard = getValues("panCard");
+
+      let hasErrors = false;
+
+      if (!aadharFront) {
+        setError("aadharFront", {
+          type: "required",
+          message: "Aadhaar front image is required",
+        });
+        hasErrors = true;
+      }
+
+      if (!aadharBack) {
+        setError("aadharBack", {
+          type: "required",
+          message: "Aadhaar back image is required",
+        });
+        hasErrors = true;
+      }
+
+      if (!panCard) {
+        setError("panCard", {
+          type: "required",
+          message: "PAN card image is required",
+        });
+        hasErrors = true;
+      }
+
+      if (hasErrors) {
+        toast({
+          title: "Missing Documents",
+          description: "Please upload all required document images",
+          variant: "destructive",
+        });
+        return;
+      }
+      console.log("All documents uploaded successfully:", {
+        aadharFront: aadharFront?.name,
+        aadharBack: aadharBack?.name,
+        panCard: panCard?.name,
+      });
+    }
+
+    // Add this after the file validation checks and before the salaryReceiveMethod check in the nextStep function
+    if (currentStep === 4) {
+      // Check employment type specific validations
+      if (employmentType === "Salaried") {
+        // Check if hasSalarySlip is checked
+        const hasSalarySlip = getValues("hasSalarySlip");
+        console.log("hasSalarySlip value:", hasSalarySlip);
+        if (hasSalarySlip !== true) {
+          setError("hasSalarySlip", {
+            type: "required",
+            message: "Please indicate if you have a salary slip",
+          });
+          toast({
+            title: "Validation Error",
+            description: "Please check the salary slip checkbox",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Check salaryReceiveMethod (already implemented)
+        const salaryReceiveMethod = getValues("salaryReceiveMethod");
+        if (!salaryReceiveMethod) {
+          setError("salaryReceiveMethod", {
+            type: "required",
+            message: "Please select how you receive your salary",
+          });
+          toast({
+            title: "Validation Error",
+            description: "Please select how you receive your salary",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else if (employmentType === "Self Employed") {
+        // Check if hasIncomeTaxReturn is checked
+        const hasIncomeTaxReturn = getValues("hasIncomeTaxReturn");
+        console.log("hasIncomeTaxReturn value:", hasIncomeTaxReturn);
+        if (hasIncomeTaxReturn !== true) {
+          setError("hasIncomeTaxReturn", {
+            type: "required",
+            message: "Please indicate if you have Income Tax Return",
+          });
+          toast({
+            title: "Validation Error",
+            description: "Please check the Income Tax Return checkbox",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Check businessRegistration
+        const businessRegistration = getValues("businessRegistration");
+        if (!businessRegistration) {
+          setError("businessRegistration", {
+            type: "required",
+            message: "Please select your business registration type",
+          });
+          toast({
+            title: "Validation Error",
+            description: "Please select your business registration type",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else if (employmentType === "Others") {
+        // Check if EmpOthers is filled
+        const empOthers = getValues("EmpOthers");
+        if (!empOthers) {
+          setError("EmpOthers", {
+            type: "required",
+            message: "Please specify your employment type",
+          });
+          toast({
+            title: "Validation Error",
+            description: "Please specify your employment type",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
+
+    if (currentStep === 4 && employmentType === "Salaried") {
+      const salaryReceiveMethod = getValues("salaryReceiveMethod");
+      if (!salaryReceiveMethod) {
+        setError("salaryReceiveMethod", {
+          type: "required",
+          message: "Please select how you receive your salary",
+        });
+        toast({
+          title: "Validation Error",
+          description: "Please select how you receive your salary",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Force validate the purpose field if we're on step 2
+    if (currentStep === 2) {
+      await trigger("purpose");
+    }
 
     const isValid = await trigger(fields as any);
 
     if (isValid) {
       // Create a complete snapshot of all current form values
       const allCurrentValues = getValues();
+      console.log("All form values before next step:", allCurrentValues);
 
       // Sanitize the data before saving
       const sanitizedValues = sanitizeFormData(allCurrentValues);
@@ -524,11 +720,30 @@ const CreditBuilderLoanForm: React.FC = () => {
       // Move to the next step
       setCurrentStep((prev) => Math.min(prev + 1, 5));
     } else {
+      console.log("Validation failed for fields:", fields);
+      console.log("Current errors:", errors);
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields correctly.",
         variant: "destructive",
       });
+    }
+    if (currentStep === 5) {
+      const bankStatement = getValues("bankStatement");
+      console.log("Bank statement value:", bankStatement);
+
+      if (!bankStatement) {
+        setError("bankStatement", {
+          type: "required",
+          message: "Bank statement is required",
+        });
+        toast({
+          title: "Missing Document",
+          description: "Please upload your bank statement before proceeding",
+          variant: "destructive",
+        });
+        return;
+      }
     }
   };
 
@@ -584,6 +799,13 @@ const CreditBuilderLoanForm: React.FC = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    // Register the bankStatement field with required validation
+    register("bankStatement", {
+      required: "Bank statement is required",
+    });
+  }, [register]);
 
   // Replace the renderLockedApplicationStatus function with this simpler version
   // Update the renderLockedApplicationStatus function
@@ -896,21 +1118,23 @@ const CreditBuilderLoanForm: React.FC = () => {
                   rules={{
                     required: "Purpose of loan is required",
                   }}
-                  render={({ field, fieldState }) => (
+                  render={({ field }) => (
                     <>
                       <Select
+                        defaultValue="Personal Use"
                         onValueChange={(value) => {
                           field.onChange(value);
-                          // Manually trigger validation after change
-                          trigger("purpose");
+                          console.log("Purpose changed to:", value);
                         }}
-                        value={field.value || ""}
+                        value={field.value || "Personal Use"}
                       >
                         <SelectTrigger
                           id="purpose"
-                          className={fieldState.error ? "border-red-500" : ""}
+                          className={errors.purpose ? "border-red-500" : ""}
                         >
-                          <SelectValue placeholder="Select purpose" />
+                          <SelectValue placeholder="Select purpose">
+                            {field.value || "Personal Use"}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Personal Use">
@@ -1032,6 +1256,11 @@ const CreditBuilderLoanForm: React.FC = () => {
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
                     setValue("aadharFront", file);
+                    // Clear validation error when file is selected
+                    if (file) {
+                      clearErrors("aadharFront");
+                    }
+                    console.log("Aadhaar front file selected:", file?.name);
                   }}
                   accept="image/jpeg,image/png,image/jpg"
                 />
@@ -1054,6 +1283,11 @@ const CreditBuilderLoanForm: React.FC = () => {
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
                     setValue("aadharBack", file);
+                    // Clear validation error when file is selected
+                    if (file) {
+                      clearErrors("aadharBack");
+                    }
+                    console.log("Aadhaar back file selected:", file?.name);
                   }}
                   accept="image/jpeg,image/png,image/jpg"
                 />
@@ -1098,6 +1332,11 @@ const CreditBuilderLoanForm: React.FC = () => {
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
                     setValue("panCard", file);
+                    // Clear validation error when file is selected
+                    if (file) {
+                      clearErrors("panCard");
+                    }
+                    console.log("PAN card file selected:", file?.name);
                   }}
                   accept="image/jpeg,image/png,image/jpg"
                 />
@@ -1173,15 +1412,49 @@ const CreditBuilderLoanForm: React.FC = () => {
               </div>
               {employmentType === "Salaried" && (
                 <>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="hasSalarySlip"
-                      {...register("hasSalarySlip")}
-                    />
-                    <Label htmlFor="hasSalarySlip">
-                      Do you have salary slip?
-                    </Label>
+                  <div className="flex items-start space-x-2">
+                    <div className="mt-1">
+                      <Controller
+                        name="hasSalarySlip"
+                        control={control}
+                        rules={{
+                          required:
+                            employmentType === "Salaried"
+                              ? "Please indicate if you have a salary slip"
+                              : false,
+                          validate: (value) =>
+                            employmentType === "Salaried"
+                              ? value === true || "You must check this box"
+                              : true,
+                        }}
+                        render={({ field }) => (
+                          <Checkbox
+                            id="hasSalarySlip"
+                            checked={field.value === true}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked === true);
+                              if (checked) clearErrors("hasSalarySlip");
+                            }}
+                            className={
+                              errors.hasSalarySlip ? "border-red-500" : ""
+                            }
+                          />
+                        )}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="hasSalarySlip" className="font-medium">
+                        Do you have salary slip?{" "}
+                        <span className="text-red-500">*</span>
+                      </Label>
+                      {errors.hasSalarySlip && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {errors.hasSalarySlip.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="salaryReceiveMethod">
                       You receive Salary In{" "}
@@ -1197,19 +1470,27 @@ const CreditBuilderLoanForm: React.FC = () => {
                             : false,
                       }}
                       render={({ field }) => (
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Cash" id="cash" />
-                            <Label htmlFor="cash">Cash</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Bank" id="bank" />
-                            <Label htmlFor="bank">Bank</Label>
-                          </div>
-                        </RadioGroup>
+                        <>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            className="space-y-2"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Cash" id="cash" />
+                              <Label htmlFor="cash">Cash</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Bank" id="bank" />
+                              <Label htmlFor="bank">Bank</Label>
+                            </div>
+                          </RadioGroup>
+                          {errors.salaryReceiveMethod && (
+                            <p className="text-sm text-red-500 mt-1">
+                              {errors.salaryReceiveMethod.message}
+                            </p>
+                          )}
+                        </>
                       )}
                     />
                     {errors.salaryReceiveMethod && (
@@ -1222,15 +1503,52 @@ const CreditBuilderLoanForm: React.FC = () => {
               )}
               {employmentType === "Self Employed" && (
                 <>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="hasIncomeTaxReturn"
-                      {...register("hasIncomeTaxReturn")}
-                    />
-                    <Label htmlFor="hasIncomeTaxReturn">
-                      Do you have Income Tax Return?
-                    </Label>
+                  <div className="flex items-start space-x-2">
+                    <div className="mt-1">
+                      <Controller
+                        name="hasIncomeTaxReturn"
+                        control={control}
+                        rules={{
+                          required:
+                            employmentType === "Self Employed"
+                              ? "Please indicate if you have Income Tax Return"
+                              : false,
+                          validate: (value) =>
+                            employmentType === "Self Employed"
+                              ? value === true || "You must check this box"
+                              : true,
+                        }}
+                        render={({ field }) => (
+                          <Checkbox
+                            id="hasIncomeTaxReturn"
+                            checked={field.value === true}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked === true);
+                              if (checked) clearErrors("hasIncomeTaxReturn");
+                            }}
+                            className={
+                              errors.hasIncomeTaxReturn ? "border-red-500" : ""
+                            }
+                          />
+                        )}
+                      />
+                    </div>
+                    <div>
+                      <Label
+                        htmlFor="hasIncomeTaxReturn"
+                        className="font-medium"
+                      >
+                        Do you have Income Tax Return?{" "}
+                        <span className="text-red-500">*</span>
+                      </Label>
+                      {errors.hasIncomeTaxReturn && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {errors.hasIncomeTaxReturn.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="businessRegistration">
                       Business registration you have{" "}
@@ -1411,16 +1729,23 @@ const CreditBuilderLoanForm: React.FC = () => {
                     onClientUploadComplete={(res) => {
                       console.log("Files: ", res);
                       if (res && res.length > 0) {
-                        setValue("bankStatement", res[0].url);
-                        trigger("bankStatement");
+                        setValue("bankStatement", res[0].url, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                          shouldTouch: true,
+                        });
+                        toast({
+                          title: "Upload Completed",
+                          description:
+                            "Your bank statement has been uploaded successfully.",
+                        });
                       }
-                      toast({
-                        title: "Upload Completed",
-                        description:
-                          "Your bank statement has been uploaded successfully.",
-                      });
                     }}
                     onUploadError={(error: Error) => {
+                      setError("bankStatement", {
+                        type: "required",
+                        message: "Failed to upload bank statement",
+                      });
                       toast({
                         title: "Upload Error",
                         description: `ERROR! ${error.message}`,
@@ -1433,6 +1758,21 @@ const CreditBuilderLoanForm: React.FC = () => {
                       allowedContent: "text-gray-600 text-sm",
                     }}
                   />
+                  {!watch("bankStatement") && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-300 rounded-md">
+                      <p className="text-red-600 font-medium">
+                        Bank statement is required. Please upload your bank
+                        statement.
+                      </p>
+                    </div>
+                  )}
+                  {errors.bankStatement && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-300 rounded-md">
+                      <p className="text-red-600 font-medium">
+                        {errors.bankStatement.message}
+                      </p>
+                    </div>
+                  )}
                   <p className="mt-4 text-sm text-gray-600 text-center">
                     Upload your bank statement in PDF format (Max size: 10MB)
                   </p>
