@@ -189,44 +189,60 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
       }
 
       // Calculate payment amount based on the selected plan
-      const planDuration = Number.parseInt(selectedPlan.split(" ")[0]);
       let baseAmount = 0;
+      let gstAmount = 0;
+      let totalAmount = 0;
 
-      // This should match your pricing logic from CreditBuilderPlans.tsx
-      switch (planDuration) {
-        case 1:
-          baseAmount = 189;
-          break;
-        case 3:
-          baseAmount = 299;
-          break;
-        case 6:
-          baseAmount = 526;
-          break;
-        case 9:
-          baseAmount = 779;
-          break;
-        case 12:
-          baseAmount = 1015;
-          break;
-        case 15:
-          baseAmount = 1265;
-          break;
-        case 18:
-          baseAmount = 1518;
-          break;
-        case 21:
-          baseAmount = 1768;
-          break;
-        case 24:
-          baseAmount = 2018;
-          break;
-        default:
-          baseAmount = 189;
+      // Extract plan details - handle both formats (with and without type)
+      const planParts = selectedPlan.split(" ");
+      const planDuration = Number.parseInt(planParts[0]);
+      const planType = planParts.length > 2 ? planParts[2] : null;
+
+      // Exact pricing from the PDF
+      if (planDuration === 1) {
+        baseAmount = 189;
+        gstAmount = 34.02;
+        totalAmount = 223.02;
+      } else if (planDuration === 3) {
+        baseAmount = 299;
+        gstAmount = 53.82;
+        totalAmount = 352.82;
+      } else if (planDuration === 6) {
+        baseAmount = 526;
+        gstAmount = 94.68;
+        totalAmount = 620.68;
+      } else if (planDuration === 9) {
+        baseAmount = 779;
+        gstAmount = 140.22;
+        totalAmount = 919.22;
+      } else if (planDuration === 12) {
+        baseAmount = 1015;
+        gstAmount = 182.7;
+        totalAmount = 1197.7;
+      } else if (planDuration === 18) {
+        baseAmount = 1520;
+        gstAmount = 273.6;
+        totalAmount = 1793.6;
+      } else if (planDuration === 24) {
+        if (planType === "BASIC" || !planType) {
+          baseAmount = 2025;
+          gstAmount = 364.5;
+          totalAmount = 2389.5;
+        } else if (planType === "PRIME") {
+          baseAmount = 3275;
+          gstAmount = 589.5;
+          totalAmount = 3864.5;
+        }
+      } else if (planDuration === 36) {
+        baseAmount = 4545;
+        gstAmount = 818.1;
+        totalAmount = 5363.1;
+      } else {
+        // Default fallback
+        baseAmount = 189;
+        gstAmount = 34.02;
+        totalAmount = 223.02;
       }
-
-      const gstAmount = baseAmount * 0.18;
-      const totalAmount = baseAmount + gstAmount;
 
       // Generate a truly unique order ID with timestamp (including milliseconds) and multiple random strings
       const timestamp = Date.now();
