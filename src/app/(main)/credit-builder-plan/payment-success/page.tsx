@@ -110,12 +110,6 @@ export default function PaymentSuccessPage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-
-              <Link href="/credit-builder/resources">
-                <Button variant="outline" className="w-full">
-                  View Credit Resources
-                </Button>
-              </Link>
             </div>
           </CardContent>
         </Card>
