@@ -222,7 +222,7 @@ export default async function LoanDetailsPage({
               <CardHeader className="bg-yellow-500 text-white p-6">
                 <CardTitle className="text-2xl font-bold flex items-center">
                   <Zap className="mr-2 h-6 w-6" />
-                  Faster Processing
+                  Instant Processing
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 bg-white">

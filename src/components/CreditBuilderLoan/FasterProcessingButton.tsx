@@ -92,7 +92,7 @@ export default function FasterProcessingButton({
     <>
       <Button
         onClick={handlePayment}
-        className="w-full py-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium text-base sm:text-lg rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+        className="w-full py-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium text-base sm:text-lg rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
         disabled={isProcessing}
       >
         {isProcessing ? (
@@ -103,7 +103,7 @@ export default function FasterProcessingButton({
         ) : (
           <>
             <Zap className="mr-3 h-5 w-5" />
-            Pay ₹118 for Faster Processing
+            Pay ₹47.20 for Instant Processing
           </>
         )}
       </Button>

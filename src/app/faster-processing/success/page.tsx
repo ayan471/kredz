@@ -52,7 +52,7 @@ export default function FasterProcessingSuccess() {
             </div>
             <CardTitle className="text-2xl">Payment Successful!</CardTitle>
             <CardDescription>
-              Your faster processing fee has been received.
+              Your instant processing fee has been received.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">

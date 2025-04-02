@@ -42,7 +42,7 @@ export default function FasterProcessingFailure() {
             </div>
             <CardTitle className="text-2xl">Payment Failed</CardTitle>
             <CardDescription>
-              We couldn't process your faster processing payment.
+              We couldn't process your instant processing payment.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
