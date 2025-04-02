@@ -46,7 +46,7 @@ export default function FasterProcessingButton({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: 118,
+          amount: 47.2,
           orderId: uniqueOrderId,
           customerName,
           customerPhone,
