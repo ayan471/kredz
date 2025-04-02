@@ -264,7 +264,7 @@ export default function LoanEligibilityResult() {
       } else {
         toast({
           title: "Debug Error",
-          description: "Failed to update faster processing status",
+          description: "Failed to update instant processing status",
           variant: "destructive",
         });
       }

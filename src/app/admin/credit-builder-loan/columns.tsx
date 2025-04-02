@@ -150,7 +150,7 @@ export const columns: ColumnDef<CreditBuilderLoanApplication>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Faster Processing
+          Instant Processing
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
