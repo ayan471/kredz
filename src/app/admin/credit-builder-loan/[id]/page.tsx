@@ -1,3 +1,4 @@
+import type React from "react";
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -14,9 +15,8 @@ import {
   CreditCard,
   Briefcase,
   Calendar,
-  Download,
-  Camera,
   BanknoteIcon as Bank,
+  CheckCircle2,
 } from "lucide-react";
 import { EditableInfoItem } from "./EditableInfoItem";
 import { PDFDownloadButton } from "./PDFDownloadButton";
@@ -30,6 +30,37 @@ export default async function CreditBuilderLoanDetailPage({
 }) {
   const application = await prisma.creditBuilderLoanApplication.findUnique({
     where: { id: params.id },
+    // If you need to explicitly select fields, you can uncomment and modify this:
+    // select: {
+    //   id: true,
+    //   fullName: true,
+    //   email: true,
+    //   mobileNumber: true,
+    //   loanAmountRequired: true,
+    //   purpose: true,
+    //   aadharNumber: true,
+    //   panNumber: true,
+    //   employmentType: true,
+    //   age: true,
+    //   hasSalarySlip: true,
+    //   salaryReceiveMethod: true,
+    //   hasIncomeTaxReturn: true,
+    //   businessRegistration: true,
+    //   EmpOthers: true,
+    //   monthlyIncome: true,
+    //   currentActiveEmis: true,
+    //   accountNumber: true,
+    //   bankName: true,
+    //   ifscCode: true,
+    //   createdAt: true,
+    //   status: true,
+    //   aadharFrontUrl: true,
+    //   aadharBackUrl: true,
+    //   panCardUrl: true,
+    //   bankStatementUrl: true,
+    //   eligibleAmount: true,
+    //   fasterProcessingPaid: true,
+    // }
   });
 
   if (!application) {
@@ -181,6 +212,50 @@ export default async function CreditBuilderLoanDetailPage({
               value={application.employmentType}
             />
             <InfoItem
+              icon={<Calendar className="h-5 w-5 text-gray-400" />}
+              label="Age"
+              value={application.age}
+            />
+
+            {/* Employment-specific details based on employment type */}
+            {application.employmentType === "Salaried" && (
+              <>
+                <InfoItem
+                  icon={<FileText className="h-5 w-5 text-gray-400" />}
+                  label="Has Salary Slip"
+                  value={application.hasSalarySlip}
+                />
+                <InfoItem
+                  icon={<Bank className="h-5 w-5 text-gray-400" />}
+                  label="Salary Receive Method"
+                  value={application.salaryReceiveMethod}
+                />
+              </>
+            )}
+
+            {application.employmentType === "Self Employed" && (
+              <>
+                <InfoItem
+                  icon={<FileText className="h-5 w-5 text-gray-400" />}
+                  label="Has Income Tax Return"
+                  value={application.hasIncomeTaxReturn}
+                />
+                <InfoItem
+                  icon={<Briefcase className="h-5 w-5 text-gray-400" />}
+                  label="Business Registration"
+                  value={application.businessRegistration}
+                />
+              </>
+            )}
+
+            {application.employmentType === "Others" && (
+              <InfoItem
+                icon={<Briefcase className="h-5 w-5 text-gray-400" />}
+                label="Other Employment Details"
+                value={application.employmentType}
+              />
+            )}
+            <InfoItem
               icon={<DollarSign className="h-5 w-5 text-gray-400" />}
               label="Monthly Income"
               value={application.monthlyIncome}
@@ -289,6 +364,26 @@ export default async function CreditBuilderLoanDetailPage({
             icon={<DollarSign className="h-5 w-5 text-gray-400" />}
             label="Eligible Amount"
             value={`₹${application.eligibleAmount?.toLocaleString() || "N/A"}`}
+          />
+          <InfoItem
+            icon={<DollarSign className="h-5 w-5 text-gray-400" />}
+            label="Credit Score"
+            value={application.creditScore}
+          />
+          <InfoItem
+            icon={<DollarSign className="h-5 w-5 text-gray-400" />}
+            label="Current Active EMIs"
+            value={application.currentActiveEmis}
+          />
+          <InfoItem
+            icon={<DollarSign className="h-5 w-5 text-gray-400" />}
+            label="Total Active Loans"
+            value={application.currentActiveOverdues}
+          />
+          <InfoItem
+            icon={<CheckCircle2 className="h-5 w-5 text-gray-400" />}
+            label="Faster Processing Paid"
+            value={application.fasterProcessingPaid}
           />
         </CardContent>
       </Card>
