@@ -438,9 +438,7 @@ const CreditBuilderLoanForm: React.FC = () => {
             eligibleAmount: eligibilityResult.eligibleAmount
               ? eligibilityResult.eligibleAmount.toString()
               : "",
-            status: eligibilityResult.message
-              ? "Partially Approved"
-              : "In Progress",
+            status: eligibilityResult.message ? "In Progress" : "In Progress",
             message: eligibilityResult.message || "",
             applicationId: result.data.id,
             customerName: data.fullName,

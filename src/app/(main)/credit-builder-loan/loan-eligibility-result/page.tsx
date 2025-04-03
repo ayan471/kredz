@@ -431,10 +431,10 @@ export default function LoanEligibilityResult() {
             <CardTitle>Loan Eligibility Result</CardTitle>
           </CardHeader>
           <CardContent>
-            {status === "Partially Approved" && (
+            {status === "In Progress" && (
               <>
                 <h2 className="text-xl font-bold text-yellow-600 mb-4">
-                  Partially Approved
+                  In Progress
                 </h2>
                 <p className="mb-4">{message}</p>
               </>

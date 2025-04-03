@@ -79,7 +79,7 @@ export async function saveCreditBuilderLoanApplication(formData: FormData) {
       where: {
         panNumber: panNumber,
         status: {
-          in: ["In Progress", "Approved", "Partially Approved"],
+          in: ["In Progress", "Approved"],
         },
       },
     });
@@ -391,7 +391,7 @@ export async function checkEligibility(applicationId: string) {
     if (eligibleAmount < loanAmountRequired) {
       await prisma.creditBuilderLoanApplication.update({
         where: { id: applicationId },
-        data: { status: "Partially Approved", eligibleAmount },
+        data: { status: "In Progress", eligibleAmount },
       });
       return {
         success: true,
