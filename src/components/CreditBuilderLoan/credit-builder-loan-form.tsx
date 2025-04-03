@@ -140,6 +140,59 @@ const sanitizeFormData = (data: Partial<FormData>) => {
   return sanitizedData;
 };
 
+// Add these utility functions after the sanitizeFormData function
+const setFormSubmittedStatus = (applicationId: string, userId: string) => {
+  if (!userId) {
+    console.error("Cannot save form submission status: No user ID provided");
+    return;
+  }
+
+  try {
+    localStorage.setItem(`creditBuilderLoanSubmitted_${userId}`, "true");
+    localStorage.setItem(`creditBuilderLoanId_${userId}`, applicationId);
+  } catch (error) {
+    console.error(
+      "Error saving form submission status to localStorage:",
+      error
+    );
+  }
+};
+
+const getFormSubmittedStatus = (userId?: string) => {
+  if (!userId) {
+    return { submitted: false, applicationId: "" };
+  }
+
+  try {
+    return {
+      submitted:
+        localStorage.getItem(`creditBuilderLoanSubmitted_${userId}`) === "true",
+      applicationId:
+        localStorage.getItem(`creditBuilderLoanId_${userId}`) || "",
+    };
+  } catch (error) {
+    console.error(
+      "Error retrieving form submission status from localStorage:",
+      error
+    );
+    return { submitted: false, applicationId: "" };
+  }
+};
+
+const clearFormSubmittedStatus = (userId?: string) => {
+  if (!userId) return;
+
+  try {
+    localStorage.removeItem(`creditBuilderLoanSubmitted_${userId}`);
+    localStorage.removeItem(`creditBuilderLoanId_${userId}`);
+  } catch (error) {
+    console.error(
+      "Error clearing form submission status from localStorage:",
+      error
+    );
+  }
+};
+
 const CreditBuilderLoanForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<FormData>>({});
@@ -150,6 +203,9 @@ const CreditBuilderLoanForm: React.FC = () => {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useUser();
+
+  // Add this state variable after the other state declarations
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const {
     register,
@@ -336,6 +392,21 @@ const CreditBuilderLoanForm: React.FC = () => {
   }, [user, reset, toast, register, setValue, existingApplication, setError]);
 
   useEffect(() => {
+    // If user exists and the application status is "Eligible", make sure we clear prior submission status
+    if (user?.id && existingApplication?.status === "Eligible") {
+      console.log(
+        "User is eligible for a new loan - clearing previous submission data"
+      );
+
+      // Clear form submitted status
+      clearFormSubmittedStatus(user.id);
+
+      // We don't immediately clear the existingApplication from state to allow the user
+      // to see they're eligible and choose to apply via the button click
+    }
+  }, [user, existingApplication]);
+
+  useEffect(() => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
       const activeStep = container.children[currentStep - 1] as HTMLElement;
@@ -409,7 +480,22 @@ const CreditBuilderLoanForm: React.FC = () => {
         // Clear saved form data after successful submission
         clearFormDataFromLocalStorage();
 
+        // Set the form submitted status in localStorage with user ID
+        if (user?.id) {
+          setFormSubmittedStatus(result.data.id, user.id);
+        }
+
         const eligibilityResult = await checkEligibility(result.data.id);
+
+        // Add this logging to verify the data being passed
+        console.log(
+          "Checking eligibility with application ID:",
+          result.data.id
+        );
+        console.log(
+          "Monthly income for eligibility calculation:",
+          data.monthlyIncome
+        );
 
         toast({
           title: "Application Submitted",
@@ -444,12 +530,15 @@ const CreditBuilderLoanForm: React.FC = () => {
             customerName: data.fullName,
             customerPhone: data.mobileNumber,
             customerEmail: data.email,
+            monthlyIncome: data.monthlyIncome.toString(),
             preventRedirect: "true", // Add this parameter
           }).toString();
 
           router.push(
             `/credit-builder-loan/loan-eligibility-result?${queryParams}`
           );
+
+          // Set form submitted status
         } else {
           const queryParams = new URLSearchParams({
             status: "Rejected",
@@ -466,6 +555,11 @@ const CreditBuilderLoanForm: React.FC = () => {
             `/credit-builder-loan/loan-eligibility-result?${queryParams}`
           );
         }
+
+        if (!user) return null;
+
+        // Set form submitted status
+        setFormSubmittedStatus(result.data.id, user.id);
       } else {
         toast({
           title: "Application Error",
@@ -773,6 +867,58 @@ const CreditBuilderLoanForm: React.FC = () => {
     });
   }, [register]);
 
+  // Add this useEffect at the beginning of the other useEffect hooks to check for previous submissions
+  useEffect(() => {
+    // Only proceed if we have a user
+    if (!user?.id) return;
+
+    const { submitted, applicationId } = getFormSubmittedStatus(user.id);
+
+    if (submitted && applicationId) {
+      setIsRedirecting(true);
+      toast({
+        title: "Previous Application Found",
+        description: "Redirecting you to the loan eligibility result page.",
+      });
+
+      // Short delay to allow toast to be seen
+      setTimeout(async () => {
+        try {
+          // Fetch the application data to get the eligible amount
+          const result = await getCreditBuilderLoanApplication(applicationId);
+          let eligibleAmount = "0";
+
+          if (result.success && result.data) {
+            // Use a type-safe approach to check for properties
+            const data = result.data as any; // Cast to any to bypass TypeScript checking
+            const amount =
+              data.eligibleAmount !== undefined
+                ? data.eligibleAmount
+                : data.amtRequired !== undefined
+                  ? data.amtRequired
+                  : 0;
+            eligibleAmount = String(amount);
+            console.log("Found eligible amount:", eligibleAmount);
+          }
+
+          // Create a clean URL with the correct parameters matching the loan-eligibility-result page
+          const redirectUrl = `/credit-builder-loan/loan-eligibility-result?applicationId=${applicationId}&preventRedirect=true&status=In Progress&eligibleAmount=${eligibleAmount}`;
+          console.log("Redirecting to:", redirectUrl);
+          router.push(redirectUrl);
+        } catch (error) {
+          console.error(
+            "Error fetching application data for redirection:",
+            error
+          );
+          // Fallback to basic redirection if fetching fails
+          const redirectUrl = `/credit-builder-loan/loan-eligibility-result?applicationId=${applicationId}&preventRedirect=true&status=In Progress`;
+          console.log("Fallback redirecting to:", redirectUrl);
+          router.push(redirectUrl);
+        }
+      }, 1500);
+    }
+  }, [router, toast, user]);
+
   // Replace the renderLockedApplicationStatus function with this simpler version
   // Update the renderLockedApplicationStatus function
   const renderLockedApplicationStatus = () => {
@@ -909,6 +1055,27 @@ const CreditBuilderLoanForm: React.FC = () => {
                   <Button
                     className="bg-green-500 hover:bg-green-600 text-white"
                     onClick={() => {
+                      // Clear any existing application data from localStorage
+                      if (user?.id) {
+                        clearFormSubmittedStatus(user.id);
+
+                        // Also clear session storage form data
+                        clearFormDataFromLocalStorage();
+
+                        // Clear bank details submission status if applicationId exists
+                        if (existingApplication.id) {
+                          localStorage.removeItem(
+                            `bankDetailsSubmitted_${user.id}_${existingApplication.id}`
+                          );
+                          localStorage.removeItem(
+                            `bankDetailsSubmissionTime_${user.id}_${existingApplication.id}`
+                          );
+                          localStorage.removeItem(
+                            `processed_${existingApplication.id}`
+                          );
+                        }
+                      }
+
                       // Clear existing application data from state to show the form
                       setExistingApplication(null);
                     }}
@@ -1746,6 +1913,20 @@ const CreditBuilderLoanForm: React.FC = () => {
     return (
       <div className="flex justify-center items-center min-h-[300px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
+
+  // Add this redirecting UI state before the return statement
+  // Add this right after the loading check
+  if (isRedirecting) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-6">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
+        <h2 className="text-xl font-semibold text-center">
+          Redirecting to your loan eligibility result...
+        </h2>
+        <p className="text-gray-500 mt-2 text-center">Please wait a moment</p>
       </div>
     );
   }

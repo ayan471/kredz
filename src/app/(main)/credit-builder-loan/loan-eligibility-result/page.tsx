@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { updateCreditBuilderLoanApplication } from "@/actions/creditBuilderLoanActions";
+import {
+  updateCreditBuilderLoanApplication,
+  fetchCreditBuilderLoanApplication,
+} from "@/actions/creditBuilderLoanActions";
 import { useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
+import { CheckCircle2, ChevronRight, ChevronLeft, Clock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import SabpaisaPaymentGateway from "@/components/sabpaisa-payment-gateway";
+import { useUser } from "@clerk/nextjs";
 
 type FormData = {
   accountNumber: string;
@@ -51,6 +55,83 @@ const getFormDataFromSessionStorage = (
   }
 };
 
+// Function to save bank details submission status to localStorage
+const setBankDetailsSubmittedStatus = (
+  applicationId: string,
+  userId: string
+) => {
+  if (!userId || !applicationId) {
+    console.error(
+      "Cannot save bank details submission status: Missing user ID or application ID"
+    );
+    return;
+  }
+
+  try {
+    localStorage.setItem(
+      `bankDetailsSubmitted_${userId}_${applicationId}`,
+      "true"
+    );
+    localStorage.setItem(
+      `bankDetailsSubmissionTime_${userId}_${applicationId}`,
+      new Date().toISOString()
+    );
+  } catch (error) {
+    console.error(
+      "Error saving bank details submission status to localStorage:",
+      error
+    );
+  }
+};
+
+// Function to get bank details submission status from localStorage
+const getBankDetailsSubmittedStatus = (
+  userId: string,
+  applicationId: string
+) => {
+  if (!userId || !applicationId) {
+    return { submitted: false, submissionTime: null };
+  }
+
+  try {
+    const submitted =
+      localStorage.getItem(
+        `bankDetailsSubmitted_${userId}_${applicationId}`
+      ) === "true";
+    const submissionTime = localStorage.getItem(
+      `bankDetailsSubmissionTime_${userId}_${applicationId}`
+    );
+    return { submitted, submissionTime };
+  } catch (error) {
+    console.error(
+      "Error retrieving bank details submission status from localStorage:",
+      error
+    );
+    return { submitted: false, submissionTime: null };
+  }
+};
+
+// Function to clear form submission status from localStorage
+const clearBankDetailsSubmittedStatus = (
+  userId: string,
+  applicationId: string
+) => {
+  if (!userId || !applicationId) return;
+
+  try {
+    localStorage.removeItem(`bankDetailsSubmitted_${userId}_${applicationId}`);
+    localStorage.removeItem(
+      `bankDetailsSubmissionTime_${userId}_${applicationId}`
+    );
+    localStorage.removeItem(`processed_${applicationId}`);
+  } catch (error) {
+    console.error(
+      "Error clearing bank details submission status from localStorage:",
+      error
+    );
+  }
+};
+
 export default function LoanEligibilityResult() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -63,14 +144,18 @@ export default function LoanEligibilityResult() {
   const customerEmail = searchParams.get("customerEmail") || "";
   const preventRedirect = searchParams.get("preventRedirect") === "true";
   const { toast } = useToast();
+  const monthlyIncome = searchParams.get("monthlyIncome") || "0";
+  const { user } = useUser();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-
-  // Sabpaisa payment state
+  const [isLoading, setIsLoading] = useState(true);
+  const [fasterProcessingPaid, setFasterProcessingPaid] = useState(false);
+  const [applicationDetails, setApplicationDetails] = useState<any>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  const [isEligibleForNewLoan, setIsEligibleForNewLoan] = useState(false);
 
   const {
     register,
@@ -88,11 +173,140 @@ export default function LoanEligibilityResult() {
     },
   });
 
+  // Fetch application details and check for faster processing payment status
+  useEffect(() => {
+    let fetchApplicationDetailsCalled = false;
+
+    const fetchApplicationDetails = async () => {
+      if (!user?.id || fetchApplicationDetailsCalled) {
+        setIsLoading(false);
+        return;
+      }
+
+      fetchApplicationDetailsCalled = true;
+
+      try {
+        // Fetch the application details from the server
+        const result = await fetchCreditBuilderLoanApplication(user.id);
+
+        if (result.success && result.data) {
+          // If the application doesn't have an eligibleAmount but we have one in localStorage, use it
+          if (!result.data.eligibleAmount && applicationId) {
+            const storedEligibleAmount = localStorage.getItem(
+              `eligibleAmount_${applicationId}`
+            );
+            if (storedEligibleAmount) {
+              result.data.eligibleAmount = Number(storedEligibleAmount);
+            }
+          }
+
+          setApplicationDetails(result.data);
+
+          // Check if user is eligible for a new loan
+          if (result.data.status === "Eligible") {
+            setIsEligibleForNewLoan(true);
+            // Clear previous submission status if user is now eligible
+            if (applicationId) {
+              clearBankDetailsSubmittedStatus(user.id, applicationId);
+            }
+
+            // Show a toast notification
+            toast({
+              title: "You're Eligible!",
+              description:
+                "You're now eligible for a new loan. Redirecting to application form...",
+            });
+
+            // Add a small delay before redirecting to allow the toast to be seen
+            setTimeout(() => {
+              // Redirect directly to the loan application page
+              router.push("/credit-builder-loan");
+            }, 1500);
+
+            return; // Exit early to prevent further processing
+          } else {
+            // Check if faster processing fee is paid
+            if (result.data.fasterProcessingPaid) {
+              setFasterProcessingPaid(true);
+            }
+
+            // If application ID is provided, check for bank details submission
+            if (applicationId) {
+              const { submitted } = getBankDetailsSubmittedStatus(
+                user.id,
+                applicationId
+              );
+
+              if (submitted) {
+                setCurrentStep(2);
+              }
+
+              // If bank details are already filled, move to step 2
+              if (
+                result.data.accountNumber &&
+                result.data.bankName &&
+                result.data.ifscCode
+              ) {
+                setCurrentStep(2);
+
+                // Pre-fill the form with the existing data
+                setValue("accountNumber", result.data.accountNumber);
+                setValue("bankName", result.data.bankName);
+                setValue("ifscCode", result.data.ifscCode);
+                setValue("emiTenure", result.data.emiTenure?.toString() || "");
+
+                // Save the bank details submission status
+                if (user?.id) {
+                  setBankDetailsSubmittedStatus(applicationId, user.id);
+                }
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching application details:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch application details",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchApplicationDetails();
+  }, [applicationId, user, setValue, toast, router]);
+
   // Prevent automatic redirection
   useEffect(() => {
     // Set a flag in localStorage to prevent redirection
     if (preventRedirect && applicationId) {
       localStorage.setItem(`processed_${applicationId}`, "true");
+
+      // Update the eligible amount in the database
+      const updateEligibleAmountInDB = async () => {
+        try {
+          const response = await fetch("/api/update-eligible-amount", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              applicationId,
+              eligibleAmount: Number(eligibleAmount),
+            }),
+          });
+
+          if (!response.ok) {
+            console.error("Failed to update eligible amount in database");
+          }
+        } catch (error) {
+          console.error("Error updating eligible amount:", error);
+        }
+      };
+
+      updateEligibleAmountInDB();
     }
 
     // Load saved form data if available
@@ -124,7 +338,7 @@ export default function LoanEligibilityResult() {
     }
 
     setIsInitialized(true);
-  }, [preventRedirect, applicationId, setValue, toast]);
+  }, [preventRedirect, applicationId, setValue, toast, eligibleAmount]);
 
   // Save form data whenever it changes
   useEffect(() => {
@@ -138,6 +352,18 @@ export default function LoanEligibilityResult() {
       return () => subscription.unsubscribe();
     }
   }, [watch, applicationId]);
+
+  // Add this useEffect after the other useEffects
+  useEffect(() => {
+    // Store eligible amount in localStorage when available from URL
+    if (eligibleAmount && applicationId) {
+      try {
+        localStorage.setItem(`eligibleAmount_${applicationId}`, eligibleAmount);
+      } catch (error) {
+        console.error("Error storing eligible amount in localStorage:", error);
+      }
+    }
+  }, [eligibleAmount, applicationId]);
 
   const watchAllFields = watch();
 
@@ -166,6 +392,12 @@ export default function LoanEligibilityResult() {
         title: "Success",
         description: "Bank details updated successfully",
       });
+
+      // Save the bank details submission status
+      if (user?.id) {
+        setBankDetailsSubmittedStatus(applicationId, user.id);
+      }
+
       setCurrentStep(2);
     } else {
       toast({
@@ -233,50 +465,41 @@ export default function LoanEligibilityResult() {
 
   const handlePaymentToggle = () => {
     setShowPaymentModal(false);
-    // Redirection will be handled by the PaymentStatusListener component
-  };
-
-  const handleDebugFasterProcessing = async () => {
-    if (!applicationId) {
-      toast({
-        title: "Error",
-        description: "Application ID not found",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Call the direct DB update API
-      const response = await fetch(
-        `/api/direct-db-update?applicationId=${applicationId}`,
-        {
-          method: "GET",
+    // After payment, refresh the application details to update the faster processing status
+    if (user?.id) {
+      fetchCreditBuilderLoanApplication(user.id).then((result) => {
+        if (result.success && result.data) {
+          setApplicationDetails(result.data);
+          if (result.data.fasterProcessingPaid) {
+            setFasterProcessingPaid(true);
+            toast({
+              title: "Payment Successful",
+              description: "Your application will now be processed faster",
+            });
+          }
         }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        toast({
-          title: "Debug Success",
-          description: `Update attempted. Current value: ${result.data.fasterProcessingPaid}`,
-        });
-      } else {
-        toast({
-          title: "Debug Error",
-          description: "Failed to update instant processing status",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Debug error:", error);
-      toast({
-        title: "Debug Error",
-        description: "An error occurred during debug",
-        variant: "destructive",
       });
     }
   };
+
+  const handleApplyForNewLoan = () => {
+    // Clear any existing application data from localStorage
+    if (user?.id && applicationId) {
+      clearBankDetailsSubmittedStatus(user.id, applicationId);
+    }
+
+    // Redirect to the loan application form
+    router.push("/credit-builder-loan");
+  };
+
+  // If still loading, show a loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto mt-10 flex justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
 
   // If not initialized yet, show a loading state
   if (!isInitialized) {
@@ -298,7 +521,11 @@ export default function LoanEligibilityResult() {
               </h3>
               <p className="text-green-700">
                 You are eligible for a pre-approved Credit Builder Loan of up to
-                ₹{Number.parseInt(eligibleAmount || "0").toLocaleString()}.
+                ₹
+                {Number.parseInt(
+                  applicationDetails?.eligibleAmount || eligibleAmount || "0"
+                ).toLocaleString()}
+                .
               </p>
             </div>
 
@@ -401,21 +628,38 @@ export default function LoanEligibilityResult() {
               <Link href="/dashboard">Go to Dashboard</Link>
             </Button>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-2">
-                For Instant processing, you can pay a fee of ₹47.20.
-              </p>
-              <Button
-                onClick={handlePayment}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-                disabled={isProcessing}
-              >
-                {isProcessing
-                  ? "Processing..."
-                  : "Pay ₹47.20 for Instant Processing"}
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
+            {!fasterProcessingPaid && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="text-sm text-gray-600 mb-2">
+                  For Instant processing, you can pay a fee of ₹47.20.
+                </p>
+                <Button
+                  onClick={handlePayment}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                  disabled={isProcessing}
+                >
+                  {isProcessing
+                    ? "Processing..."
+                    : "Pay ₹47.20 for Instant Processing"}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
+            {fasterProcessingPaid && (
+              <div className="mt-6 pt-6 border-t border-gray-200 bg-blue-50 p-4 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                  <p className="text-blue-700 font-medium">
+                    Faster Processing Fee Paid
+                  </p>
+                </div>
+                <p className="text-sm text-blue-600 mt-2">
+                  Your application is now being processed with priority. Our
+                  team will contact you soon.
+                </p>
+              </div>
+            )}
           </div>
         );
       default:
@@ -453,6 +697,106 @@ export default function LoanEligibilityResult() {
             <Link href="/">
               <Button className="w-full mt-4">Back to Home</Button>
             </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // If we have application details and bank details are submitted, show the application status
+  if (
+    applicationDetails &&
+    applicationDetails.accountNumber &&
+    applicationDetails.bankName &&
+    applicationDetails.ifscCode
+  ) {
+    return (
+      <div className="container mx-auto mt-10">
+        <Card className="w-full max-w-2xl mx-auto">
+          <CardHeader className="bg-gradient-to-r from-orange-500 to-blue-950 text-white">
+            <CardTitle className="text-2xl">Loan Application Status</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-green-700">
+                  Application Submitted
+                </h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-600 font-medium">In Progress</span>
+                  <Clock className="h-5 w-5 text-blue-600" />
+                </div>
+              </div>
+              <p className="text-green-700 mb-4">
+                Your loan application has been successfully submitted and is
+                being processed.
+              </p>
+              <div className="mt-3 pt-3 border-t border-green-200">
+                <p className="text-green-700 font-medium">
+                  Eligible Amount: ₹
+                  {Number.parseInt(
+                    applicationDetails?.eligibleAmount || eligibleAmount || "0"
+                  ).toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            <h3 className="text-xl font-semibold mb-4">Your Bank Details</h3>
+            <div className="bg-orange-50 p-4 rounded-lg mb-6">
+              <p className="mb-2">
+                <strong>Account Number:</strong>{" "}
+                {applicationDetails.accountNumber}
+              </p>
+              <p className="mb-2">
+                <strong>Bank Name:</strong> {applicationDetails.bankName}
+              </p>
+              <p className="mb-2">
+                <strong>IFSC Code:</strong> {applicationDetails.ifscCode}
+              </p>
+              <p>
+                <strong>EMI Tenure:</strong> {applicationDetails.emiTenure}{" "}
+                months
+              </p>
+            </div>
+
+            <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white mb-6">
+              <Link href="/dashboard">Go to Dashboard</Link>
+            </Button>
+
+            {!applicationDetails.fasterProcessingPaid &&
+              !fasterProcessingPaid && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <p className="text-sm text-gray-600 mb-2">
+                    For Instant processing, you can pay a fee of ₹47.20.
+                  </p>
+                  <Button
+                    onClick={handlePayment}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing
+                      ? "Processing..."
+                      : "Pay ₹47.20 for Instant Processing"}
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+            {(applicationDetails.fasterProcessingPaid ||
+              fasterProcessingPaid) && (
+              <div className="mt-6 pt-6 border-t border-gray-200 bg-blue-50 p-4 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                  <p className="text-blue-700 font-medium">
+                    Faster Processing Fee Paid
+                  </p>
+                </div>
+                <p className="text-sm text-blue-600 mt-2">
+                  Your application is now being processed with priority. Our
+                  team will contact you soon.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

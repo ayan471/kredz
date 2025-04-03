@@ -50,6 +50,13 @@ export async function uploadToCloudinary(
   });
 }
 
+/**
+ * Calculates the eligible loan amount based on the applicant's monthly income.
+ * The eligible amount increases with higher income levels according to predefined thresholds.
+ * @param salary - The applicant's monthly income in rupees
+ * @returns The maximum eligible loan amount in rupees
+ */
+
 async function calculateEligibleAmount(salary: number): Promise<number> {
   if (salary <= 10000) return 37000;
   if (salary <= 23000) return 53000;
@@ -63,6 +70,26 @@ async function calculateEligibleAmount(salary: number): Promise<number> {
   if (salary <= 95000) return 308000;
   if (salary <= 125000) return 376000;
   return 487000;
+}
+
+export async function updateEligibleAmount(
+  applicationId: string,
+  eligibleAmount: number
+) {
+  try {
+    const updatedApplication = await prisma.creditBuilderLoanApplication.update(
+      {
+        where: { id: applicationId },
+        data: { eligibleAmount },
+      }
+    );
+
+    console.log("Updated eligible amount:", updatedApplication);
+    return { success: true, data: updatedApplication };
+  } catch (error) {
+    console.error("Error updating eligible amount:", error);
+    return { success: false, error: "Failed to update eligible amount" };
+  }
 }
 
 export async function saveCreditBuilderLoanApplication(formData: FormData) {
@@ -404,7 +431,7 @@ export async function checkEligibility(applicationId: string) {
       where: { id: applicationId },
       data: { status: "In Progress", eligibleAmount },
     });
-    return { success: true, eligibleAmount };
+    return { success: true, eligibleAmount, monthlyIncome: monthlyIncome };
   } catch (error) {
     console.error("Error checking eligibility:", error);
     return {
