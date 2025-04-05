@@ -1381,7 +1381,11 @@ const CreditBuilderLoanForm: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="aadharFront">
-                  Upload Aadhaar Front <span className="text-red-500">*</span>
+                  Upload Aadhaar Front{" "}
+                  <span className="text-muted-foreground">
+                    (maximum image size: 1mb)
+                  </span>{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="aadharFront"
@@ -1408,7 +1412,11 @@ const CreditBuilderLoanForm: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="aadharBack">
-                  Upload Aadhaar Back <span className="text-red-500">*</span>
+                  Upload Aadhaar Back{" "}
+                  <span className="text-muted-foreground">
+                    (maximum image size: 1mb)
+                  </span>{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="aadharBack"
@@ -1457,7 +1465,11 @@ const CreditBuilderLoanForm: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="panCard">
-                  Upload PAN Card <span className="text-red-500">*</span>
+                  Upload PAN Card{" "}
+                  <span className="text-muted-foreground">
+                    (maximum image size: 1mb)
+                  </span>
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="panCard"
@@ -1879,7 +1891,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                     </div>
                   )}
                   <p className="mt-4 text-sm text-gray-600 text-center">
-                    Upload your bank statement in PDF format (Max size: 10MB)
+                    Upload your bank statement in PDF format (Max size: 4MB)
                   </p>
                   <p className="text-red-500 text-sm text-center">
                     Please wait for <span className="font-bold">30seconds</span>{" "}
