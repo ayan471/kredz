@@ -731,14 +731,6 @@ export default function LoanEligibilityResult() {
                 Your loan application has been successfully submitted and is
                 being processed.
               </p>
-              <div className="mt-3 pt-3 border-t border-green-200">
-                <p className="text-green-700 font-medium">
-                  Eligible Amount: ₹
-                  {Number.parseInt(
-                    applicationDetails?.eligibleAmount || eligibleAmount || "0"
-                  ).toLocaleString()}
-                </p>
-              </div>
             </div>
 
             <h3 className="text-xl font-semibold mb-4">Your Bank Details</h3>
