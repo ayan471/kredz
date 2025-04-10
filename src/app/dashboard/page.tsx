@@ -318,9 +318,9 @@ export default async function DashboardPage() {
                       <li>Access to financial education resources</li>
                     </ul>
                     <div className="mt-3 text-center">
-                      <Link href={"/credit-builder-dashboard"}>
+                      <Link href={"/dashboard/subscription"}>
                         <button className="w-full px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-900 text-white text-sm rounded-md hover:bg-blue-800 transition-colors">
-                          View Dashboard
+                          View Subscription
                         </button>
                       </Link>
                     </div>

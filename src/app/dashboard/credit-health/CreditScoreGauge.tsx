@@ -56,7 +56,7 @@ const CreditScoreGauge: React.FC<CreditScoreGaugeProps> = ({
       {/* Score display */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
         <motion.div
-          className="text-4xl font-bold text-white"
+          className="text-4xl font-bold text-black"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
