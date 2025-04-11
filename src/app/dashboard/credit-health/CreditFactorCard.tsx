@@ -27,7 +27,7 @@ const CreditFactorCard: React.FC<CreditFactorCardProps> = ({ factor }) => {
     switch (factor.name) {
       case "Credit Age":
         return (
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-blue-200">
             {factor.details.years} years, {factor.details.months} months,{" "}
             {factor.details.days} days
           </p>
@@ -38,11 +38,11 @@ const CreditFactorCard: React.FC<CreditFactorCardProps> = ({ factor }) => {
       case "Overdue Accounts":
         return (
           <>
-            <p className="text-sm text-slate-400">
-              Count: {factor.details.count}
+            <p className="text-sm text-blue-200">
+              Numbers: {factor.details.count}
             </p>
             {factor.details.lenders && (
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-blue-200">
                 Lenders: {factor.details.lenders}
               </p>
             )}
@@ -50,11 +50,11 @@ const CreditFactorCard: React.FC<CreditFactorCardProps> = ({ factor }) => {
         );
       case "Scoring Factors":
         return (
-          <p className="text-sm text-slate-400">{factor.details.factors}</p>
+          <p className="text-sm text-blue-200">{factor.details.factors}</p>
         );
       case "Our Recommendation":
         return (
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-blue-200">
             {factor.details.recommendation}
           </p>
         );
@@ -67,9 +67,9 @@ const CreditFactorCard: React.FC<CreditFactorCardProps> = ({ factor }) => {
     <Card className="bg-slate-700 border-slate-600">
       <CardContent className="p-4">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-sm font-medium text-slate-200">{factor.name}</h3>
+          <h3 className="text-sm font-medium text-blue-200">{factor.name}</h3>
           {factor.score > 0 && (
-            <span className="text-sm font-semibold text-slate-300">
+            <span className="text-sm font-semibold text-blue-300">
               {factor.score}%
             </span>
           )}
