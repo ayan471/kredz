@@ -76,22 +76,6 @@ const SubscriptionPage = async () => {
                         : "N/A"}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-blue-700">Activation Date</p>
-                    <p className="text-lg font-semibold flex items-center text-blue-900">
-                      {subscription.activationDate ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
-                          {formatDate(subscription.activationDate)}
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle className="w-4 h-4 mr-2 text-yellow-600" />
-                          Pending Activation
-                        </>
-                      )}
-                    </p>
-                  </div>
                 </div>
                 {!subscription.isActive &&
                   subscription.activationDate === null && (
