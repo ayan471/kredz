@@ -1891,7 +1891,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                     </div>
                   )}
                   <p className="mt-4 text-sm text-gray-600 text-center">
-                    Upload your bank statement in PDF format (Max size: 2MB)
+                    Upload your bank statement in PDF format (Max size: 4MB)
                   </p>
                   <p className="text-red-500 text-sm text-center">
                     Please wait for <span className="font-bold">30seconds</span>{" "}
