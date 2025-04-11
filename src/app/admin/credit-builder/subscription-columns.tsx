@@ -10,7 +10,6 @@ import {
   MoreHorizontal,
   CheckCircle,
   XCircle,
-  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -42,7 +41,6 @@ import {
   updateMonthlyCreditHealth,
   toggleSubscriptionStatus,
 } from "@/actions/formActions";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
@@ -763,7 +761,29 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
       const subscription = row.original;
       const [isActivating, setIsActivating] = useState(false);
       const [isDeactivating, setIsDeactivating] = useState(false);
+      const [applicationId, setApplicationId] = useState<string | null>(null);
       const router = useRouter();
+
+      // Fetch the application ID when the component mounts
+      useEffect(() => {
+        const fetchApplicationId = async () => {
+          try {
+            const response = await fetch(
+              `/api/get-application-id?userId=${subscription.userId}`
+            );
+            if (response.ok) {
+              const data = await response.json();
+              if (data.applicationId) {
+                setApplicationId(data.applicationId);
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching application ID:", error);
+          }
+        };
+
+        fetchApplicationId();
+      }, [subscription.userId]);
 
       const handleActivate = async () => {
         setIsActivating(true);
@@ -844,9 +864,18 @@ export const columns: ColumnDef<CreditBuilderSubscription>[] = [
               <Link
                 href={`/admin/credit-builder/subscription/${subscription.id}`}
               >
-                View details
+                View subscription details
               </Link>
             </DropdownMenuItem>
+            {applicationId && (
+              <DropdownMenuItem asChild>
+                <Link
+                  href={`/admin/credit-builder/application/${applicationId}`}
+                >
+                  View application details
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             {subscription.isActive ? (
               <DropdownMenuItem

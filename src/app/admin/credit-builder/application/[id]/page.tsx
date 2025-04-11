@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
+
+import { EditApplicationForm } from "./edit-application-form";
 import { DownloadCSV } from "./download-csv";
 
 const prisma = new PrismaClient();
@@ -27,7 +29,17 @@ export default async function ApplicationDetailPage({
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Application Details</h1>
-        <DownloadCSV data={applicationData} />
+        <div className="flex items-center gap-3">
+          <EditApplicationForm
+            applicationData={{
+              ...applicationData,
+              creditScore: applicationData.creditScore
+                ? Number(applicationData.creditScore)
+                : null,
+            }}
+          />
+          <DownloadCSV data={applicationData} />
+        </div>
       </div>
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
         <div className="px-4 py-5 sm:px-6">
@@ -43,6 +55,7 @@ export default async function ApplicationDetailPage({
                 {applicationData.fullName || "N/A"}
               </dd>
             </div>
+
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">
                 Phone number

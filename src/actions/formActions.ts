@@ -558,3 +558,34 @@ export async function initiateCashfreePayment(amount: number, orderId: string) {
     throw error;
   }
 }
+
+export async function updateApplicationData(
+  id: string,
+  data: {
+    fullName?: string;
+    email?: string;
+    phoneNo?: string;
+    aadharNo?: string;
+    panNo?: string;
+    creditScore?: number;
+    step?: number;
+  }
+) {
+  try {
+    await prisma.creditBuilderApplicationData.update({
+      where: { id },
+      data: {
+        ...data,
+        creditScore:
+          data.creditScore !== undefined ? String(data.creditScore) : undefined,
+      },
+    });
+
+    revalidatePath(`/admin/credit-builder/application/${id}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating application data:", error);
+    return { success: false, error: "Failed to update application data" };
+  }
+}
