@@ -1833,7 +1833,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                   </p>
                 )}
               </div>
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <Label
                   htmlFor="bankStatement"
                   className="text-lg font-semibold"
@@ -1911,7 +1911,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                     </p>
                   )}
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
         );
