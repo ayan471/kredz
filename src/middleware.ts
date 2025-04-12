@@ -36,11 +36,22 @@ const adminUserIds = [
 ];
 
 export default clerkMiddleware((auth, request: NextRequest) => {
+  const { userId } = auth();
+  const url = request.nextUrl;
+  const searchParams = url.searchParams;
+  const redirectUrl = searchParams.get("redirect_url");
+
+  // Handle post-authentication redirect
+  // If the user just signed in and we have a redirect URL in the query params
+  if (userId && isPublicRoute(request) && redirectUrl) {
+    // Create a response that redirects to the specified URL
+    return NextResponse.redirect(new URL(redirectUrl, request.url));
+  }
+
+  // Continue with existing middleware logic
   if (isPublicRoute(request)) {
     return NextResponse.next();
   }
-
-  const { userId } = auth();
 
   if (!userId) {
     const signInUrl = new URL("/sign-in", request.url);
