@@ -1799,16 +1799,24 @@ const CreditBuilderLoanForm: React.FC = () => {
                 <Label htmlFor="currentActiveEmis">
                   Current EMIs <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="currentActiveEmis"
-                  type="number"
-                  {...register("currentActiveEmis", {
-                    required: "Current EMIs information is required",
-                    min: {
-                      value: 0,
-                      message: "Value cannot be negative",
-                    },
-                  })}
+                <Controller
+                  name="currentActiveEmis"
+                  control={control}
+                  rules={{ required: "Current EMIs information is required" }}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select number of EMIs" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1</SelectItem>
+                        <SelectItem value="2">2</SelectItem>
+                        <SelectItem value="3">3</SelectItem>
+                        <SelectItem value="4">4</SelectItem>
+                        <SelectItem value="4+">4+</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
                 {errors.currentActiveEmis && (
                   <p className="text-sm text-red-500 mt-1">
@@ -1820,16 +1828,25 @@ const CreditBuilderLoanForm: React.FC = () => {
                 <Label htmlFor="currentActiveOverdues">
                   Total Active Loans <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="currentActiveOverdues"
-                  type="number"
-                  {...register("currentActiveOverdues", {
+                <Controller
+                  name="currentActiveOverdues"
+                  control={control}
+                  rules={{
                     required: "Total active loans information is required",
-                    min: {
-                      value: 0,
-                      message: "Value cannot be negative",
-                    },
-                  })}
+                  }}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select number of active loans" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0-3">0-3</SelectItem>
+                        <SelectItem value="4-7">4-7</SelectItem>
+                        <SelectItem value="8-10">8-10</SelectItem>
+                        <SelectItem value="10+">10+</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
                 {errors.currentActiveOverdues && (
                   <p className="text-sm text-red-500 mt-1">
@@ -1838,84 +1855,84 @@ const CreditBuilderLoanForm: React.FC = () => {
                 )}
               </div>
               {/* <div className="space-y-4">
-                <Label
-                  htmlFor="bankStatement"
-                  className="text-lg font-semibold"
-                >
-                  Upload Bank Statement <span className="text-red-500">*</span>
-                </Label>
-                <div className="border-2 border-dashed border-orange-300 rounded-lg p-6 bg-orange-50">
-                  <UploadButton<OurFileRouter>
-                    endpoint="pdfUploader"
-                    onClientUploadComplete={(res) => {
-                      console.log("Files: ", res);
-                      if (res && res.length > 0) {
-                        setValue("bankStatement", res[0].url, {
-                          shouldValidate: true,
-                          shouldDirty: true,
-                          shouldTouch: true,
-                        });
-                        toast({
-                          title: "Upload Completed",
-                          description:
-                            "Your bank statement has been uploaded successfully.",
-                        });
-                      }
-                    }}
-                    onUploadError={(error: Error) => {
-                      setError("bankStatement", {
-                        type: "required",
-                        message: "Failed to upload bank statement",
+              <Label
+                htmlFor="bankStatement"
+                className="text-lg font-semibold"
+              >
+                Upload Bank Statement <span className="text-red-500">*</span>
+              </Label>
+              <div className="border-2 border-dashed border-orange-300 rounded-lg p-6 bg-orange-50">
+                <UploadButton<OurFileRouter>
+                  endpoint="pdfUploader"
+                  onClientUploadComplete={(res) => {
+                    console.log("Files: ", res);
+                    if (res && res.length > 0) {
+                      setValue("bankStatement", res[0].url, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                        shouldTouch: true,
                       });
                       toast({
-                        title: "Upload Error",
-                        description: `ERROR! ${error.message}`,
-                        variant: "destructive",
+                        title: "Upload Completed",
+                        description:
+                          "Your bank statement has been uploaded successfully.",
                       });
-                    }}
-                    appearance={{
-                      button:
-                        "bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200",
-                      allowedContent: "text-gray-600 text-sm",
-                    }}
-                  />
-                  {!watch("bankStatement") && (
-                    <div className="mt-4 p-3 bg-red-50 border border-red-300 rounded-md">
-                      <p className="text-red-600 font-medium">
-                        Bank statement is required. Please upload your bank
-                        statement.
-                      </p>
-                    </div>
-                  )}
-                  {errors.bankStatement && (
-                    <div className="mt-4 p-3 bg-red-50 border border-red-300 rounded-md">
-                      <p className="text-red-600 font-medium">
-                        {errors.bankStatement.message}
-                      </p>
-                    </div>
-                  )}
-                  <p className="mt-4 text-sm text-gray-600 text-center">
-                    Upload your bank statement in PDF format (Max size: 4MB)
-                  </p>
-                  <p className="text-red-500 text-sm text-center">
-                    Please wait for <span className="font-bold">30seconds</span>{" "}
-                    to upload the bank statement
-                  </p>
-                  {watch("bankStatement") && (
-                    <div className="mt-4 p-3 bg-green-100 border border-green-300 rounded-md flex items-center justify-between">
-                      <span className="text-green-700 font-medium">
-                        Bank statement uploaded successfully
-                      </span>
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    </div>
-                  )}
-                  {errors.bankStatement && (
-                    <p className="text-sm text-red-500 mt-1">
+                    }
+                  }}
+                  onUploadError={(error: Error) => {
+                    setError("bankStatement", {
+                      type: "required",
+                      message: "Failed to upload bank statement",
+                    });
+                    toast({
+                      title: "Upload Error",
+                      description: `ERROR! ${error.message}`,
+                      variant: "destructive",
+                    });
+                  }}
+                  appearance={{
+                    button:
+                      "bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200",
+                    allowedContent: "text-gray-600 text-sm",
+                  }}
+                />
+                {!watch("bankStatement") && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-300 rounded-md">
+                    <p className="text-red-600 font-medium">
+                      Bank statement is required. Please upload your bank
+                      statement.
+                    </p>
+                  </div>
+                )}
+                {errors.bankStatement && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-300 rounded-md">
+                    <p className="text-red-600 font-medium">
                       {errors.bankStatement.message}
                     </p>
-                  )}
-                </div>
-              </div> */}
+                  </div>
+                )}
+                <p className="mt-4 text-sm text-gray-600 text-center">
+                  Upload your bank statement in PDF format (Max size: 4MB)
+                </p>
+                <p className="text-red-500 text-sm text-center">
+                  Please wait for <span className="font-bold">30seconds</span>{" "}
+                  to upload the bank statement
+                </p>
+                {watch("bankStatement") && (
+                  <div className="mt-4 p-3 bg-green-100 border border-green-300 rounded-md flex items-center justify-between">
+                    <span className="text-green-700 font-medium">
+                      Bank statement uploaded successfully
+                    </span>
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  </div>
+                )}
+                {errors.bankStatement && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.bankStatement.message}
+                  </p>
+                )}
+              </div>
+            </div> */}
             </CardContent>
           </Card>
         );
