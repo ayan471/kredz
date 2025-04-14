@@ -2,6 +2,8 @@
 
 import { SignUp } from "@clerk/nextjs";
 import { motion } from "framer-motion";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   Sparkles,
   Shield,
@@ -25,6 +27,26 @@ const stats = [
 ];
 
 export default function SignUpPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const redirectUrl = searchParams.get("redirect_url");
+
+  // Store the redirect URL in localStorage when the component mounts
+  useEffect(() => {
+    if (redirectUrl) {
+      localStorage.setItem("redirectAfterAuth", redirectUrl);
+    }
+  }, [redirectUrl]);
+
+  // Handle successful sign-up
+  const handleSignUpComplete = () => {
+    const storedRedirectUrl = localStorage.getItem("redirectAfterAuth");
+    if (storedRedirectUrl) {
+      localStorage.removeItem("redirectAfterAuth");
+      router.push(storedRedirectUrl);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex">
       {/* Left Section */}
@@ -196,6 +218,7 @@ export default function SignUpPage() {
             </motion.div>
           </div>
           <SignUp
+            redirectUrl={redirectUrl || "/"}
             appearance={{
               elements: {
                 formButtonPrimary:
@@ -215,6 +238,7 @@ export default function SignUpPage() {
                 socialButtonsVariant: "blockButton",
               },
             }}
+            signInUrl="/sign-in"
           />
         </div>
       </motion.div>

@@ -96,7 +96,8 @@ type FormData = {
     | "GST"
     | "Udhyam Registration"
     | "Trade Licenses"
-    | "Act of establishment";
+    | "Act of establishment"
+    | "None of above";
   age: string;
 };
 
@@ -1698,6 +1699,9 @@ const CreditBuilderLoanForm: React.FC = () => {
                             </SelectItem>
                             <SelectItem value="Act of establishment">
                               Act of establishment
+                            </SelectItem>
+                            <SelectItem value="None of above">
+                              None of above
                             </SelectItem>
                           </SelectContent>
                         </Select>
