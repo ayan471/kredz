@@ -141,6 +141,20 @@ const sanitizeFormData = (data: Partial<FormData>) => {
   return sanitizedData;
 };
 
+// Add this function after the sanitizeFormData function
+const validateFileSize = (file: File | null, maxSizeMB = 1): boolean => {
+  if (!file) return true; // No file is valid (validation for required is handled separately)
+
+  // Convert MB to bytes (1MB = 1,048,576 bytes)
+  const maxSizeBytes = maxSizeMB * 1048576;
+
+  if (file.size > maxSizeBytes) {
+    return false;
+  }
+
+  return true;
+};
+
 // Add these utility functions after the sanitizeFormData function
 const setFormSubmittedStatus = (applicationId: string, userId: string) => {
   if (!userId) {
@@ -207,6 +221,7 @@ const CreditBuilderLoanForm: React.FC = () => {
 
   // Add this state variable after the other state declarations
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -447,6 +462,7 @@ const CreditBuilderLoanForm: React.FC = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
+      setIsSubmitting(true);
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
         if (value instanceof File) {
@@ -578,6 +594,8 @@ const CreditBuilderLoanForm: React.FC = () => {
           "There was an error submitting your application. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false); // Reset loading state when submission completes (success or error)
     }
   };
 
@@ -643,12 +661,26 @@ const CreditBuilderLoanForm: React.FC = () => {
           message: "Aadhaar front image is required",
         });
         hasErrors = true;
+      } else if (!validateFileSize(aadharFront)) {
+        setError("aadharFront", {
+          type: "validate",
+          message:
+            "File size exceeds 1MB limit. Please upload a smaller image.",
+        });
+        hasErrors = true;
       }
 
       if (!aadharBack) {
         setError("aadharBack", {
           type: "required",
           message: "Aadhaar back image is required",
+        });
+        hasErrors = true;
+      } else if (!validateFileSize(aadharBack)) {
+        setError("aadharBack", {
+          type: "validate",
+          message:
+            "File size exceeds 1MB limit. Please upload a smaller image.",
         });
         hasErrors = true;
       }
@@ -659,12 +691,20 @@ const CreditBuilderLoanForm: React.FC = () => {
           message: "PAN card image is required",
         });
         hasErrors = true;
+      } else if (!validateFileSize(panCard)) {
+        setError("panCard", {
+          type: "validate",
+          message:
+            "File size exceeds 1MB limit. Please upload a smaller image.",
+        });
+        hasErrors = true;
       }
 
       if (hasErrors) {
         toast({
-          title: "Missing Documents",
-          description: "Please upload all required document images",
+          title: "Validation Error",
+          description:
+            "Please upload all required document images (max 1MB each)",
           variant: "destructive",
         });
         return;
@@ -1393,6 +1433,16 @@ const CreditBuilderLoanForm: React.FC = () => {
                   type="file"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
+                    if (file && !validateFileSize(file)) {
+                      setError("aadharFront", {
+                        type: "validate",
+                        message:
+                          "File size exceeds 1MB limit. Please upload a smaller image.",
+                      });
+                      e.target.value = ""; // Reset the input
+                      return;
+                    }
+
                     setValue("aadharFront", file);
                     // Clear validation error when file is selected
                     if (file) {
@@ -1424,6 +1474,16 @@ const CreditBuilderLoanForm: React.FC = () => {
                   type="file"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
+
+                    if (file && !validateFileSize(file)) {
+                      setError("aadharBack", {
+                        type: "validate",
+                        message:
+                          "File size exceeds 1MB limit. Please upload a smaller image.",
+                      });
+                      e.target.value = ""; // Reset the input
+                      return;
+                    }
                     setValue("aadharBack", file);
                     // Clear validation error when file is selected
                     if (file) {
@@ -1477,6 +1537,16 @@ const CreditBuilderLoanForm: React.FC = () => {
                   type="file"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
+                    if (file && !validateFileSize(file)) {
+                      setError("panCard", {
+                        type: "validate",
+                        message:
+                          "File size exceeds 1MB limit. Please upload a smaller image.",
+                      });
+                      e.target.value = ""; // Reset the input
+                      return;
+                    }
+
                     setValue("panCard", file);
                     // Clear validation error when file is selected
                     if (file) {
@@ -2074,9 +2144,19 @@ const CreditBuilderLoanForm: React.FC = () => {
                     <Button
                       type="submit"
                       className="bg-orange-500 hover:bg-orange-600 text-white w-auto sm:w-auto sm:ml-auto"
+                      disabled={isSubmitting} // Disable button when submitting
                     >
-                      Submit Application
-                      <ChevronRight className="w-4 h-4 ml-2" />
+                      {isSubmitting ? (
+                        <>
+                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          Submit Application
+                          <ChevronRight className="w-4 h-4 ml-2" />
+                        </>
+                      )}
                     </Button>
                   )}
                 </div>
