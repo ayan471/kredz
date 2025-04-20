@@ -46,7 +46,7 @@ export default function FasterProcessingButton({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: 47.2,
+          amount: 78,
           orderId: uniqueOrderId,
           customerName,
           customerPhone,
@@ -103,7 +103,7 @@ export default function FasterProcessingButton({
         ) : (
           <>
             <Zap className="mr-3 h-5 w-5" />
-            Pay ₹47.20 for Instant Processing
+            Pay ₹78 for Instant Processing
           </>
         )}
       </Button>

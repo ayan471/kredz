@@ -231,7 +231,7 @@ export default async function LoanDetailsPage({
                     Speed Up Your Application
                   </h3>
                   <p className="text-gray-700 mb-4">
-                    Pay a small fee of ₹47.20 to get your loan application
+                    Pay a small fee of ₹78 to get your loan application
                     processed on priority. This will help you get a faster
                     response on your application.
                   </p>
