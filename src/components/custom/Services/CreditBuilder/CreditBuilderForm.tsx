@@ -377,7 +377,7 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-col gap-6 bg-orange-50 p-6 rounded-xl">
+        {/* <div className="flex flex-col gap-6 bg-orange-50 p-6 rounded-xl">
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="creditScore">Credit Score</Label>
             <Input
@@ -397,7 +397,7 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
               </p>
             )}
           </div>
-        </div>
+        </div> */}
 
         <Button
           type="submit"

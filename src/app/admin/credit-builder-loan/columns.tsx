@@ -178,7 +178,7 @@ export const columns: ColumnDef<CreditBuilderLoanApplication>[] = [
             </TooltipTrigger>
             <TooltipContent>
               {isPaid
-                ? "Customer has paid 78 for instant processing"
+                ? "Customer has paid 146 for instant processing"
                 : "Customer has not paid for instant processing"}
             </TooltipContent>
           </Tooltip>
