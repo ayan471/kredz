@@ -427,7 +427,7 @@ export default function LoanEligibilityResult() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: 78,
+          amount: 146,
           orderId: `FASTER-${applicationId}`,
           customerName,
           customerPhone,
@@ -631,7 +631,7 @@ export default function LoanEligibilityResult() {
             {!fasterProcessingPaid && (
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <p className="text-sm text-gray-600 mb-2">
-                  For Instant processing, you can pay a fee of ₹78.
+                  For Instant processing, you can pay a fee of ₹146.
                 </p>
                 <Button
                   onClick={handlePayment}
@@ -640,7 +640,7 @@ export default function LoanEligibilityResult() {
                 >
                   {isProcessing
                     ? "Processing..."
-                    : "Pay ₹78 for Instant Processing"}
+                    : "Pay ₹146 for Instant Processing"}
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -759,7 +759,7 @@ export default function LoanEligibilityResult() {
               !fasterProcessingPaid && (
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <p className="text-sm text-gray-600 mb-2">
-                    For Instant processing, you can pay a fee of ₹78.
+                    For Instant processing, you can pay a fee of ₹146.
                   </p>
                   <Button
                     onClick={handlePayment}
@@ -768,7 +768,7 @@ export default function LoanEligibilityResult() {
                   >
                     {isProcessing
                       ? "Processing..."
-                      : "Pay ₹78 for Instant Processing"}
+                      : "Pay ₹146 for Instant Processing"}
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
