@@ -17,6 +17,8 @@ import {
   Download,
   Camera,
   BanknoteIcon as Bank,
+  Cake,
+  Mail,
 } from "lucide-react";
 import { EditableInfoItem } from "./EditableInfoItem";
 import { PDFDownloadButton } from "./PDFDownloadButton";
@@ -157,9 +159,28 @@ export default async function LoanApplicationDetailPage({
               value={application.fullName}
             />
             <InfoItem
+              icon={<Mail className="h-5 w-5 text-gray-400" />}
+              label="Email"
+              value={application.email}
+            />
+            <InfoItem
               icon={<Phone className="h-5 w-5 text-gray-400" />}
               label="Phone Number"
               value={application.phoneNo}
+            />
+            <InfoItem
+              icon={<Cake className="h-5 w-5 text-gray-400" />}
+              label="Age"
+              value={application.age}
+            />
+            <InfoItem
+              icon={<Cake className="h-5 w-5 text-gray-400" />}
+              label="Date of birth"
+              value={
+                application.dateOfBirth
+                  ? application.dateOfBirth.toLocaleDateString()
+                  : "N/A"
+              }
             />
             <InfoItem
               icon={<DollarSign className="h-5 w-5 text-gray-400" />}
@@ -196,6 +217,16 @@ export default async function LoanApplicationDetailPage({
               icon={<DollarSign className="h-5 w-5 text-gray-400" />}
               label="Current EMIs"
               value={application.currEmis}
+            />
+            <InfoItem
+              icon={<DollarSign className="h-5 w-5 text-gray-400" />}
+              label="Total Active Loans"
+              value={application.totalActiveLoans}
+            />
+            <InfoItem
+              icon={<DollarSign className="h-5 w-5 text-gray-400" />}
+              label="Credit Score"
+              value={application.creditScore}
             />
             <EditableInfoItem
               icon={<Bank className="h-5 w-5 text-gray-400" />}
