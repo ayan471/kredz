@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import type React from "react";
 import { useState, useRef, useEffect } from "react";
 import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
@@ -22,8 +22,6 @@ import {
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import type { LoanApplication } from "@/types";
-import { UploadButton } from "@uploadthing/react";
-import type { OurFileRouter } from "@/app/api/uploadthing/core";
 import "@uploadthing/react/styles.css";
 import { useUser } from "@clerk/nextjs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -145,6 +143,23 @@ const clearFormDataFromLocalStorage = () => {
   } catch (error) {
     console.error("Error clearing form data from sessionStorage:", error);
   }
+};
+
+// File size validation function (1MB = 1024 * 1024 bytes)
+const validateFileSize = (
+  files: FileList | null,
+  maxSizeInMB = 1
+): string | true => {
+  if (!files || files.length === 0) return true;
+
+  const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+  const file = files[0];
+
+  if (file.size > maxSizeInBytes) {
+    return `File size must be less than ${maxSizeInMB}MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`;
+  }
+
+  return true;
 };
 
 interface StepProps {
@@ -492,20 +507,6 @@ const Step4Documents: React.FC<StepProps> = ({
   setValue,
   watch,
 }) => {
-  const [uploadStatus, setUploadStatus] = useState<
-    "idle" | "uploading" | "completed" | "error"
-  >("idle");
-
-  // Register the bankStatmntImg field with required validation
-  React.useEffect(() => {
-    register("bankStatmntImg", {
-      required: "Bank statement is required",
-    });
-  }, [register]);
-
-  // Watch the bankStatmntImg value to know if it's been set
-  const bankStatmntImg = watch("bankStatmntImg");
-
   return (
     <div className="space-y-6">
       <div className="grid w-full items-center gap-3">
@@ -514,15 +515,26 @@ const Step4Documents: React.FC<StepProps> = ({
         </Label>
         <Input
           id="aadharNo"
-          type="number"
+          type="text"
           {...register("aadharNo", {
             required: "Aadhar number is required",
             pattern: {
               value: /^\d{12}$/,
-              message: "Invalid Aadhar number, must be 12 digits",
+              message: "Aadhar number must be exactly 12 digits",
+            },
+            validate: (value: string) => {
+              // Remove any spaces or special characters
+              const cleanValue = value.replace(/\D/g, "");
+              if (cleanValue.length !== 12) {
+                return "Aadhar number must be exactly 12 digits";
+              }
+              // Basic checksum validation could be added here if needed
+              return true;
             },
           })}
           className="w-full p-3"
+          placeholder="Enter 12-digit Aadhar number"
+          maxLength={12}
         />
         {errors.aadharNo && (
           <p className="text-red-500 text-sm">{errors.aadharNo.message}</p>
@@ -537,10 +549,25 @@ const Step4Documents: React.FC<StepProps> = ({
           type="file"
           {...register("aadharImgFront", {
             required: "Aadhar card front image is required",
+            validate: {
+              fileSize: (files: FileList) => validateFileSize(files, 1),
+              fileType: (files: FileList) => {
+                if (!files || files.length === 0) return true;
+                const file = files[0];
+                const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+                if (!allowedTypes.includes(file.type)) {
+                  return "Only JPG, JPEG, and PNG files are allowed";
+                }
+                return true;
+              },
+            },
           })}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
         />
+        <p className="text-xs text-gray-500 mt-1">
+          Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
+        </p>
         {errors.aadharImgFront && (
           <p className="text-red-500 text-sm">
             {errors.aadharImgFront.message}
@@ -556,14 +583,25 @@ const Step4Documents: React.FC<StepProps> = ({
           type="file"
           {...register("aadharImgBack", {
             required: "Aadhar card back image is required",
-            pattern: {
-              value: /\.(jpg|jpeg|png)$/i,
-              message: "Only JPG, JPEG, and PNG files are allowed",
+            validate: {
+              fileSize: (files: FileList) => validateFileSize(files, 1),
+              fileType: (files: FileList) => {
+                if (!files || files.length === 0) return true;
+                const file = files[0];
+                const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+                if (!allowedTypes.includes(file.type)) {
+                  return "Only JPG, JPEG, and PNG files are allowed";
+                }
+                return true;
+              },
             },
           })}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
         />
+        <p className="text-xs text-gray-500 mt-1">
+          Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
+        </p>
         {errors.aadharImgBack && (
           <p className="text-red-500 text-sm">{errors.aadharImgBack.message}</p>
         )}
@@ -579,10 +617,21 @@ const Step4Documents: React.FC<StepProps> = ({
             required: "PAN number is required",
             pattern: {
               value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-              message: "Please enter a valid PAN number (e.g., ABCDE1234F)",
+              message:
+                "PAN format: 5 letters, 4 digits, 1 letter (e.g., ABCDE1234F)",
+            },
+            validate: (value: string) => {
+              const upperValue = value.toUpperCase();
+              if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(upperValue)) {
+                return "Invalid PAN format. Use format: ABCDE1234F";
+              }
+              return true;
             },
           })}
           className="w-full p-3"
+          placeholder="ABCDE1234F"
+          maxLength={10}
+          style={{ textTransform: "uppercase" }}
         />
         {errors.panNo && (
           <p className="text-red-500 text-sm">{errors.panNo.message}</p>
@@ -597,10 +646,25 @@ const Step4Documents: React.FC<StepProps> = ({
           type="file"
           {...register("panImgFront", {
             required: "PAN card image is required",
+            validate: {
+              fileSize: (files: FileList) => validateFileSize(files, 1),
+              fileType: (files: FileList) => {
+                if (!files || files.length === 0) return true;
+                const file = files[0];
+                const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+                if (!allowedTypes.includes(file.type)) {
+                  return "Only JPG, JPEG, and PNG files are allowed";
+                }
+                return true;
+              },
+            },
           })}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
         />
+        <p className="text-xs text-gray-500 mt-1">
+          Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
+        </p>
         {errors.panImgFront && (
           <p className="text-red-500 text-sm">{errors.panImgFront.message}</p>
         )}
@@ -613,81 +677,29 @@ const Step4Documents: React.FC<StepProps> = ({
         <Input
           id="selfieImg"
           type="file"
-          {...register("selfieImg", { required: "Selfie image is required" })}
+          {...register("selfieImg", {
+            required: "Selfie image is required",
+            validate: {
+              fileSize: (files: FileList) => validateFileSize(files, 1),
+              fileType: (files: FileList) => {
+                if (!files || files.length === 0) return true;
+                const file = files[0];
+                const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+                if (!allowedTypes.includes(file.type)) {
+                  return "Only JPG, JPEG, and PNG files are allowed";
+                }
+                return true;
+              },
+            },
+          })}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
         />
+        <p className="text-xs text-gray-500 mt-1">
+          Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
+        </p>
         {errors.selfieImg && (
           <p className="text-red-500 text-sm">{errors.selfieImg.message}</p>
-        )}
-      </div>
-      <div className="grid w-full items-center gap-3">
-        <Label htmlFor="bankStatmntImg" className="text-base font-semibold">
-          Upload Your Bank Statement <span className="text-red-500">*</span>
-        </Label>
-        <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-orange-500 rounded-lg bg-orange-50">
-          <UploadButton<OurFileRouter>
-            endpoint="pdfUploader"
-            onClientUploadComplete={(res) => {
-              const uploadedFiles = res as {
-                name: string;
-                url: string;
-                size: number;
-              }[];
-              if (uploadedFiles && uploadedFiles.length > 0) {
-                setValue("bankStatmntImg", uploadedFiles[0].url);
-                setUploadStatus("completed");
-              }
-            }}
-            onUploadError={(error: Error) => {
-              console.error("Upload error:", error);
-              setUploadStatus("error");
-            }}
-            onUploadBegin={() => {
-              setUploadStatus("uploading");
-            }}
-            appearance={{
-              button:
-                "ut-ready:bg-orange-500 ut-ready:hover:bg-orange-600 ut-ready:text-white ut-ready:font-semibold ut-ready:py-3 ut-ready:px-4 ut-ready:rounded-md ut-ready:transition-colors ut-ready:duration-200 ut-ready:text-lg",
-              allowedContent: "flex flex-col items-center justify-center gap-2",
-            }}
-          />
-          <p className="text-sm text-muted-foreground mt-2">
-            ** Only PDF files are accepted
-          </p>
-
-          {uploadStatus === "uploading" && (
-            <div className="mt-4 flex items-center gap-2 text-orange-600">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-orange-600 border-t-transparent"></div>
-              <p>Uploading bank statement...</p>
-            </div>
-          )}
-
-          {uploadStatus === "completed" && (
-            <div className="mt-4 flex items-center gap-2 text-green-600">
-              <CheckCircle2 className="h-5 w-5" />
-              <p>Bank statement uploaded successfully!</p>
-            </div>
-          )}
-
-          {uploadStatus === "error" && (
-            <div className="mt-4 flex items-center gap-2 text-red-600">
-              <AlertCircle className="h-5 w-5" />
-              <p>Failed to upload bank statement. Please try again.</p>
-            </div>
-          )}
-
-          {uploadStatus === "idle" && (
-            <p className="text-red-500 text-sm mt-2">
-              Please wait for <span className="font-bold">30seconds</span> to
-              upload the bank statement
-            </p>
-          )}
-        </div>
-        {errors.bankStatmntImg && (
-          <p className="text-red-500 text-sm">
-            {errors.bankStatmntImg.message}
-          </p>
         )}
       </div>
     </div>
@@ -1026,7 +1038,6 @@ const LaStepOne: React.FC = () => {
         "panNo",
         "panImgFront",
         "selfieImg",
-        "bankStatmntImg",
       ],
       5: ["currEmis", "totalActiveLoans", "termsConfirmation"],
     }[currentStep];
