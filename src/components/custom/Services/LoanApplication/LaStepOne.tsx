@@ -147,20 +147,6 @@ const clearFormDataFromLocalStorage = () => {
   }
 };
 
-// Add this function after clearFormDataFromLocalStorage
-const validateFileSize = (file: File | null, maxSizeMB = 1): boolean => {
-  if (!file) return true; // No file is valid (validation for required is handled separately)
-
-  // Convert MB to bytes (1MB = 1,048,576 bytes)
-  const maxSizeBytes = maxSizeMB * 1048576;
-
-  if (file.size > maxSizeBytes) {
-    return false;
-  }
-
-  return true;
-};
-
 interface StepProps {
   control: any;
   register: any;
@@ -171,8 +157,6 @@ interface StepProps {
   isAgeInvalid: boolean;
   getValues?: () => FormValues;
   watch: any;
-  setError: any;
-  clearErrors: any;
 }
 
 const Step1Personal: React.FC<StepProps> = ({
@@ -184,8 +168,6 @@ const Step1Personal: React.FC<StepProps> = ({
   age,
   isAgeInvalid,
   watch,
-  setError,
-  clearErrors,
 }) => (
   <div className="space-y-6">
     <div className="grid w-full items-center gap-3">
@@ -281,8 +263,6 @@ const Step2EmploymentIncome: React.FC<StepProps> = ({
   isAgeInvalid,
   watch,
   setValue,
-  setError,
-  clearErrors,
 }) => {
   const monIncome = watch("monIncome");
   const age = watch("age");
@@ -412,8 +392,6 @@ const Step3LoanDetails: React.FC<StepProps> = ({
   errors,
   isAgeInvalid,
   watch,
-  setError,
-  clearErrors,
 }) => {
   const eligibleLoanAmount = watch("eligibleLoanAmount");
 
@@ -513,8 +491,6 @@ const Step4Documents: React.FC<StepProps> = ({
   isAgeInvalid,
   setValue,
   watch,
-  setError,
-  clearErrors,
 }) => {
   const [uploadStatus, setUploadStatus] = useState<
     "idle" | "uploading" | "completed" | "error"
@@ -554,10 +530,7 @@ const Step4Documents: React.FC<StepProps> = ({
       </div>
       <div className="grid w-full items-center gap-3">
         <Label htmlFor="aadharImgFront" className="text-base font-semibold">
-          Upload Aadhar Card (Front){" "}
-          <span className="text-muted-foreground">
-            (maximum image size: 1mb)
-          </span>
+          Upload Aadhar Card (Front)
         </Label>
         <Input
           id="aadharImgFront"
@@ -565,25 +538,6 @@ const Step4Documents: React.FC<StepProps> = ({
           {...register("aadharImgFront", {
             required: "Aadhar card front image is required",
           })}
-          onChange={(e) => {
-            const file = e.target.files?.[0] || null;
-            if (file && !validateFileSize(file)) {
-              setError("aadharImgFront", {
-                type: "validate",
-                message:
-                  "File size exceeds 1MB limit. Please upload a smaller image.",
-              });
-              e.target.value = ""; // Reset the input
-              return;
-            }
-
-            setValue("aadharImgFront", file);
-            // Clear validation error when file is selected
-            if (file) {
-              clearErrors("aadharImgFront");
-            }
-            console.log("Aadhaar front file selected:", file?.name);
-          }}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
         />
@@ -592,52 +546,27 @@ const Step4Documents: React.FC<StepProps> = ({
             {errors.aadharImgFront.message}
           </p>
         )}
-        <p className="text-xs text-gray-500">
-          Accepted formats: JPG, JPEG, PNG
-        </p>
       </div>
-
       <div className="grid w-full items-center gap-3">
         <Label htmlFor="aadharImgBack" className="text-base font-semibold">
-          Upload Aadhar Card (Back){" "}
-          <span className="text-muted-foreground">
-            (maximum image size: 1mb)
-          </span>
+          Upload Aadhar Card (Back)
         </Label>
         <Input
           id="aadharImgBack"
           type="file"
           {...register("aadharImgBack", {
             required: "Aadhar card back image is required",
+            pattern: {
+              value: /\.(jpg|jpeg|png)$/i,
+              message: "Only JPG, JPEG, and PNG files are allowed",
+            },
           })}
-          onChange={(e) => {
-            const file = e.target.files?.[0] || null;
-            if (file && !validateFileSize(file)) {
-              setError("aadharImgBack", {
-                type: "validate",
-                message:
-                  "File size exceeds 1MB limit. Please upload a smaller image.",
-              });
-              e.target.value = ""; // Reset the input
-              return;
-            }
-
-            setValue("aadharImgBack", file);
-            // Clear validation error when file is selected
-            if (file) {
-              clearErrors("aadharImgBack");
-            }
-            console.log("Aadhaar back file selected:", file?.name);
-          }}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
         />
         {errors.aadharImgBack && (
           <p className="text-red-500 text-sm">{errors.aadharImgBack.message}</p>
         )}
-        <p className="text-xs text-gray-500">
-          Accepted formats: JPG, JPEG, PNG
-        </p>
       </div>
       <div className="grid w-full items-center gap-3">
         <Label htmlFor="panNo" className="text-base font-semibold">
@@ -661,10 +590,7 @@ const Step4Documents: React.FC<StepProps> = ({
       </div>
       <div className="grid w-full items-center gap-3">
         <Label htmlFor="panImgFront" className="text-base font-semibold">
-          Upload PAN Card (Front){" "}
-          <span className="text-muted-foreground">
-            (maximum image size: 1mb)
-          </span>
+          Upload PAN Card (Front)
         </Label>
         <Input
           id="panImgFront"
@@ -672,75 +598,28 @@ const Step4Documents: React.FC<StepProps> = ({
           {...register("panImgFront", {
             required: "PAN card image is required",
           })}
-          onChange={(e) => {
-            const file = e.target.files?.[0] || null;
-            if (file && !validateFileSize(file)) {
-              setError("panImgFront", {
-                type: "validate",
-                message:
-                  "File size exceeds 1MB limit. Please upload a smaller image.",
-              });
-              e.target.value = ""; // Reset the input
-              return;
-            }
-
-            setValue("panImgFront", file);
-            // Clear validation error when file is selected
-            if (file) {
-              clearErrors("panImgFront");
-            }
-            console.log("PAN card file selected:", file?.name);
-          }}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
         />
         {errors.panImgFront && (
           <p className="text-red-500 text-sm">{errors.panImgFront.message}</p>
         )}
-        <p className="text-xs text-gray-500">
-          Accepted formats: JPG, JPEG, PNG
-        </p>
       </div>
 
       <div className="grid w-full items-center gap-3">
         <Label htmlFor="selfieImg" className="text-base font-semibold">
-          Upload your selfie{" "}
-          <span className="text-muted-foreground">
-            (maximum image size: 1mb)
-          </span>
+          Upload your selfie
         </Label>
         <Input
           id="selfieImg"
           type="file"
           {...register("selfieImg", { required: "Selfie image is required" })}
-          onChange={(e) => {
-            const file = e.target.files?.[0] || null;
-            if (file && !validateFileSize(file)) {
-              setError("selfieImg", {
-                type: "validate",
-                message:
-                  "File size exceeds 1MB limit. Please upload a smaller image.",
-              });
-              e.target.value = ""; // Reset the input
-              return;
-            }
-
-            setValue("selfieImg", file);
-            // Clear validation error when file is selected
-            if (file) {
-              clearErrors("selfieImg");
-            }
-            console.log("Selfie file selected:", file?.name);
-          }}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
         />
         {errors.selfieImg && (
           <p className="text-red-500 text-sm">{errors.selfieImg.message}</p>
         )}
-        <p className="text-xs text-gray-500">
-          Accepted formats: JPG, JPEG, PNG
-        </p>
       </div>
       <div className="grid w-full items-center gap-3">
         <Label htmlFor="bankStatmntImg" className="text-base font-semibold">
@@ -820,8 +699,6 @@ const Step5Financial: React.FC<StepProps> = ({
   register,
   errors,
   isAgeInvalid,
-  setError,
-  clearErrors,
 }) => (
   <div className="space-y-6">
     <div className="grid w-full items-center gap-3">
@@ -914,8 +791,6 @@ const Step6Review: React.FC<StepProps> = ({
   register,
   errors,
   watch,
-  setError,
-  clearErrors,
 }) => {
   // Make sure we always call watch even if we don't use it
   const watchedValues = watch ? watch() : {};
@@ -1003,12 +878,10 @@ const LaStepOne: React.FC = () => {
     watch,
     trigger,
     getValues,
-    setError,
-    clearErrors, // Add this
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
-      prpseOfLoan: "Personal Use",
+      prpseOfLoan: "Personal Use", // Add this default value
     },
   });
 
@@ -1170,97 +1043,6 @@ const LaStepOne: React.FC = () => {
           variant: "destructive",
         });
         return;
-      }
-
-      // Special handling for file inputs in step 4
-      if (currentStep === 4) {
-        const aadharImgFront = getValues("aadharImgFront");
-        const aadharImgBack = getValues("aadharImgBack");
-        const panImgFront = getValues("panImgFront");
-        const selfieImg = getValues("selfieImg");
-
-        let hasErrors = false;
-
-        // Validate Aadhaar front
-        if (!aadharImgFront || aadharImgFront.length === 0) {
-          setError("aadharImgFront", {
-            type: "required",
-            message: "Aadhaar front image is required",
-          });
-          hasErrors = true;
-        } else if (!validateFileSize(aadharImgFront[0])) {
-          setError("aadharImgFront", {
-            type: "validate",
-            message:
-              "File size exceeds 1MB limit. Please upload a smaller image.",
-          });
-          hasErrors = true;
-        }
-
-        // Validate Aadhaar back
-        if (!aadharImgBack || aadharImgBack.length === 0) {
-          setError("aadharImgBack", {
-            type: "required",
-            message: "Aadhaar back image is required",
-          });
-          hasErrors = true;
-        } else if (!validateFileSize(aadharImgBack[0])) {
-          setError("aadharImgBack", {
-            type: "validate",
-            message:
-              "File size exceeds 1MB limit. Please upload a smaller image.",
-          });
-          hasErrors = true;
-        }
-
-        // Validate PAN card
-        if (!panImgFront || panImgFront.length === 0) {
-          setError("panImgFront", {
-            type: "required",
-            message: "PAN card image is required",
-          });
-          hasErrors = true;
-        } else if (!validateFileSize(panImgFront[0])) {
-          setError("panImgFront", {
-            type: "validate",
-            message:
-              "File size exceeds 1MB limit. Please upload a smaller image.",
-          });
-          hasErrors = true;
-        }
-
-        // Validate selfie
-        if (!selfieImg || selfieImg.length === 0) {
-          setError("selfieImg", {
-            type: "required",
-            message: "Selfie image is required",
-          });
-          hasErrors = true;
-        } else if (!validateFileSize(selfieImg[0])) {
-          setError("selfieImg", {
-            type: "validate",
-            message:
-              "File size exceeds 1MB limit. Please upload a smaller image.",
-          });
-          hasErrors = true;
-        }
-
-        if (hasErrors) {
-          toast({
-            title: "Validation Error",
-            description:
-              "Please upload all required document images (max 1MB each)",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        console.log("All documents uploaded successfully:", {
-          aadharImgFront: aadharImgFront[0]?.name,
-          aadharImgBack: aadharImgBack[0]?.name,
-          panImgFront: panImgFront[0]?.name,
-          selfieImg: selfieImg[0]?.name,
-        });
       }
       setCurrentStep((prev) => prev + 1);
     }
@@ -1482,8 +1264,6 @@ const LaStepOne: React.FC = () => {
                   age={age}
                   isAgeInvalid={isAgeInvalid}
                   watch={watch}
-                  setError={setError}
-                  clearErrors={clearErrors}
                 />
               )}
 
@@ -1495,8 +1275,6 @@ const LaStepOne: React.FC = () => {
                   setValue={setValue}
                   isAgeInvalid={isAgeInvalid}
                   watch={watch}
-                  setError={setError}
-                  clearErrors={clearErrors}
                 />
               )}
 
@@ -1508,8 +1286,6 @@ const LaStepOne: React.FC = () => {
                   setValue={setValue}
                   isAgeInvalid={isAgeInvalid}
                   watch={watch}
-                  setError={setError}
-                  clearErrors={clearErrors}
                 />
               )}
 
@@ -1521,8 +1297,6 @@ const LaStepOne: React.FC = () => {
                   isAgeInvalid={isAgeInvalid}
                   setValue={setValue}
                   watch={watch}
-                  setError={setError}
-                  clearErrors={clearErrors}
                 />
               )}
 
@@ -1534,8 +1308,6 @@ const LaStepOne: React.FC = () => {
                   errors={errors}
                   isAgeInvalid={isAgeInvalid}
                   watch={watch}
-                  setError={setError}
-                  clearErrors={clearErrors}
                 />
               )}
 
@@ -1548,8 +1320,6 @@ const LaStepOne: React.FC = () => {
                   errors={errors}
                   isAgeInvalid={isAgeInvalid}
                   watch={watch}
-                  setError={setError}
-                  clearErrors={clearErrors}
                 />
               )}
 
