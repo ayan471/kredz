@@ -30,31 +30,6 @@ type FormValues = {
   membershipPlan: string;
 };
 
-// Define a mock function for updateLoanApplicationData
-// async function updateLoanApplicationData(id: string, data: any): Promise<any> {
-//   // Simulate an API call
-//   return new Promise((resolve) => {
-//     setTimeout(() => {
-//       resolve({ success: true, data: { id, ...data } })
-//     }, 500)
-//   })
-// }
-
-// Define a mock function for initiateSabpaisaPayment
-// async function initiateSabpaisaPayment(paymentDetails: any): Promise<any> {
-//   // Simulate an API call
-//   return new Promise((resolve) => {
-//     setTimeout(() => {
-//       resolve({ success: true, paymentDetails: { ...paymentDetails, transactionId: "12345" } })
-//     }, 500)
-//   })
-// }
-
-// Define a mock function for calculateAmounts
-// function calculateAmounts(discountedPrice: number): { totalAmount: string } {
-//   return { totalAmount: String(discountedPrice) }
-// }
-
 const calculateAmounts = (basePrice: number) => {
   const gstAmount = basePrice * 0.18;
   const totalAmount = basePrice + gstAmount;
@@ -80,6 +55,7 @@ const LaStepThree = () => {
   }>({ name: "", discountedPrice: 0, realPrice: 0, features: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [eligibleAmount, setEligibleAmount] = useState<number | null>(null);
+  const [requestedAmount, setRequestedAmount] = useState<number | null>(null);
   const { user } = useUser();
 
   // Sabpaisa payment state
@@ -110,6 +86,7 @@ const LaStepThree = () => {
           setValue("membershipPlan", membershipPlan);
 
           setEligibleAmount(result.data.eligibleAmount || null);
+          setRequestedAmount(Number.parseFloat(result.data.amtRequired || "0"));
 
           // Set plan details (replace with actual data)
           setPlanDetails({
@@ -228,17 +205,56 @@ const LaStepThree = () => {
         </CardHeader>
         <CardContent className="p-6">
           <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
-            {eligibleAmount !== null && (
-              <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-2">
-                    Your Eligible Loan Amount
-                  </h2>
-                  <p className="text-3xl font-bold">
-                    ₹{eligibleAmount.toLocaleString()}
-                  </p>
-                </CardContent>
-              </Card>
+            {eligibleAmount !== null && requestedAmount !== null && (
+              <div className="space-y-4">
+                {/* <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+                  <CardContent className="p-6">
+                    <h2 className="text-xl font-semibold mb-2">
+                      Your Eligible Loan Amount
+                    </h2>
+                    <p className="text-3xl font-bold">
+                      ₹{eligibleAmount.toLocaleString()}
+                    </p>
+                  </CardContent>
+                </Card> */}
+
+                <Card className="border-2 border-orange-200">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          Your Requested Amount
+                        </p>
+                        <p className="text-2xl font-bold text-orange-600">
+                          ₹{requestedAmount.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">Eligible Amount</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          ₹{eligibleAmount.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    {requestedAmount > eligibleAmount && (
+                      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Note:</strong> Your eligible amount is lower
+                          than your requested amount.
+                        </p>
+                      </div>
+                    )}
+                    {requestedAmount <= eligibleAmount && (
+                      <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <p className="text-sm text-green-800">
+                          <strong>Great!</strong> You are eligible for your full
+                          requested amount.
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             )}
 
             <Card className="border-orange-500 shadow-md">

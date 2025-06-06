@@ -189,6 +189,7 @@ const LaStepTwo = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [requestedAmount, setRequestedAmount] = useState<number | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -241,6 +242,9 @@ const LaStepTwo = () => {
             applicationData.age || 0
           );
           setEligibleAmount(calculatedEligibleAmount);
+          setRequestedAmount(
+            Number.parseFloat(applicationData.amtRequired || "0")
+          );
 
           // If we have saved data in localStorage, override with that data
           if (savedData) {
@@ -281,14 +285,14 @@ const LaStepTwo = () => {
   }, [watch, applicationId]);
 
   useEffect(() => {
-    if (eligibleAmount && selectedTenure) {
+    if (requestedAmount && selectedTenure) {
       const details = calculateEMI(
-        eligibleAmount,
+        requestedAmount,
         Number.parseInt(selectedTenure)
       );
       setEmiDetails(details);
     }
-  }, [eligibleAmount, selectedTenure]);
+  }, [requestedAmount, selectedTenure]);
 
   useEffect(() => {
     if (scrollContainerRef.current) {
@@ -319,19 +323,32 @@ const LaStepTwo = () => {
       return;
     }
 
-    // Keep eMandate as boolean - the database action should handle the conversion
+    console.log("Form data before submission:", data);
+    console.log("eMandate value type:", typeof data.eMandate);
+    console.log("eMandate value:", data.eMandate);
+
+    // Ensure eMandate is explicitly a boolean
     const submissionData = {
       ...data,
+      eMandate: Boolean(data.eMandate),
       step: 2,
     };
 
-    console.log("Submitting eMandate value:", data.eMandate); // Add logging for debugging
+    console.log("Submission data:", submissionData);
 
-    const result = await updateLoanApplicationData(id, submissionData);
+    const result = await updateLoanApplicationData(id, {
+      ...submissionData,
+      step: 2,
+    });
 
     if (result.success) {
       // Clear saved form data after successful submission
       clearFormDataFromLocalStorage(id);
+
+      // Set the form submitted status in localStorage with user ID
+      if (user?.id) {
+        setFormSubmittedStatus(id, user.id);
+      }
 
       toast({
         title: "Eligibility Submitted!",
@@ -454,18 +471,61 @@ const LaStepTwo = () => {
         return (
           <div className="space-y-6">
             <h3 className="text-2xl font-semibold">Loan Details</h3>
-            {eligibleAmount !== null && (
-              <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                <CardContent className="p-6">
-                  <h2 className="text-3xl font-bold mb-2">Congratulations!</h2>
-                  <p className="text-xl">
-                    You are eligible for pre approved loan amount:
-                  </p>
-                  <p className="text-4xl font-bold mt-2">
-                    ₹{eligibleAmount.toLocaleString()}
-                  </p>
-                </CardContent>
-              </Card>
+            {eligibleAmount !== null && requestedAmount !== null && (
+              <div className="space-y-4">
+                {/* <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                  <CardContent className="p-6">
+                    <h2 className="text-3xl font-bold mb-2">
+                      Congratulations!
+                    </h2>
+                    <p className="text-xl">
+                      You are eligible for pre approved loan amount:
+                    </p>
+                    <p className="text-4xl font-bold mt-2">
+                      ₹{eligibleAmount.toLocaleString()}
+                    </p>
+                  </CardContent>
+                </Card> */}
+
+                <Card className="border-2 border-orange-200">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          Your Requested Amount
+                        </p>
+                        <p className="text-2xl font-bold text-orange-600">
+                          ₹{requestedAmount.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">Eligible Amount</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          ₹{eligibleAmount.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    {requestedAmount > eligibleAmount && (
+                      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Note:</strong> Your eligible amount is lower
+                          than your requested amount. The EMI calculations below
+                          are based on your requested amount of ₹
+                          {requestedAmount.toLocaleString()}.
+                        </p>
+                      </div>
+                    )}
+                    {requestedAmount <= eligibleAmount && (
+                      <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <p className="text-sm text-green-800">
+                          <strong>Great!</strong> You are eligible for your full
+                          requested amount.
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             )}
             <div className="grid w-full items-center gap-4">
               <Label htmlFor="emiTenure">
@@ -482,8 +542,8 @@ const LaStepTwo = () => {
                     className="grid gap-4"
                   >
                     {[12, 24, 36, 48, 60, 72].map((months) => {
-                      const monthlyEMI = eligibleAmount
-                        ? calculateEMI(eligibleAmount, months).emi
+                      const monthlyEMI = requestedAmount
+                        ? calculateEMI(requestedAmount, months).emi
                         : 0;
                       return (
                         <div
@@ -659,10 +719,14 @@ const LaStepTwo = () => {
                     render={({ field }) => (
                       <Checkbox
                         id="eMandate"
-                        checked={field.value === true} // Ensure boolean comparison
+                        checked={field.value}
                         onCheckedChange={(checked) => {
-                          field.onChange(checked === true); // Ensure boolean value
-                          console.log("E-mandate value:", checked); // Add logging for debugging
+                          const booleanValue = Boolean(checked);
+                          field.onChange(booleanValue);
+                          console.log(
+                            "E-mandate value changed to:",
+                            booleanValue
+                          );
                         }}
                       />
                     )}
