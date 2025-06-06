@@ -154,7 +154,7 @@ interface StepProps {
   setValue: any;
   user?: any;
   age?: number | null;
-  isRejected: boolean;
+  isAgeInvalid: boolean;
   getValues?: () => FormValues;
   watch: any;
 }
@@ -166,7 +166,7 @@ const Step1Personal: React.FC<StepProps> = ({
   setValue,
   user,
   age,
-  isRejected,
+  isAgeInvalid,
   watch,
 }) => (
   <div className="space-y-6">
@@ -179,7 +179,6 @@ const Step1Personal: React.FC<StepProps> = ({
         type="text"
         {...register("fullName", { required: "Full name is required" })}
         className="w-full p-3"
-        disabled={isRejected}
       />
       {errors.fullName && (
         <p className="text-red-500 text-sm">{errors.fullName.message}</p>
@@ -200,7 +199,6 @@ const Step1Personal: React.FC<StepProps> = ({
           },
         })}
         className="w-full p-3"
-        disabled={isRejected}
       />
       {errors.email && (
         <p className="text-red-500 text-sm">{errors.email.message}</p>
@@ -217,7 +215,6 @@ const Step1Personal: React.FC<StepProps> = ({
           required: "Phone number is required",
         })}
         className="w-full p-3"
-        disabled={isRejected}
       />
       {errors.phoneNo && (
         <p className="text-red-500 text-sm">{errors.phoneNo.message}</p>
@@ -233,15 +230,28 @@ const Step1Personal: React.FC<StepProps> = ({
         {...register("dateOfBirth", {
           required: "Date of Birth is required",
         })}
-        className="w-full p-3"
-        disabled={isRejected}
+        className={`w-full p-3 ${isAgeInvalid ? "border-red-500" : ""}`}
       />
       {errors.dateOfBirth && (
         <p className="text-red-500 text-sm">{errors.dateOfBirth.message}</p>
       )}
     </div>
     {age !== null && (
-      <div className="text-sm text-muted-foreground">Age: {age} years</div>
+      <div
+        className={`text-sm ${isAgeInvalid ? "text-red-600" : "text-muted-foreground"}`}
+      >
+        Age: {age} years
+      </div>
+    )}
+    {isAgeInvalid && (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Age Requirement Not Met</AlertTitle>
+        <AlertDescription>
+          You must be at least 18 years old to apply for a loan. Please correct
+          your date of birth.
+        </AlertDescription>
+      </Alert>
     )}
   </div>
 );
@@ -250,7 +260,7 @@ const Step2EmploymentIncome: React.FC<StepProps> = ({
   control,
   register,
   errors,
-  isRejected,
+  isAgeInvalid,
   watch,
   setValue,
 }) => {
@@ -276,11 +286,7 @@ const Step2EmploymentIncome: React.FC<StepProps> = ({
           control={control}
           rules={{ required: "Employment type is required" }}
           render={({ field }) => (
-            <Select
-              onValueChange={field.onChange}
-              value={field.value}
-              disabled={isRejected}
-            >
+            <Select onValueChange={field.onChange} value={field.value}>
               <SelectTrigger className="w-full p-3">
                 <SelectValue placeholder="Select Employment Type" />
               </SelectTrigger>
@@ -309,11 +315,7 @@ const Step2EmploymentIncome: React.FC<StepProps> = ({
           control={control}
           rules={{ required: "Monthly income range is required" }}
           render={({ field }) => (
-            <Select
-              onValueChange={field.onChange}
-              value={field.value}
-              disabled={isRejected}
-            >
+            <Select onValueChange={field.onChange} value={field.value}>
               <SelectTrigger className="w-full p-3">
                 <SelectValue placeholder="Select Income Range" />
               </SelectTrigger>
@@ -348,7 +350,6 @@ const Step2EmploymentIncome: React.FC<StepProps> = ({
             },
           })}
           className="w-full p-3"
-          disabled={isRejected}
         />
         {errors.monIncome && (
           <p className="text-red-500 text-sm">{errors.monIncome.message}</p>
@@ -363,11 +364,7 @@ const Step2EmploymentIncome: React.FC<StepProps> = ({
           control={control}
           rules={{ required: "Credit Score is required" }}
           render={({ field }) => (
-            <Select
-              onValueChange={field.onChange}
-              value={field.value}
-              disabled={isRejected}
-            >
+            <Select onValueChange={field.onChange} value={field.value}>
               <SelectTrigger className="w-full p-3">
                 <SelectValue placeholder="Select Credit Score Range" />
               </SelectTrigger>
@@ -393,7 +390,7 @@ const Step3LoanDetails: React.FC<StepProps> = ({
   control,
   register,
   errors,
-  isRejected,
+  isAgeInvalid,
   watch,
 }) => {
   const eligibleLoanAmount = watch("eligibleLoanAmount");
@@ -427,7 +424,6 @@ const Step3LoanDetails: React.FC<StepProps> = ({
             },
           })}
           className="w-full p-3"
-          disabled={isRejected}
         />
         {errors.amtRequired && (
           <p className="text-red-500 text-sm">{errors.amtRequired.message}</p>
@@ -444,7 +440,6 @@ const Step3LoanDetails: React.FC<StepProps> = ({
             required: "Purpose of loan is required",
           })}
           className="w-full p-3"
-          disabled={isRejected}
         />
         {errors.prpseOfLoan && (
           <p className="text-red-500 text-sm">{errors.prpseOfLoan.message}</p>
@@ -458,7 +453,7 @@ const Step4Documents: React.FC<StepProps> = ({
   control,
   register,
   errors,
-  isRejected,
+  isAgeInvalid,
   setValue,
   watch,
 }) => {
@@ -493,7 +488,6 @@ const Step4Documents: React.FC<StepProps> = ({
             },
           })}
           className="w-full p-3"
-          disabled={isRejected}
         />
         {errors.aadharNo && (
           <p className="text-red-500 text-sm">{errors.aadharNo.message}</p>
@@ -511,7 +505,6 @@ const Step4Documents: React.FC<StepProps> = ({
           })}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
-          disabled={isRejected}
         />
         {errors.aadharImgFront && (
           <p className="text-red-500 text-sm">
@@ -535,7 +528,6 @@ const Step4Documents: React.FC<StepProps> = ({
           })}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
-          disabled={isRejected}
         />
         {errors.aadharImgBack && (
           <p className="text-red-500 text-sm">{errors.aadharImgBack.message}</p>
@@ -556,7 +548,6 @@ const Step4Documents: React.FC<StepProps> = ({
             },
           })}
           className="w-full p-3"
-          disabled={isRejected}
         />
         {errors.panNo && (
           <p className="text-red-500 text-sm">{errors.panNo.message}</p>
@@ -574,7 +565,6 @@ const Step4Documents: React.FC<StepProps> = ({
           })}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
-          disabled={isRejected}
         />
         {errors.panImgFront && (
           <p className="text-red-500 text-sm">{errors.panImgFront.message}</p>
@@ -591,7 +581,6 @@ const Step4Documents: React.FC<StepProps> = ({
           {...register("selfieImg", { required: "Selfie image is required" })}
           className="w-full p-3"
           accept=".jpg,.jpeg,.png"
-          disabled={isRejected}
         />
         {errors.selfieImg && (
           <p className="text-red-500 text-sm">{errors.selfieImg.message}</p>
@@ -674,7 +663,7 @@ const Step5Financial: React.FC<StepProps> = ({
   control,
   register,
   errors,
-  isRejected,
+  isAgeInvalid,
 }) => (
   <div className="space-y-6">
     <div className="grid w-full items-center gap-3">
@@ -686,11 +675,7 @@ const Step5Financial: React.FC<StepProps> = ({
         control={control}
         rules={{ required: "Current EMIs is required" }}
         render={({ field }) => (
-          <Select
-            onValueChange={field.onChange}
-            value={field.value}
-            disabled={isRejected}
-          >
+          <Select onValueChange={field.onChange} value={field.value}>
             <SelectTrigger className="w-full p-3">
               <SelectValue placeholder="Select number of EMIs" />
             </SelectTrigger>
@@ -717,11 +702,7 @@ const Step5Financial: React.FC<StepProps> = ({
         control={control}
         rules={{ required: "Total Active Loans is required" }}
         render={({ field }) => (
-          <Select
-            onValueChange={field.onChange}
-            value={field.value}
-            disabled={isRejected}
-          >
+          <Select onValueChange={field.onChange} value={field.value}>
             <SelectTrigger className="w-full p-3">
               <SelectValue placeholder="Select Total Active Loans" />
             </SelectTrigger>
@@ -842,7 +823,7 @@ const LaStepOne: React.FC = () => {
   const [existingApplicationData, setExistingApplicationData] =
     useState<LoanApplication | null>(null);
   const [age, setAge] = useState<number | null>(null);
-  const [isRejected, setIsRejected] = useState(false);
+  const [isAgeInvalid, setIsAgeInvalid] = useState(false);
   const [isRejectedForCreditScore, setIsRejectedForCreditScore] =
     useState(false);
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
@@ -906,9 +887,14 @@ const LaStepOne: React.FC = () => {
       const calculatedAge = calculateAge(dateOfBirth);
       setAge(calculatedAge);
       setValue("age", calculatedAge);
-      setIsRejected(calculatedAge < 18); // Directly set isRejected based on age
+
+      // Set age invalid flag instead of rejecting the entire form
+      setIsAgeInvalid(calculatedAge < 18);
+
       if (calculatedAge < 18) {
         setRejectionReason("Applicant must be at least 18 years old");
+      } else {
+        setRejectionReason(null);
       }
     }
   }, [dateOfBirth, setValue]);
@@ -937,6 +923,7 @@ const LaStepOne: React.FC = () => {
         const calculatedAge = calculateAge(savedData.dateOfBirth);
         setAge(calculatedAge);
         setValue("age", calculatedAge);
+        setIsAgeInvalid(calculatedAge < 18);
       }
 
       toast({
@@ -1008,19 +995,15 @@ const LaStepOne: React.FC = () => {
     const isValid = await trigger(fields as any);
 
     if (isValid) {
-      if (currentStep === 1) {
-        const dob = getValues("dateOfBirth");
-        const calculatedAge = calculateAge(dob);
-        if (calculatedAge < 18) {
-          setIsRejected(true);
-          toast({
-            title: "Application Rejected",
-            description:
-              "We're sorry, but you must be at least 18 years old to apply for a loan.",
-            variant: "destructive",
-          });
-          return;
-        }
+      // Check if age is invalid and prevent moving to next step
+      if (currentStep === 1 && isAgeInvalid) {
+        toast({
+          title: "Age Requirement Not Met",
+          description:
+            "Please correct your date of birth. You must be at least 18 years old to apply for a loan.",
+          variant: "destructive",
+        });
+        return;
       }
       setCurrentStep((prev) => prev + 1);
     }
@@ -1031,11 +1014,11 @@ const LaStepOne: React.FC = () => {
   };
 
   const onSubmit = async (data: FormValues) => {
-    if (isRejected) {
+    // Check if age is invalid before submitting
+    if (isAgeInvalid) {
       toast({
-        title: "Application Rejected",
-        description:
-          "We're sorry, but you must be at least 18 years old to apply for a loan.",
+        title: "Age Requirement Not Met",
+        description: "You must be at least 18 years old to apply for a loan.",
         variant: "destructive",
       });
       return;
@@ -1231,17 +1214,6 @@ const LaStepOne: React.FC = () => {
               </div>
             </div>
 
-            {isRejected && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Application Rejected</AlertTitle>
-                <AlertDescription>
-                  We're sorry, but you must be at least 18 years old to apply
-                  for a loan.
-                </AlertDescription>
-              </Alert>
-            )}
-
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {currentStep === 1 && (
                 <Step1Personal
@@ -1251,7 +1223,7 @@ const LaStepOne: React.FC = () => {
                   setValue={setValue}
                   user={user}
                   age={age}
-                  isRejected={isRejected}
+                  isAgeInvalid={isAgeInvalid}
                   watch={watch}
                 />
               )}
@@ -1262,7 +1234,7 @@ const LaStepOne: React.FC = () => {
                   register={register}
                   errors={errors}
                   setValue={setValue}
-                  isRejected={isRejected}
+                  isAgeInvalid={isAgeInvalid}
                   watch={watch}
                 />
               )}
@@ -1273,7 +1245,7 @@ const LaStepOne: React.FC = () => {
                   register={register}
                   errors={errors}
                   setValue={setValue}
-                  isRejected={isRejected}
+                  isAgeInvalid={isAgeInvalid}
                   watch={watch}
                 />
               )}
@@ -1283,7 +1255,7 @@ const LaStepOne: React.FC = () => {
                   control={control}
                   register={register}
                   errors={errors}
-                  isRejected={isRejected}
+                  isAgeInvalid={isAgeInvalid}
                   setValue={setValue}
                   watch={watch}
                 />
@@ -1295,7 +1267,7 @@ const LaStepOne: React.FC = () => {
                   register={register}
                   setValue={setValue}
                   errors={errors}
-                  isRejected={isRejected}
+                  isAgeInvalid={isAgeInvalid}
                   watch={watch}
                 />
               )}
@@ -1307,7 +1279,7 @@ const LaStepOne: React.FC = () => {
                   setValue={setValue}
                   register={register}
                   errors={errors}
-                  isRejected={isRejected}
+                  isAgeInvalid={isAgeInvalid}
                   watch={watch}
                 />
               )}
@@ -1327,15 +1299,16 @@ const LaStepOne: React.FC = () => {
                   <Button
                     type="button"
                     onClick={handleNext}
-                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                    disabled={currentStep === 1 && isAgeInvalid}
+                    className="bg-orange-500 hover:bg-orange-600 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
                     Next <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 ) : (
                   <Button
                     type="submit"
-                    disabled={isSubmitting || isRejected}
-                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                    disabled={isSubmitting || isAgeInvalid}
+                    className="bg-orange-500 hover:bg-orange-600 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? "Submitting..." : "Submit Application"}
                   </Button>
