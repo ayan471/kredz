@@ -80,6 +80,60 @@ const clearFormDataFromLocalStorage = (id: string) => {
   }
 };
 
+// New utility functions for tracking form submission status
+const setFormSubmittedStatus = (applicationId: string, userId: string) => {
+  if (!userId) {
+    console.error("Cannot save form submission status: No user ID provided");
+    return;
+  }
+
+  try {
+    localStorage.setItem(`loanApplicationStepTwoSubmitted_${userId}`, "true");
+    localStorage.setItem(`loanApplicationStepTwoId_${userId}`, applicationId);
+  } catch (error) {
+    console.error(
+      "Error saving form submission status to localStorage:",
+      error
+    );
+  }
+};
+
+const getFormSubmittedStatus = (userId?: string) => {
+  if (!userId) {
+    return { submitted: false, applicationId: "" };
+  }
+
+  try {
+    return {
+      submitted:
+        localStorage.getItem(`loanApplicationStepTwoSubmitted_${userId}`) ===
+        "true",
+      applicationId:
+        localStorage.getItem(`loanApplicationStepTwoId_${userId}`) || "",
+    };
+  } catch (error) {
+    console.error(
+      "Error retrieving form submission status from localStorage:",
+      error
+    );
+    return { submitted: false, applicationId: "" };
+  }
+};
+
+const clearFormSubmittedStatus = (userId?: string) => {
+  if (!userId) return;
+
+  try {
+    localStorage.removeItem(`loanApplicationStepTwoSubmitted_${userId}`);
+    localStorage.removeItem(`loanApplicationStepTwoId_${userId}`);
+  } catch (error) {
+    console.error(
+      "Error clearing form submission status from localStorage:",
+      error
+    );
+  }
+};
+
 const calculateEligibleAmount = (salary: number, age: number): number => {
   if (age < 23) {
     if (salary <= 10000) return 7000;
@@ -134,8 +188,30 @@ const LaStepTwo = () => {
   const selectedTenure = watch("emiTenure");
   const [currentStep, setCurrentStep] = useState(1);
   const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Add this useEffect at the beginning of the other useEffect hooks to check for previous submissions
+  useEffect(() => {
+    // Only proceed if we have a user
+    if (!user?.id) return;
+
+    const { submitted, applicationId } = getFormSubmittedStatus(user.id);
+
+    if (submitted && applicationId) {
+      setIsRedirecting(true);
+      toast({
+        title: "Previous Application Found",
+        description: "Redirecting you to the next step.",
+      });
+
+      // Short delay to allow toast to be seen
+      setTimeout(() => {
+        router.push(`/consultancy-application/membership?id=${applicationId}`);
+      }, 1500);
+    }
+  }, [router, toast, user]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -243,10 +319,15 @@ const LaStepTwo = () => {
       return;
     }
 
-    const result = await updateLoanApplicationData(id, {
+    // Keep eMandate as boolean - the database action should handle the conversion
+    const submissionData = {
       ...data,
       step: 2,
-    });
+    };
+
+    console.log("Submitting eMandate value:", data.eMandate); // Add logging for debugging
+
+    const result = await updateLoanApplicationData(id, submissionData);
 
     if (result.success) {
       // Clear saved form data after successful submission
@@ -578,8 +659,11 @@ const LaStepTwo = () => {
                     render={({ field }) => (
                       <Checkbox
                         id="eMandate"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
+                        checked={field.value === true} // Ensure boolean comparison
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked === true); // Ensure boolean value
+                          console.log("E-mandate value:", checked); // Add logging for debugging
+                        }}
                       />
                     )}
                   />
@@ -607,6 +691,18 @@ const LaStepTwo = () => {
         );
     }
   };
+
+  if (isRedirecting) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-6">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
+        <h2 className="text-xl font-semibold text-center">
+          Redirecting to the next step...
+        </h2>
+        <p className="text-gray-500 mt-2 text-center">Please wait a moment</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-4xl p-6 space-y-8">
