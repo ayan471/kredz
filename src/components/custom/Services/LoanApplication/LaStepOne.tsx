@@ -323,26 +323,6 @@ const Step2EmploymentIncome: React.FC<StepProps> = ({
       </div>
 
       <div className="grid w-full items-center gap-3">
-        <Label htmlFor="monIncome" className="text-base font-semibold">
-          Monthly Income
-        </Label>
-        <Input
-          id="monIncome"
-          type="number"
-          {...register("monIncome", {
-            required: "Monthly income is required",
-            min: {
-              value: 1000,
-              message: "Monthly income must be at least 1000",
-            },
-          })}
-          className="w-full p-3"
-        />
-        {errors.monIncome && (
-          <p className="text-red-500 text-sm">{errors.monIncome.message}</p>
-        )}
-      </div>
-      <div className="grid w-full items-center gap-3">
         <Label htmlFor="monIncomeRange" className="text-base font-semibold">
           Monthly Income Range
         </Label>
@@ -369,6 +349,26 @@ const Step2EmploymentIncome: React.FC<StepProps> = ({
           <p className="text-red-500 text-sm">
             {errors.monIncomeRange.message}
           </p>
+        )}
+      </div>
+      <div className="grid w-full items-center gap-3">
+        <Label htmlFor="monIncome" className="text-base font-semibold">
+          Monthly Income
+        </Label>
+        <Input
+          id="monIncome"
+          type="number"
+          {...register("monIncome", {
+            required: "Monthly income is required",
+            min: {
+              value: 1000,
+              message: "Monthly income must be at least 1000",
+            },
+          })}
+          className="w-full p-3"
+        />
+        {errors.monIncome && (
+          <p className="text-red-500 text-sm">{errors.monIncome.message}</p>
         )}
       </div>
       <div className="grid w-full items-center gap-3">
