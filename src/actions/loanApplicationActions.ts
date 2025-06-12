@@ -9,6 +9,7 @@ import {
   LoanApplication,
   LoanApplicationData,
 } from "@/types";
+import { getEligibleLoanAmount } from "@/components/lib/loanCalculations";
 
 const prisma = new PrismaClient();
 
@@ -318,6 +319,32 @@ export async function updateLoanApplicationData(
   id: string,
   data: Partial<LoanApplicationData>
 ) {
+  // Calculate eligible amount based on monthly income
+
+  // Get the current application data to access monIncome and age for eligible amount calculation
+  const currentData = await prisma.loanApplicationData.findUnique({
+    where: { id },
+  });
+
+  if (!currentData) {
+    return { success: false, error: "Application data not found" };
+  }
+
+  // Calculate eligible amount based on age and monthly income using the same logic as la-step-one
+  let eligibleAmount: number | null = null;
+  const monthlyIncome = currentData.monIncome
+    ? Number.parseFloat(currentData.monIncome)
+    : 0;
+  const age = currentData.age || 0;
+
+  if (monthlyIncome > 0 && age > 0) {
+    eligibleAmount = await getEligibleLoanAmount(age, monthlyIncome);
+    console.log(
+      "Calculated eligible amount using proper logic:",
+      eligibleAmount
+    );
+  }
+
   try {
     const updatedData = await prisma.loanApplicationData.update({
       where: { id },
@@ -325,6 +352,8 @@ export async function updateLoanApplicationData(
         accountNumber: data.accountNumber,
         bankName: data.bankName,
         ifscCode: data.ifscCode,
+        emiTenure: data.emiTenure,
+        eligibleAmount: eligibleAmount,
       },
     });
     revalidatePath(`/admin/loans/${id}`);

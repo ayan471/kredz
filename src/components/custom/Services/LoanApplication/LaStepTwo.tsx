@@ -27,6 +27,7 @@ import {
 import { calculateEMI } from "@/components/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { Progress } from "@/components/ui/progress";
+import { getEligibleLoanAmount } from "@/components/lib/loanCalculations";
 
 type FormValues = {
   fullName: string;
@@ -134,28 +135,6 @@ const clearFormSubmittedStatus = (userId?: string) => {
   }
 };
 
-const calculateEligibleAmount = (salary: number, age: number): number => {
-  if (age < 23) {
-    if (salary <= 10000) return 7000;
-    if (salary <= 20000) return 12000;
-    if (salary <= 30000) return 23000;
-    return 34000;
-  } else {
-    if (salary <= 10000) return 37000;
-    if (salary <= 23000) return 53000;
-    if (salary <= 30000) return 67000;
-    if (salary <= 37000) return 83000;
-    if (salary <= 45000) return 108000;
-    if (salary <= 55000) return 131000;
-    if (salary <= 65000) return 178000;
-    if (salary <= 75000) return 216000;
-    if (salary <= 85000) return 256000;
-    if (salary <= 95000) return 308000;
-    if (salary <= 125000) return 376000;
-    return 487000;
-  }
-};
-
 const steps = [
   "Loan Application",
   "Eligibility",
@@ -236,12 +215,24 @@ const LaStepTwo = () => {
             }
           });
 
-          // Calculate eligible amount
-          const calculatedEligibleAmount = calculateEligibleAmount(
-            Number.parseFloat(applicationData.monIncome || "0"),
-            applicationData.age || 0
+          // Calculate eligible amount using the same logic as la-step-one
+          const monthlyIncome = Number.parseFloat(
+            applicationData.monIncome || "0"
           );
-          setEligibleAmount(calculatedEligibleAmount);
+          const age = applicationData.age || 0;
+
+          if (monthlyIncome > 0 && age > 0) {
+            const calculatedEligibleAmount = await getEligibleLoanAmount(
+              age,
+              monthlyIncome
+            );
+            setEligibleAmount(calculatedEligibleAmount);
+            console.log(
+              "Calculated eligible amount in la-step-two:",
+              calculatedEligibleAmount
+            );
+          }
+
           setRequestedAmount(
             Number.parseFloat(applicationData.amtRequired || "0")
           );
@@ -323,43 +314,90 @@ const LaStepTwo = () => {
       return;
     }
 
-    console.log("Form data before submission:", data);
-    console.log("eMandate value type:", typeof data.eMandate);
-    console.log("eMandate value:", data.eMandate);
+    // Enhanced debugging
+    console.log("=== FORM SUBMISSION DEBUG ===");
+    console.log("Raw form data:", data);
+    console.log("EMI Tenure raw value:", data.emiTenure);
+    console.log("EMI Tenure type:", typeof data.emiTenure);
+    console.log("EMI Tenure length:", data.emiTenure?.length);
+    console.log("EMI Tenure truthy check:", !!data.emiTenure);
 
-    // Ensure eMandate is explicitly a boolean
+    // Get current form values directly
+    const currentFormValues = form.getValues();
+    console.log("Current form values:", currentFormValues);
+    console.log("Current EMI Tenure from form:", currentFormValues.emiTenure);
+
+    // Validate EMI tenure before submission
+    if (!data.emiTenure || data.emiTenure.trim() === "") {
+      console.error("EMI Tenure is missing or empty!");
+      toast({
+        title: "Validation Error",
+        description: "EMI Tenure is required. Please select a tenure.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Prepare submission data with explicit field mapping
     const submissionData = {
-      ...data,
+      fullName: data.fullName || "",
+      phoneNo: data.phoneNo || "",
+      emailID: data.emailID || "",
+      panNo: data.panNo || "",
+      aadharNo: data.aadharNo || "",
+      emiTenure: String(data.emiTenure).trim(), // Explicit conversion and trim
+      accountNumber: data.accountNumber || "",
+      bankName: data.bankName || "",
+      ifscCode: data.ifscCode || "",
       eMandate: Boolean(data.eMandate),
       step: 2,
     };
 
-    console.log("Submission data:", submissionData);
+    console.log("=== SUBMISSION DATA ===");
+    console.log("Prepared submission data:", submissionData);
+    console.log("EMI Tenure in submission:", submissionData.emiTenure);
+    console.log("EMI Tenure submission type:", typeof submissionData.emiTenure);
+    console.log("========================");
 
-    const result = await updateLoanApplicationData(id, {
-      ...submissionData,
-      step: 2,
-    });
+    try {
+      const result = await updateLoanApplicationData(id, submissionData);
 
-    if (result.success) {
-      // Clear saved form data after successful submission
-      clearFormDataFromLocalStorage(id);
-
-      // Set the form submitted status in localStorage with user ID
-      if (user?.id) {
-        setFormSubmittedStatus(id, user.id);
+      console.log("=== SERVER RESPONSE ===");
+      console.log("Update result:", result);
+      console.log("Success:", result.success);
+      if (result.error) {
+        console.error("Server error:", result.error);
       }
+      console.log("=======================");
 
-      toast({
-        title: "Eligibility Submitted!",
-        description: "Your loan eligibility has been determined.",
-      });
-      router.push(`/consultancy-application/membership?id=${id}`);
-    } else {
+      if (result.success) {
+        // Clear saved form data after successful submission
+        clearFormDataFromLocalStorage(id);
+
+        // Set the form submitted status in localStorage with user ID
+        if (user?.id) {
+          setFormSubmittedStatus(id, user.id);
+        }
+
+        toast({
+          title: "Eligibility Submitted!",
+          description: "Your loan eligibility has been determined.",
+        });
+        router.push(`/consultancy-application/membership?id=${id}`);
+      } else {
+        console.error("Submission failed:", result.error);
+        toast({
+          title: "Error",
+          description:
+            result.error || "Failed to submit eligibility. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
       toast({
         title: "Error",
-        description:
-          result.error || "Failed to submit eligibility. Please try again.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     }
@@ -372,13 +410,33 @@ const LaStepTwo = () => {
       3: ["accountNumber", "bankName", "ifscCode", "eMandate"],
     }[currentStep];
 
+    // Special validation for EMI tenure
+    if (currentStep === 2) {
+      const emiTenureValue = watch("emiTenure");
+      console.log("EMI Tenure validation - current value:", emiTenureValue);
+
+      if (!emiTenureValue) {
+        toast({
+          title: "Validation Error",
+          description: "Please select an EMI tenure before proceeding.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const isValid = await form.trigger(fields as any);
+    console.log("Form validation result:", isValid);
+    console.log("Current form values:", form.getValues());
+
     if (isValid) {
       if (currentStep < 3) {
         setCurrentStep((prev) => prev + 1);
       } else {
         await handleSubmit(onSubmit)();
       }
+    } else {
+      console.log("Form errors:", form.formState.errors);
     }
   };
 
@@ -473,7 +531,7 @@ const LaStepTwo = () => {
             <h3 className="text-2xl font-semibold">Loan Details</h3>
             {eligibleAmount !== null && requestedAmount !== null && (
               <div className="space-y-4">
-                {/* <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
                   <CardContent className="p-6">
                     <h2 className="text-3xl font-bold mb-2">
                       Congratulations!
@@ -482,12 +540,12 @@ const LaStepTwo = () => {
                       You are eligible for pre approved loan amount:
                     </p>
                     <p className="text-4xl font-bold mt-2">
-                      ₹{eligibleAmount.toLocaleString()}
+                      ₹{requestedAmount.toLocaleString()}
                     </p>
                   </CardContent>
-                </Card> */}
+                </Card>
 
-                <Card className="border-2 border-orange-200">
+                {/* <Card className="border-2 border-orange-200">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center">
                       <div>
@@ -524,7 +582,7 @@ const LaStepTwo = () => {
                       </div>
                     )}
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
             )}
             <div className="grid w-full items-center gap-4">
@@ -535,47 +593,60 @@ const LaStepTwo = () => {
                 name="emiTenure"
                 control={control}
                 rules={{ required: "Please select an EMI tenure" }}
-                render={({ field }) => (
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    className="grid gap-4"
-                  >
-                    {[12, 24, 36, 48, 60, 72].map((months) => {
-                      const monthlyEMI = requestedAmount
-                        ? calculateEMI(requestedAmount, months).emi
-                        : 0;
-                      return (
-                        <div
-                          key={months}
-                          className={`flex items-center justify-between p-4 rounded-lg border ${
-                            field.value === months.toString()
-                              ? "border-blue-500 bg-blue-50"
-                              : "border-gray-200 hover:bg-gray-50"
-                          } transition-colors`}
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem
-                              value={months.toString()}
-                              id={`r${months}`}
-                            />
-                            <Label htmlFor={`r${months}`}>
-                              {months} months
-                            </Label>
+                render={({ field }) => {
+                  console.log("RadioGroup field value:", field.value);
+                  return (
+                    <RadioGroup
+                      onValueChange={(value) => {
+                        console.log("RadioGroup value changing to:", value);
+                        console.log("Value type:", typeof value);
+                        field.onChange(value);
+
+                        // Force update the form state
+                        setValue("emiTenure", value, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+                      }}
+                      value={field.value}
+                      className="grid gap-4"
+                    >
+                      {[12, 24, 36, 48, 60, 72].map((months) => {
+                        const monthlyEMI = requestedAmount
+                          ? calculateEMI(requestedAmount, months).emi
+                          : 0;
+                        return (
+                          <div
+                            key={months}
+                            className={`flex items-center justify-between p-4 rounded-lg border ${
+                              field.value === months.toString()
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 hover:bg-gray-50"
+                            } transition-colors`}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem
+                                value={months.toString()}
+                                id={`r${months}`}
+                              />
+                              <Label htmlFor={`r${months}`}>
+                                {months} months
+                              </Label>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-semibold">
+                                ₹{monthlyEMI.toLocaleString()}
+                              </span>
+                              <span className="text-sm text-gray-600">
+                                /month
+                              </span>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <span className="font-semibold">
-                              ₹{monthlyEMI.toLocaleString()}
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              /month
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </RadioGroup>
-                )}
+                        );
+                      })}
+                    </RadioGroup>
+                  );
+                }}
               />
               {errors.emiTenure && (
                 <p className="text-sm text-red-500 mt-1">

@@ -176,6 +176,7 @@ model LoanApplicationData {
   aadharNo         String?
   panNo            String?
   creditScore      String?
+  eligibleAmount   Float?
   empType          String?
   totalActiveLoans String?
   EmpOthers        String?

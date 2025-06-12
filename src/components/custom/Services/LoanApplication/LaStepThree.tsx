@@ -207,17 +207,17 @@ const LaStepThree = () => {
           <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
             {eligibleAmount !== null && requestedAmount !== null && (
               <div className="space-y-4">
-                {/* <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+                <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold mb-2">
                       Your Eligible Loan Amount
                     </h2>
                     <p className="text-3xl font-bold">
-                      ₹{eligibleAmount.toLocaleString()}
+                      ₹{requestedAmount.toLocaleString()}
                     </p>
                   </CardContent>
-                </Card> */}
-
+                </Card>
+                {/* 
                 <Card className="border-2 border-orange-200">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center">
@@ -253,7 +253,7 @@ const LaStepThree = () => {
                       </div>
                     )}
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
             )}
 

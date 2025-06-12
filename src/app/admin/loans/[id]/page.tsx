@@ -1,3 +1,5 @@
+import type React from "react";
+import { DollarSign } from "lucide-react";
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -9,19 +11,65 @@ import { Separator } from "@/components/ui/separator";
 import {
   User,
   Phone,
-  DollarSign,
   FileText,
   CreditCard,
   Briefcase,
   Calendar,
-  Download,
-  Camera,
   BanknoteIcon as Bank,
   Cake,
   Mail,
+  Clock,
 } from "lucide-react";
 import { EditableInfoItem } from "./EditableInfoItem";
 import { PDFDownloadButton } from "./PDFDownloadButton";
+
+interface ApplicationData {
+  eligibleAmount?: number;
+  emiTenure?: number;
+  accountNumber?: string;
+  bankName?: string;
+  ifscCode?: string;
+  eMandate?: boolean;
+  id?: string;
+}
+
+interface Application {
+  eligibleAmount: number;
+  fullName: string;
+  email: string;
+  phoneNo: string;
+  age: number;
+  dateOfBirth: Date;
+  amtRequired: string;
+  prpseOfLoan: string;
+  aadharNo: string;
+  panNo: string;
+  empType: string;
+  monIncome: string;
+  currEmis: string;
+  totalActiveLoans: number;
+  creditScore: number;
+  createdAt: Date;
+  aadharImgFrontUrl: string;
+  aadharImgBackUrl: string;
+  panImgFrontUrl: string;
+  selfieImgUrl: string;
+  bankStatmntImgUrl: string;
+  status: string;
+  id: string;
+  userId: string;
+  accountNumber: string;
+  bankName: string;
+  ifscCode: string;
+  eMandate: boolean;
+  eligibility: any;
+}
+
+interface InfoItemProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number | undefined;
+}
 
 const prisma = new PrismaClient();
 
@@ -46,6 +94,36 @@ export default async function LoanApplicationDetailPage({
     where: { userId: application.userId },
     orderBy: { createdAt: "desc" },
   });
+
+  // Debug logging (this will show in your server console)
+  console.log("Application ID:", application.id);
+  console.log("User ID:", application.userId);
+  console.log("Application Data:", applicationData);
+  console.log("EMI Tenure from applicationData:", applicationData?.emiTenure);
+  console.log(
+    "EMI Tenure from eligibility:",
+    application.eligibility?.emiTenure
+  );
+  console.log("Eligible Amount from application:", application.eligibleAmount);
+  console.log(
+    "Eligible Amount from applicationData:",
+    applicationData?.eligibleAmount
+  );
+
+  // Get EMI tenure from multiple sources
+  const emiTenure =
+    applicationData?.emiTenure || application.eligibility?.emiTenure || null;
+
+  // Get eligible amount from stored data (same as la-step-three.tsx)
+  const eligibleAmount = applicationData?.eligibleAmount || null;
+  const requestedAmount = applicationData?.amtRequired
+    ? Number.parseFloat(applicationData.amtRequired)
+    : null;
+
+  console.log("Eligible Amount from stored data:", eligibleAmount);
+  console.log("Requested Amount from stored data:", requestedAmount);
+
+  console.log("Final EMI Tenure:", emiTenure);
 
   const InfoItem = ({
     icon,
@@ -92,7 +170,7 @@ export default async function LoanApplicationDetailPage({
         ) : (
           <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
             <Image
-              src={src}
+              src={src || "/placeholder.svg"}
               alt={alt}
               fill
               style={{ objectFit: "cover" }}
@@ -117,6 +195,12 @@ export default async function LoanApplicationDetailPage({
         </div>
       </div>
     );
+  };
+
+  // Format currency function
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount === null || amount === undefined) return "N/A";
+    return `₹${amount.toLocaleString("en-IN")}`;
   };
 
   return (
@@ -146,6 +230,55 @@ export default async function LoanApplicationDetailPage({
           <DownloadCSV data={application} />
         </div>
       </div>
+
+      {/* Eligible Amount Card - Highlighted */}
+      <Card className="mb-6 border-green-200 bg-green-50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-xl text-green-800">
+            Loan Eligibility Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="p-4 bg-white rounded-lg border border-green-200">
+              <p className="text-sm text-gray-500">Requested Amount</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {formatCurrency(Number.parseFloat(application.amtRequired))}
+              </p>
+            </div>
+            <div className="p-4 bg-white rounded-lg border border-green-200">
+              <p className="text-sm text-gray-500">Eligible Amount</p>
+              <p className="text-2xl font-bold text-green-600">
+                {formatCurrency(eligibleAmount)}
+              </p>
+            </div>
+            <div className="p-4 bg-white rounded-lg border border-green-200">
+              <p className="text-sm text-gray-500">EMI Tenure</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {emiTenure ? `${emiTenure} months` : "N/A"}
+              </p>
+            </div>
+          </div>
+          {requestedAmount && eligibleAmount && (
+            <div className="mt-4 p-3 rounded-lg border">
+              {requestedAmount > eligibleAmount ? (
+                <div className="bg-yellow-50 border-yellow-200">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Note:</strong> Eligible amount is lower than
+                    requested amount.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-green-50 border-green-200">
+                  <p className="text-sm text-green-800">
+                    <strong>Great!</strong> Eligible for full requested amount.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -185,13 +318,14 @@ export default async function LoanApplicationDetailPage({
             <InfoItem
               icon={<DollarSign className="h-5 w-5 text-gray-400" />}
               label="Amount Required"
-              value={application.amtRequired}
+              value={formatCurrency(Number.parseFloat(application.amtRequired))}
             />
             <InfoItem
               icon={<FileText className="h-5 w-5 text-gray-400" />}
               label="Purpose of Loan"
               value={application.prpseOfLoan}
             />
+
             <Separator />
             <InfoItem
               icon={<CreditCard className="h-5 w-5 text-gray-400" />}
@@ -211,12 +345,21 @@ export default async function LoanApplicationDetailPage({
             <InfoItem
               icon={<DollarSign className="h-5 w-5 text-gray-400" />}
               label="Monthly Income"
-              value={application.monIncome}
+              value={formatCurrency(Number.parseFloat(application.monIncome))}
+            />
+            <InfoItem
+              icon={<DollarSign className="h-5 w-5 text-gray-400" />}
+              label="Eligible Amount"
+              value={formatCurrency(eligibleAmount)}
             />
             <InfoItem
               icon={<DollarSign className="h-5 w-5 text-gray-400" />}
               label="Current EMIs"
-              value={application.currEmis}
+              value={
+                application.currEmis
+                  ? formatCurrency(Number.parseFloat(application.currEmis))
+                  : "N/A"
+              }
             />
             <InfoItem
               icon={<DollarSign className="h-5 w-5 text-gray-400" />}
@@ -228,6 +371,14 @@ export default async function LoanApplicationDetailPage({
               label="Credit Score"
               value={application.creditScore}
             />
+
+            {/* Add EMI Tenure here in the main section */}
+            <InfoItem
+              icon={<Clock className="h-5 w-5 text-gray-400" />}
+              label="EMI Tenure"
+              value={emiTenure ? `${emiTenure} months` : "N/A"}
+            />
+
             <EditableInfoItem
               icon={<Bank className="h-5 w-5 text-gray-400" />}
               label="Account Number"
@@ -289,12 +440,12 @@ export default async function LoanApplicationDetailPage({
               <h3 className="font-semibold mb-2">Aadhar Card</h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <ImageWithDownload
-                  src={application.aadharImgFrontUrl}
+                  src={application.aadharImgFrontUrl || "/placeholder.svg"}
                   alt="Aadhar Front"
                   filename="aadhar_front.jpg"
                 />
                 <ImageWithDownload
-                  src={application.aadharImgBackUrl}
+                  src={application.aadharImgBackUrl || "/placeholder.svg"}
                   alt="Aadhar Back"
                   filename="aadhar_back.jpg"
                 />
@@ -305,7 +456,7 @@ export default async function LoanApplicationDetailPage({
               <h3 className="font-semibold mb-2">PAN Card</h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <ImageWithDownload
-                  src={application.panImgFrontUrl}
+                  src={application.panImgFrontUrl || "/placeholder.svg"}
                   alt="PAN Front"
                   filename="pan_front.jpg"
                 />
@@ -316,7 +467,7 @@ export default async function LoanApplicationDetailPage({
               <div>
                 <h3 className="font-semibold mb-2">Selfie</h3>
                 <ImageWithDownload
-                  src={application.selfieImgUrl}
+                  src={application.selfieImgUrl || "/placeholder.svg"}
                   alt="Selfie"
                   filename="selfie.jpg"
                 />
@@ -325,7 +476,7 @@ export default async function LoanApplicationDetailPage({
                 <h3 className="font-semibold mb-2">Bank Statement</h3>
                 {application.bankStatmntImgUrl ? (
                   <ImageWithDownload
-                    src={application.bankStatmntImgUrl}
+                    src={application.bankStatmntImgUrl || "/placeholder.svg"}
                     alt="Bank Statement"
                     filename="bank_statement.pdf"
                   />
@@ -354,12 +505,12 @@ export default async function LoanApplicationDetailPage({
             <InfoItem
               icon={<Calendar className="h-5 w-5 text-gray-400" />}
               label="EMI Tenure"
-              value={application.eligibility.emiTenure}
+              value={emiTenure ? `${emiTenure} months` : "N/A"}
             />
             <InfoItem
               icon={<DollarSign className="h-5 w-5 text-gray-400" />}
               label="Loan Eligibility"
-              value={`₹${application.eligibility.loanEligibility?.toLocaleString() || "N/A"}`}
+              value={formatCurrency(application.eligibility.loanEligibility)}
             />
           </CardContent>
         </Card>
