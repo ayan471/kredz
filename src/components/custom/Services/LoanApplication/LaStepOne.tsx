@@ -1191,28 +1191,29 @@ const LaStepOne: React.FC = () => {
   // Render different UIs based on flags instead of early returns
   const renderContent = () => {
     if (showExistingApplicationUI && existingApplicationData) {
-      return (
-        <div className="mx-auto w-full max-w-[520px]">
-          <h2 className="text-2xl font-bold mb-4">Existing Loan Application</h2>
-          <p className="mb-4">
-            You already have a loan application in progress. You cannot submit a
-            new application at this time.
-          </p>
-          <div className="bg-gray-100 p-4 rounded-md">
-            <h3 className="font-semibold mb-2">Application Details:</h3>
-            <p>Status: {existingApplicationData.status || "In Progress"}</p>
-            <p>Amount Required: ₹{existingApplicationData.amtRequired}</p>
-            <p>Purpose: {existingApplicationData.prpseOfLoan}</p>
-            <p>
-              Submitted on:{" "}
-              {new Date(existingApplicationData.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-          <Button className="mt-4" onClick={() => router.push("/dashboard")}>
-            Go to Dashboard
-          </Button>
-        </div>
-      );
+      // return (
+      //   <div className="mx-auto w-full max-w-[520px]">
+      //     <h2 className="text-2xl font-bold mb-4">Existing Loan Application</h2>
+      //     <p className="mb-4">
+      //       You already have a loan application in progress. You cannot submit a
+      //       new application at this time.
+      //     </p>
+      //     <div className="bg-gray-100 p-4 rounded-md">
+      //       <h3 className="font-semibold mb-2">Application Details:</h3>
+      //       <p>Status: {existingApplicationData.status || "In Progress"}</p>
+      //       <p>Amount Required: ₹{existingApplicationData.amtRequired}</p>
+      //       <p>Purpose: {existingApplicationData.prpseOfLoan}</p>
+      //       <p>
+      //         Submitted on:{" "}
+      //         {new Date(existingApplicationData.createdAt).toLocaleDateString()}
+      //       </p>
+      //     </div>
+      //     <Button className="mt-4" onClick={() => router.push("/dashboard")}>
+      //       Go to Dashboard
+      //     </Button>
+      //   </div>
+      // );
+      router.push("/membership-cards");
     }
 
     if (showRejectionUI) {

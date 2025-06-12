@@ -372,6 +372,16 @@ export default async function LoanApplicationDetailPage({
               value={application.creditScore}
             />
 
+            <InfoItem
+              icon={<Bank className="h-5 w-5 text-gray-400" />}
+              label="Financial Obligation Checkbox"
+              value={
+                applicationData?.eMandate !== undefined
+                  ? applicationData.eMandate
+                  : application.eMandate
+              }
+            />
+
             {/* Add EMI Tenure here in the main section */}
             <InfoItem
               icon={<Clock className="h-5 w-5 text-gray-400" />}
