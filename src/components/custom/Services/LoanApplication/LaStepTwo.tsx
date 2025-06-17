@@ -537,7 +537,7 @@ const LaStepTwo = () => {
                       Congratulations!
                     </h2>
                     <p className="text-xl">
-                      You are eligible for pre approved loan amount:
+                      You are eligible for your requested loan amount:
                     </p>
                     <p className="text-4xl font-bold mt-2">
                       ₹{requestedAmount.toLocaleString()}
@@ -722,7 +722,7 @@ const LaStepTwo = () => {
                   Account Number <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  type="text"
+                  type="number"
                   id="accountNumber"
                   {...register("accountNumber", {
                     required: "Account number is required",

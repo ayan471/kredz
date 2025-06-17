@@ -210,7 +210,7 @@ const LaStepThree = () => {
                 <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold mb-2">
-                      Your Eligible Loan Amount
+                      You are eligible for your requested loan amount:
                     </h2>
                     <p className="text-3xl font-bold">
                       ₹{requestedAmount.toLocaleString()}

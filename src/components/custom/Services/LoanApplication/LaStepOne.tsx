@@ -516,7 +516,7 @@ const Step4Documents: React.FC<StepProps> = ({
         </Label>
         <Input
           id="aadharNo"
-          type="text"
+          type="number"
           {...register("aadharNo", {
             required: "Aadhar number is required",
             pattern: {
