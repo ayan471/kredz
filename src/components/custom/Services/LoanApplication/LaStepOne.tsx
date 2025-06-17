@@ -12,6 +12,7 @@ import {
   submitLoanApplicationStep1,
   checkExistingLoanApplication,
   saveRejectedApplication,
+  determineMembershipPlan,
 } from "@/actions/loanApplicationActions";
 import {
   Select,
@@ -31,6 +32,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { RejectionMessage } from "./rejection-message";
 import { getEligibleLoanAmount } from "@/components/lib/loanCalculations";
+import SabpaisaPaymentGateway from "@/components/sabpaisa-payment-gateway";
+import { initiateSabpaisaPayment } from "@/components/lib/sabPaisa";
 
 const totalActiveLoansRanges = [
   { label: "0-3", value: "0-3" },
@@ -85,6 +88,16 @@ type FormValues = {
   termsConfirmation: boolean;
   eligibleLoanAmount: number;
   age: number;
+};
+
+// Membership form values
+type MembershipFormValues = {
+  fullName: string;
+  phoneNo: string;
+  emailID: string;
+  panNo: string;
+  aadharNo: string;
+  membershipPlan: string;
 };
 
 const steps = [
@@ -162,6 +175,16 @@ const validateFileSize = (
   return true;
 };
 
+const calculateAmounts = (basePrice: number) => {
+  const gstAmount = basePrice * 0.18;
+  const totalAmount = basePrice + gstAmount;
+  return {
+    basePrice: basePrice.toFixed(2),
+    gstAmount: gstAmount.toFixed(2),
+    totalAmount: totalAmount.toFixed(2),
+  };
+};
+
 interface StepProps {
   control: any;
   register: any;
@@ -173,6 +196,332 @@ interface StepProps {
   getValues?: () => FormValues;
   watch: any;
 }
+
+// Membership Card Component
+const MembershipCard: React.FC<{
+  applicationData: LoanApplication;
+  onClose: () => void;
+}> = ({ applicationData, onClose }) => {
+  const [membershipPlan, setMembershipPlan] = useState<string>("");
+  const [planDetails, setPlanDetails] = useState<{
+    name: string;
+    discountedPrice: number;
+    realPrice: number;
+    features: string[];
+  }>({ name: "", discountedPrice: 0, realPrice: 0, features: [] });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+
+  const { toast } = useToast();
+  const { user } = useUser();
+
+  const membershipForm = useForm<MembershipFormValues>({
+    defaultValues: {
+      fullName: applicationData.fullName || "",
+      phoneNo: applicationData.phoneNo || "",
+      emailID: user?.emailAddresses[0]?.emailAddress || "",
+      panNo: applicationData.panNo || "",
+      aadharNo: applicationData.aadharNo || "",
+      membershipPlan: "",
+    },
+  });
+
+  useEffect(() => {
+    const fetchMembershipPlan = async () => {
+      if (applicationData.monIncome) {
+        const plan = await determineMembershipPlan(
+          Number(applicationData.monIncome)
+        );
+        setMembershipPlan(plan);
+        membershipForm.setValue("membershipPlan", plan);
+
+        // Set plan details
+        setPlanDetails({
+          name: plan,
+          discountedPrice:
+            plan === "Bronze"
+              ? 179
+              : plan === "Silver"
+                ? 289
+                : plan === "Gold"
+                  ? 389
+                  : plan === "Platinum"
+                    ? 479
+                    : 0,
+          realPrice:
+            plan === "Bronze"
+              ? 300
+              : plan === "Silver"
+                ? 600
+                : plan === "Gold"
+                  ? 900
+                  : plan === "Platinum"
+                    ? 1200
+                    : 0,
+          features: [
+            "Instant processing",
+            "Exclusive interest rates",
+            "24/7 customer support",
+            "Priority loan approval",
+          ],
+        });
+      }
+    };
+
+    fetchMembershipPlan();
+  }, [applicationData, membershipForm]);
+
+  const onMembershipSubmit = async (data: MembershipFormValues) => {
+    setIsSubmitting(true);
+
+    try {
+      console.log("Submitting membership data:", {
+        applicationId: applicationData.id,
+        membershipData: data,
+      });
+
+      toast({
+        title: "Membership Submitted!",
+        description: "Initiating payment...",
+      });
+
+      // Proceed directly to payment without updating application data
+      const paymentResult = await initiateSabpaisaPayment({
+        amount: Number.parseFloat(
+          calculateAmounts(planDetails.discountedPrice).totalAmount
+        ),
+        orderId: `${applicationData.id}-${Date.now()}`, // Generate unique order ID
+        customerName: data.fullName,
+        customerPhone: data.phoneNo,
+        customerEmail: data.emailID,
+        customerAddress: "Not Provided",
+      });
+
+      if (paymentResult.success && paymentResult.paymentDetails) {
+        setPaymentDetails(paymentResult.paymentDetails);
+        setShowPaymentModal(true);
+      } else {
+        console.error("Payment initiation failed:", paymentResult.error);
+        toast({
+          title: "Payment Error",
+          description:
+            paymentResult.error ||
+            "Failed to initiate payment. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error in membership submission:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePaymentToggle = () => {
+    setShowPaymentModal(false);
+  };
+
+  return (
+    <div className="mx-auto w-full max-w-4xl p-6 space-y-8">
+      <Card className="border-2 border-orange-500 shadow-lg overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-orange-500 to-blue-950 text-white p-6">
+          <CardTitle className="text-3xl font-bold text-center">
+            Complete Your Membership
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="mb-6">
+            <Alert className="border-green-500 bg-green-50">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertTitle className="text-green-800">
+                Application Status
+              </AlertTitle>
+              <AlertDescription className="text-green-700">
+                Your loan application is ready! Complete your membership to
+                proceed with loan processing.
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <form
+            onSubmit={membershipForm.handleSubmit(onMembershipSubmit)}
+            className="space-y-8"
+          >
+            <Card className="border-orange-500 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-orange-500 to-blue-950 text-white">
+                <CardTitle className="text-2xl font-bold">
+                  {planDetails.name} Plan
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+                  <div className="text-3xl font-bold mb-4 md:mb-0">
+                    ₹{calculateAmounts(planDetails.discountedPrice).basePrice}
+                  </div>
+                  <div className="bg-orange-50 p-3 rounded-lg border border-orange-100 w-full md:w-auto">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm text-gray-600 mr-4">
+                        Base Price:
+                      </span>
+                      <span className="font-medium">
+                        ₹
+                        {
+                          calculateAmounts(planDetails.discountedPrice)
+                            .basePrice
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm text-gray-600 mr-4">
+                        GST (18%):
+                      </span>
+                      <span className="font-medium">
+                        ₹
+                        {
+                          calculateAmounts(planDetails.discountedPrice)
+                            .gstAmount
+                        }
+                      </span>
+                    </div>
+                    <div className="border-t border-orange-200 my-2"></div>
+                    <div className="flex justify-between items-center mt-2 p-2 bg-orange-100 rounded-md">
+                      <span className="font-bold text-blue-900">Total:</span>
+                      <span className="font-bold text-lg text-orange-600">
+                        ₹
+                        {
+                          calculateAmounts(planDetails.discountedPrice)
+                            .totalAmount
+                        }
+                      </span>
+                    </div>
+                    <div className="text-sm text-right mt-1 line-through text-gray-500">
+                      Original: ₹{planDetails.realPrice}
+                    </div>
+                  </div>
+                </div>
+                <ul className="space-y-2">
+                  {planDetails.features.map((feature, index) => (
+                    <li key={index} className="flex items-center">
+                      <CheckCircle2 className="w-5 h-5 mr-2 text-orange-500" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="border-orange-500 shadow-md">
+              <CardContent className="p-6 space-y-6">
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    type="text"
+                    id="fullName"
+                    {...membershipForm.register("fullName", {
+                      required: "Full name is required",
+                    })}
+                  />
+                </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="phoneNo">Phone No</Label>
+                  <Input
+                    type="tel"
+                    id="phoneNo"
+                    {...membershipForm.register("phoneNo", {
+                      required: "Phone number is required",
+                    })}
+                  />
+                </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="emailID">Email ID</Label>
+                  <Input
+                    type="email"
+                    id="emailID"
+                    {...membershipForm.register("emailID", {
+                      required: "Email is required",
+                    })}
+                  />
+                </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="panNo">PAN No</Label>
+                  <Input
+                    type="text"
+                    id="panNo"
+                    {...membershipForm.register("panNo", {
+                      required: "PAN number is required",
+                    })}
+                  />
+                </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="aadharNo">Aadhar No</Label>
+                  <Input
+                    type="text"
+                    id="aadharNo"
+                    {...membershipForm.register("aadharNo", {
+                      required: "Aadhar number is required",
+                    })}
+                  />
+                </div>
+                <Input
+                  type="hidden"
+                  {...membershipForm.register("membershipPlan")}
+                />
+              </CardContent>
+            </Card>
+
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1"
+              >
+                Back to Application
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-4 text-lg font-semibold"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Processing..." : "Proceed to Payment"}
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Sabpaisa Payment Gateway Modal */}
+      {showPaymentModal && paymentDetails && (
+        <SabpaisaPaymentGateway
+          clientCode={paymentDetails.clientCode}
+          transUserName={paymentDetails.transUserName}
+          transUserPassword={paymentDetails.transUserPassword}
+          authkey={paymentDetails.authkey}
+          authiv={paymentDetails.authiv}
+          payerName={paymentDetails.payerName}
+          payerEmail={paymentDetails.payerEmail}
+          payerMobile={paymentDetails.payerMobile}
+          clientTxnId={paymentDetails.clientTxnId}
+          amount={paymentDetails.amount}
+          payerAddress={paymentDetails.payerAddress}
+          callbackUrl={paymentDetails.callbackUrl}
+          isOpen={showPaymentModal}
+          onToggle={handlePaymentToggle}
+        />
+      )}
+    </div>
+  );
+};
 
 const Step1Personal: React.FC<StepProps> = ({
   control,
@@ -875,6 +1224,7 @@ const LaStepOne: React.FC = () => {
   const [isRejectedForCreditScore, setIsRejectedForCreditScore] =
     useState(false);
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
+  const [showMembershipCard, setShowMembershipCard] = useState(false);
   const [showExistingApplicationUI, setShowExistingApplicationUI] =
     useState(false);
   const [showRejectionUI, setShowRejectionUI] = useState(false);
@@ -908,13 +1258,29 @@ const LaStepOne: React.FC = () => {
         setHasExistingApplication(result.hasExistingApplication);
         setExistingApplicationData(result.applicationData);
 
-        // Set flag instead of returning early
+        console.log("Application status:", result.applicationData?.status);
+
+        // Show membership card only for "In Progress" applications
+        // "Eligible" users should see the normal form to continue their application
         if (
           result.hasExistingApplication &&
           result.applicationData &&
-          result.applicationData.status !== "Eligible"
+          result.applicationData.status === "In Progress"
         ) {
+          setShowMembershipCard(true);
+          setShowExistingApplicationUI(false);
+        } else if (
+          result.hasExistingApplication &&
+          result.applicationData &&
+          result.applicationData.status === "Approved"
+        ) {
+          // For approved applications, redirect to dashboard or show appropriate message
           setShowExistingApplicationUI(true);
+          setShowMembershipCard(false);
+        } else {
+          // For "Eligible" status or no existing application, show the normal form
+          setShowMembershipCard(false);
+          setShowExistingApplicationUI(false);
         }
       } else {
         toast({
@@ -1190,30 +1556,39 @@ const LaStepOne: React.FC = () => {
 
   // Render different UIs based on flags instead of early returns
   const renderContent = () => {
+    // Show membership card for "In Progress" applications
+    if (showMembershipCard && existingApplicationData) {
+      return (
+        <MembershipCard
+          applicationData={existingApplicationData}
+          onClose={() => setShowMembershipCard(false)}
+        />
+      );
+    }
+
+    // Show existing application details for "Approved" applications
     if (showExistingApplicationUI && existingApplicationData) {
-      // return (
-      //   <div className="mx-auto w-full max-w-[520px]">
-      //     <h2 className="text-2xl font-bold mb-4">Existing Loan Application</h2>
-      //     <p className="mb-4">
-      //       You already have a loan application in progress. You cannot submit a
-      //       new application at this time.
-      //     </p>
-      //     <div className="bg-gray-100 p-4 rounded-md">
-      //       <h3 className="font-semibold mb-2">Application Details:</h3>
-      //       <p>Status: {existingApplicationData.status || "In Progress"}</p>
-      //       <p>Amount Required: ₹{existingApplicationData.amtRequired}</p>
-      //       <p>Purpose: {existingApplicationData.prpseOfLoan}</p>
-      //       <p>
-      //         Submitted on:{" "}
-      //         {new Date(existingApplicationData.createdAt).toLocaleDateString()}
-      //       </p>
-      //     </div>
-      //     <Button className="mt-4" onClick={() => router.push("/dashboard")}>
-      //       Go to Dashboard
-      //     </Button>
-      //   </div>
-      // );
-      router.push("/membership-cards");
+      return (
+        <div className="mx-auto w-full max-w-[520px]">
+          <h2 className="text-2xl font-bold mb-4">Existing Loan Application</h2>
+          <p className="mb-4">
+            You already have a loan application that has been processed.
+          </p>
+          <div className="bg-gray-100 p-4 rounded-md">
+            <h3 className="font-semibold mb-2">Application Details:</h3>
+            <p>Status: {existingApplicationData.status || "In Progress"}</p>
+            <p>Amount Required: ₹{existingApplicationData.amtRequired}</p>
+            <p>Purpose: {existingApplicationData.prpseOfLoan}</p>
+            <p>
+              Submitted on:{" "}
+              {new Date(existingApplicationData.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <Button className="mt-4" onClick={() => router.push("/dashboard")}>
+            Go to Dashboard
+          </Button>
+        </div>
+      );
     }
 
     if (showRejectionUI) {
