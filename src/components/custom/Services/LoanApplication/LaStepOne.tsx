@@ -962,29 +962,17 @@ const Step4Documents: React.FC<StepProps> = ({
         </Label>
         <Input
           id="panNo"
-          type="text"
           {...register("panNo", {
             required: "PAN number is required",
             pattern: {
               value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-              message:
-                "PAN format: 5 letters, 4 digits, 1 letter (e.g., ABCDE1234F)",
-            },
-            validate: (value: string) => {
-              const upperValue = value.toUpperCase();
-              if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(upperValue)) {
-                return "Invalid PAN format. Use format: ABCDE1234F";
-              }
-              return true;
+              message: "Please enter a valid PAN number (e.g., ABCDE1234F)",
             },
           })}
-          className="w-full p-3"
-          placeholder="ABCDE1234F"
           maxLength={10}
-          style={{ textTransform: "uppercase" }}
         />
         {errors.panNo && (
-          <p className="text-red-500 text-sm">{errors.panNo.message}</p>
+          <p className="text-sm text-red-500 mt-1">{errors.panNo.message}</p>
         )}
       </div>
       <div className="grid w-full items-center gap-3">
