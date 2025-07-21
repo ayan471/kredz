@@ -1190,6 +1190,8 @@ const CreditBuilderLoanForm: React.FC = () => {
                 </Label>
                 <Input
                   id="mobileNumber"
+                  type="number"
+                  className="appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-moz-appearance:textfield]"
                   {...register("mobileNumber", {
                     required: "Mobile number is required",
                   })}

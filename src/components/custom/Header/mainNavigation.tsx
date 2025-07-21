@@ -104,7 +104,7 @@ export default function NavigationMenuDemo() {
           <NavigationMenuItem>
             <Link href="/services" legacyBehavior passHref>
               <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                <p className="uppercase tracking-wider">Sevices</p>
+                <p className="uppercase tracking-wider">Services</p>
               </NavigationMenuLink>
             </Link>
           </NavigationMenuItem>
