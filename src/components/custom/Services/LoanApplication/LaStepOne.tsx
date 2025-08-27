@@ -1202,7 +1202,7 @@ const Step6Review: React.FC<StepProps> = ({
 };
 
 interface LaStepOneProps {
-  user: any;
+  user?: any;
 }
 
 const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
