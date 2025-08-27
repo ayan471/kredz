@@ -483,7 +483,7 @@ const MembershipCard: React.FC<{
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                className="flex-1"
+                className="flex-1 bg-transparent"
               >
                 Back to Application
               </Button>
@@ -1201,9 +1201,15 @@ const Step6Review: React.FC<StepProps> = ({
   );
 };
 
-const LaStepOne: React.FC = () => {
+interface LaStepOneProps {
+  user: any;
+}
+
+const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasExistingLoan, setHasExistingLoan] = useState(false);
+  const [panVerificationError, setPanVerificationError] = useState<string>("");
   const [hasExistingApplication, setHasExistingApplication] = useState(false);
   const [existingApplicationData, setExistingApplicationData] =
     useState<LoanApplication | null>(null);
@@ -1219,7 +1225,6 @@ const LaStepOne: React.FC = () => {
 
   const { toast } = useToast();
   const router = useRouter();
-  const { user } = useUser();
 
   const {
     register,
@@ -1238,6 +1243,36 @@ const LaStepOne: React.FC = () => {
 
   const { dateOfBirth, creditScore, currEmis, totalActiveLoans, monIncome } =
     watch();
+
+  const verifyPanCard = async (panNo: string) => {
+    try {
+      const response = await fetch("/api/check-existing-loan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ panNo }),
+      });
+
+      const result = await response.json();
+
+      if (result.hasExistingApplication) {
+        setHasExistingLoan(true);
+        setPanVerificationError(
+          "A loan application already exists with this PAN card number. You cannot apply for another loan until your current application is completed or rejected."
+        );
+        return false;
+      }
+
+      setHasExistingLoan(false);
+      setPanVerificationError("");
+      return true;
+    } catch (error) {
+      console.error("Error verifying PAN card:", error);
+      setPanVerificationError("Error verifying PAN card. Please try again.");
+      return false;
+    }
+  };
 
   useEffect(() => {
     const checkExistingApplication = async () => {
@@ -1410,6 +1445,16 @@ const LaStepOne: React.FC = () => {
         });
         return;
       }
+
+      if (currentStep === 4) {
+        const panNo = watch("panNo");
+        if (panNo) {
+          const isPanValid = await verifyPanCard(panNo);
+          if (!isPanValid) {
+            return; // Don't proceed if PAN verification fails
+          }
+        }
+      }
       setCurrentStep((prev) => prev + 1);
     }
   };
@@ -1439,6 +1484,11 @@ const LaStepOne: React.FC = () => {
           "You already have a loan application in progress. You cannot submit a new application at this time.",
         variant: "destructive",
       });
+      return;
+    }
+
+    const isPanValid = await verifyPanCard(data.panNo);
+    if (!isPanValid) {
       return;
     }
 
@@ -1705,7 +1755,7 @@ const LaStepOne: React.FC = () => {
                     type="button"
                     variant="outline"
                     onClick={handlePrev}
-                    className="border-orange-500 text-orange-500 hover:bg-orange-50"
+                    className="border-orange-500 text-orange-500 hover:bg-orange-50 bg-transparent"
                   >
                     Previous
                   </Button>
@@ -1722,13 +1772,19 @@ const LaStepOne: React.FC = () => {
                 ) : (
                   <Button
                     type="submit"
-                    disabled={isSubmitting || isAgeInvalid}
+                    disabled={isSubmitting || isAgeInvalid || hasExistingLoan}
                     className="bg-orange-500 hover:bg-orange-600 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? "Submitting..." : "Submit Application"}
                   </Button>
                 )}
               </div>
+
+              {panVerificationError && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-red-600 text-sm">{panVerificationError}</p>
+                </div>
+              )}
             </form>
           </CardContent>
         </Card>
