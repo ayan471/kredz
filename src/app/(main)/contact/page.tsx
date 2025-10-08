@@ -13,11 +13,11 @@ import MainContactUs from "@/components/custom/MainContactUsFields";
 
 const ContactPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-extrabold text-navy-900 sm:text-5xl md:text-6xl">
-            Contact <span className="text-orange-500">Kredz</span>
+            Contact <span className="text-blue-600">Kredz</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-navy-600 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
             We're here to assist you on your journey to better credit and a
@@ -27,14 +27,14 @@ const ContactPage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           <div className="space-y-8">
-            <Card className="border-orange-200">
+            <Card className="border-blue-200">
               <CardContent className="p-6">
                 <h2 className="text-2xl font-semibold text-navy-900 mb-4">
                   Get in Touch
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
-                    <PhoneIcon className="w-6 h-6 text-orange-500 mt-1" />
+                    <PhoneIcon className="w-6 h-6 text-blue-600 mt-1" />
                     <div>
                       <p className="font-medium text-navy-800">Phone:</p>
                       <p className="text-navy-700">
@@ -46,7 +46,7 @@ const ContactPage = () => {
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <WhatsappIcon className="w-6 h-6 text-orange-500 mt-1" />
+                    <WhatsappIcon className="w-6 h-6 text-blue-600 mt-1" />
                     <Link href={"https://wa.me/918068213011"}>
                       <p className="font-medium text-navy-800">Whatsapp:</p>
                       <p className="text-navy-700">
@@ -56,7 +56,7 @@ const ContactPage = () => {
                   </div>
 
                   <div className="flex items-start space-x-3">
-                    <MailIcon className="w-6 h-6 text-orange-500 mt-1" />
+                    <MailIcon className="w-6 h-6 text-blue-600 mt-1" />
                     <div>
                       <p className="font-medium text-navy-800">Email:</p>
                       <p className="text-navy-700">
@@ -66,7 +66,7 @@ const ContactPage = () => {
                   </div>
 
                   <div className="flex items-start space-x-3">
-                    <MapPinIcon className="w-6 h-6 text-orange-500 mt-1" />
+                    <MapPinIcon className="w-6 h-6 text-blue-600 mt-1" />
                     <div>
                       <p className="font-medium text-navy-800">Address:</p>
                       <p className="text-navy-700">
@@ -80,7 +80,7 @@ const ContactPage = () => {
                   </div>
 
                   <div className="flex items-start space-x-3">
-                    <GlobeIcon className="w-6 h-6 text-orange-500 mt-1" />
+                    <GlobeIcon className="w-6 h-6 text-blue-600 mt-1" />
                     <div>
                       <p className="font-medium text-navy-800">Website:</p>
                       <p className="text-navy-700">https://kredz.in</p>
@@ -90,7 +90,7 @@ const ContactPage = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-orange-200">
+            <Card className="border-blue-200">
               <CardContent className="p-6">
                 <h2 className="text-2xl font-semibold text-navy-900 mb-4">
                   About Kredz
@@ -109,7 +109,7 @@ const ContactPage = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-orange-200">
+            <Card className="border-blue-200">
               <CardContent className="p-6">
                 <h2 className="text-2xl font-semibold text-navy-900 mb-4">
                   Follow Us
@@ -120,19 +120,19 @@ const ContactPage = () => {
                 <div className="flex space-x-4">
                   <Link
                     href="https://www.facebook.com/share/187jupHMLF/"
-                    className="text-orange-500 hover:text-orange-600"
+                    className="text-blue-600 hover:text-blue-700"
                   >
                     <FacebookIcon className="w-6 h-6" />
                   </Link>
                   <Link
                     href="https://www.instagram.com/kredz.in?igsh=MTdnYTIwd2IyOG5zdQ=="
-                    className="text-orange-500 hover:text-orange-600"
+                    className="text-blue-600 hover:text-blue-700"
                   >
                     <InstagramIcon className="w-6 h-6" />
                   </Link>
                   <Link
                     href="https://youtube.com/@kredzcredit?si=wM5z5v5unh4xxHUg"
-                    className="text-orange-500 hover:text-orange-600"
+                    className="text-blue-600 hover:text-blue-700"
                   >
                     <Youtube className="w-6 h-6" />
                   </Link>
@@ -142,7 +142,7 @@ const ContactPage = () => {
           </div>
 
           <div>
-            <Card className="shadow-lg border-orange-200">
+            <Card className="shadow-lg border-blue-200">
               <CardContent className="p-6">
                 <h2 className="text-2xl font-semibold text-navy-900 mb-4">
                   Schedule a Free Consultation

@@ -12,7 +12,7 @@ export default function FAQPage() {
         {floatingBubbles.map((_, index) => (
           <motion.div
             key={index}
-            className="absolute rounded-full bg-orange-300 opacity-20"
+            className="absolute rounded-full bg-blue-300 opacity-20"
             style={{
               width: Math.random() * 100 + 20,
               height: Math.random() * 100 + 20,
@@ -26,7 +26,7 @@ export default function FAQPage() {
             }}
             transition={{
               duration: Math.random() * 5 + 5,
-              repeat: Infinity,
+              repeat: Number.POSITIVE_INFINITY,
               ease: "easeInOut",
             }}
           />
@@ -36,7 +36,7 @@ export default function FAQPage() {
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
-        className="bg-gradient-to-r from-orange-400 to-orange-600 text-white py-20 px-4 sm:px-6 lg:px-8 text-center"
+        className="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-20 px-4 sm:px-6 lg:px-8 text-center"
       >
         <h1 className="text-4xl md:text-6xl font-bold mb-4">Need Help?</h1>
         <p className="text-xl md:text-2xl">

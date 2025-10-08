@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -64,11 +64,11 @@ export function MainContactUs() {
 
   if (submitMessage) {
     return (
-      <div className="text-center p-6 bg-green-100 rounded-lg">
-        <h3 className="text-2xl font-semibold text-green-800 mb-4">
+      <div className="text-center p-6 bg-blue-100 rounded-lg">
+        <h3 className="text-2xl font-semibold text-blue-800 mb-4">
           {submitMessage}
         </h3>
-        <p className="text-green-700">We'll get back to you soon!</p>
+        <p className="text-blue-700">{"We'll get back to you soon!"}</p>
         <Button className="mt-4" onClick={() => setSubmitMessage("")}>
           Submit Another Message
         </Button>

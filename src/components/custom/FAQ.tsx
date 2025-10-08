@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
@@ -9,7 +10,7 @@ import {
   TrendingUp,
   AlertTriangle,
   Calculator,
-  BanknoteIcon as Bank,
+  Ban as Bank,
   Bell,
   Clock,
   FileSearch,
@@ -30,14 +31,16 @@ const faqData: FAQItem[] = [
     question: "What is the Kredz Credit Build-Up Plan?",
     answer: (
       <>
-        The <strong>Kredz Credit Build-Up Plan</strong> is a comprehensive
-        service designed to help you improve your credit score, monitor your
-        credit health, and resolve any discrepancies in your credit report. We
-        provide personalized strategies and expert guidance to help you build a
-        stronger credit profile and increase your financial opportunities.
+        The{" "}
+        <strong className="text-blue-600">Kredz Credit Build-Up Plan</strong> is
+        a comprehensive service designed to help you improve your credit score,
+        monitor your credit health, and resolve any discrepancies in your credit
+        report. We provide personalized strategies and expert guidance to help
+        you build a stronger credit profile and increase your financial
+        opportunities.
       </>
     ),
-    icon: <CreditCard className="w-6 h-6 text-orange-500" />,
+    icon: <CreditCard className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "How can Kredz help me improve my credit score?",
@@ -59,20 +62,21 @@ const faqData: FAQItem[] = [
         </ul>
       </>
     ),
-    icon: <TrendingUp className="w-6 h-6 text-orange-500" />,
+    icon: <TrendingUp className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "Do you guarantee that my credit score will improve?",
     answer: (
       <>
         While we strive to help improve your credit score,{" "}
-        <strong>Kredz</strong> cannot guarantee specific results as credit
-        scores are influenced by many factors, including your credit history,
-        financial behavior, and actions taken by creditors. However, we provide
-        expert guidance to increase your chances of improvement.
+        <strong className="text-blue-600">Kredz</strong> cannot guarantee
+        specific results as credit scores are influenced by many factors,
+        including your credit history, financial behavior, and actions taken by
+        creditors. However, we provide expert guidance to increase your chances
+        of improvement.
       </>
     ),
-    icon: <AlertTriangle className="w-6 h-6 text-orange-500" />,
+    icon: <AlertTriangle className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "What is the reducing balance method for loan calculation?",
@@ -84,33 +88,37 @@ const faqData: FAQItem[] = [
         that your interest payments decrease as you pay down the principal.
       </>
     ),
-    icon: <Calculator className="w-6 h-6 text-orange-500" />,
+    icon: <Calculator className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "Can Kredz help me get a loan?",
     answer: (
       <>
-        Yes! Through our extensive network of <strong>bank</strong> and{" "}
-        <strong>NBFC (Non-Banking Financial Company)</strong> partners, we help
-        you access loans with better terms. Whether you're looking for a
-        personal loan, home loan, or car loan, we assist in connecting you with
-        financial institutions that best suit your needs.
+        Yes! Through our extensive network of{" "}
+        <strong className="text-blue-600">bank</strong> and{" "}
+        <strong className="text-blue-600">
+          NBFC (Non-Banking Financial Company)
+        </strong>{" "}
+        partners, we help you access loans with better terms. Whether you're
+        looking for a personal loan, home loan, or car loan, we assist in
+        connecting you with financial institutions that best suit your needs.
       </>
     ),
-    icon: <Bank className="w-6 h-6 text-orange-500" />,
+    icon: <Bank className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "How does Kredz monitor my credit score?",
     answer: (
       <>
-        Once you sign up for the <strong>Kredz Credit Build-Up Plan</strong>, we
-        provide you with regular credit score updates, along with notifications
-        for any changes to your credit profile. You will also receive alerts if
-        any significant events, like a sudden drop in your credit score or
-        suspicious activities, are detected.
+        Once you sign up for the{" "}
+        <strong className="text-blue-600">Kredz Credit Build-Up Plan</strong>,
+        we provide you with regular credit score updates, along with
+        notifications for any changes to your credit profile. You will also
+        receive alerts if any significant events, like a sudden drop in your
+        credit score or suspicious activities, are detected.
       </>
     ),
-    icon: <Bell className="w-6 h-6 text-orange-500" />,
+    icon: <Bell className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "How long will it take to see improvements in my credit score?",
@@ -122,7 +130,7 @@ const faqData: FAQItem[] = [
         Generally, it may take a few months to see significant changes.
       </>
     ),
-    icon: <Clock className="w-6 h-6 text-orange-500" />,
+    icon: <Clock className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "What happens if there are errors in my credit report?",
@@ -134,7 +142,7 @@ const faqData: FAQItem[] = [
         disputes, and follow up until the errors are resolved.
       </>
     ),
-    icon: <FileSearch className="w-6 h-6 text-orange-500" />,
+    icon: <FileSearch className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "How much does the Kredz Credit Build-Up Plan cost?",
@@ -142,29 +150,30 @@ const faqData: FAQItem[] = [
       <>
         The cost of our services depends on the plan you choose. Please visit
         our{" "}
-        <a href="/pricing" className="text-orange-500 hover:underline">
+        <a href="/pricing" className="text-blue-600 hover:underline">
           Pricing Page
         </a>{" "}
         or contact us for more details on pricing and available packages.
       </>
     ),
-    icon: <DollarSign className="w-6 h-6 text-orange-500" />,
+    icon: <DollarSign className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "How can I get started with Kredz?",
     answer: (
       <>
         To get started, simply{" "}
-        <a href="#contact-us" className="text-orange-500 hover:underline">
+        <a href="#contact-us" className="text-blue-600 hover:underline">
           contact us
         </a>{" "}
-        or sign up for the <strong>Kredz Credit Build-Up Plan</strong> on our
-        website. We will assess your current credit status and develop a
+        or sign up for the{" "}
+        <strong className="text-blue-600">Kredz Credit Build-Up Plan</strong> on
+        our website. We will assess your current credit status and develop a
         personalized plan to help you improve your credit score and reach your
         financial goals.
       </>
     ),
-    icon: <UserPlus className="w-6 h-6 text-orange-500" />,
+    icon: <UserPlus className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "Is my personal information secure with Kredz?",
@@ -173,13 +182,13 @@ const faqData: FAQItem[] = [
         Yes, we take your privacy seriously. All the personal and financial
         information you provide is protected using secure encryption methods.
         Please review our{" "}
-        <a href="/privacy-policy" className="text-orange-500 hover:underline">
+        <a href="/privacy-policy" className="text-blue-600 hover:underline">
           Privacy Policy
         </a>{" "}
         for more information on how we handle and safeguard your data.
       </>
     ),
-    icon: <Lock className="w-6 h-6 text-orange-500" />,
+    icon: <Lock className="w-6 h-6 text-blue-600" />,
   },
   {
     question: "What if I have more questions?",
@@ -187,13 +196,13 @@ const faqData: FAQItem[] = [
       <>
         If you have additional questions or need more information, feel free to
         reach out to us through our{" "}
-        <a href="#contact-us" className="text-orange-500 hover:underline">
+        <a href="#contact-us" className="text-blue-600 hover:underline">
           Contact Us
         </a>{" "}
         page. Our customer support team is happy to assist you with any queries.
       </>
     ),
-    icon: <HelpCircle className="w-6 h-6 text-orange-500" />,
+    icon: <HelpCircle className="w-6 h-6 text-blue-600" />,
   },
 ];
 
@@ -209,7 +218,7 @@ const FAQItem: React.FC<{
     className="border-b border-gray-200 py-4"
   >
     <button
-      className="flex justify-between items-center w-full text-left font-semibold text-lg text-gray-700 hover:text-orange-500 focus:outline-none transition-colors duration-200"
+      className="flex justify-between items-center w-full text-left font-semibold text-lg text-gray-700 hover:text-blue-600 focus:outline-none transition-colors duration-200"
       onClick={toggleOpen}
     >
       <div className="flex items-center">
@@ -256,7 +265,7 @@ const FAQ: React.FC = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-orange-50 to-orange-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gradient-to-br from-orange-50 to-blue-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
@@ -272,7 +281,7 @@ const FAQ: React.FC = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="text-center text-gray-600 mb-12"
         >
-          At <strong className="text-orange-500">Kredz</strong>, we understand
+          At <strong className="text-blue-600">Kredz</strong>, we understand
           that you may have questions about our services and how we can help you
           improve your credit score and secure better financial opportunities.
           Here are some common questions and their answers:
