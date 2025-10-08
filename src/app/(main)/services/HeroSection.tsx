@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function HeroSection() {
@@ -10,7 +9,7 @@ export default function HeroSection() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="bg-gradient-to-r from-orange-600 to-blue-600 text-white py-20 px-4"
+      className="bg-gradient-to-r from-blue-800 to-blue-600 text-white py-20 px-4"
     >
       <div className="container mx-auto text-center">
         <motion.h1
@@ -37,7 +36,7 @@ export default function HeroSection() {
         >
           <Link
             href={"#services"}
-            className="bg-white text-orange-600 hover:bg-orange-100 text-lg px-8 py-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
+            className="bg-white text-blue-700 hover:bg-blue-50 text-lg px-8 py-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
           >
             Explore Our Services
           </Link>

@@ -50,13 +50,13 @@ export default function ServiceCard({
         {service.comingSoon ? (
           <button
             onClick={onChannelPartnerClick}
-            className="w-full bg-orange-500 text-white py-2 px-4 hover:bg-orange-600 transition-colors duration-300 rounded-full mt-auto"
+            className="w-full bg-blue-600 text-white py-2 px-4 hover:bg-blue-700 transition-colors duration-300 rounded-full mt-auto"
           >
             {service.buttonText}
           </button>
         ) : (
           <Link href={service.buttonLink} className="mt-auto">
-            <button className="w-full bg-orange-500 text-white py-2 px-4 hover:bg-orange-600 transition-colors duration-300 rounded-full">
+            <button className="w-full bg-blue-600 text-white py-2 px-4 hover:bg-blue-700 transition-colors duration-300 rounded-full">
               {service.buttonText}
             </button>
           </Link>

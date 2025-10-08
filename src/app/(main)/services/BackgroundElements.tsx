@@ -19,7 +19,7 @@ export default function BackgroundElements() {
         }}
       />
       <motion.div
-        className="absolute top-40 right-10 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"
+        className="absolute top-40 right-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"
         animate={{
           x: [0, -30, 0],
           y: [0, 60, 0],
@@ -32,7 +32,7 @@ export default function BackgroundElements() {
         }}
       />
       <motion.div
-        className="absolute bottom-20 left-20 w-80 h-80 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"
+        className="absolute bottom-20 left-20 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"
         animate={{
           x: [0, 40, 0],
           y: [0, -30, 0],
