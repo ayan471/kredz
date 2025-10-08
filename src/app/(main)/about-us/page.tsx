@@ -37,13 +37,13 @@ const AboutUs = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-b from-orange-50 to-white py-16">
+    <div className="bg-gradient-to-b from-blue-50 to-white py-16">
       <div className="container mx-auto px-4">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl md:text-5xl font-bold text-center text-navy-900 mb-12"
+          className="text-4xl md:text-5xl font-bold text-center text-blue-900 mb-12"
         >
           About Us – Kredz
         </motion.h1>
@@ -54,13 +54,13 @@ const AboutUs = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="max-w-3xl mx-auto text-center mb-16"
         >
-          <p className="text-xl text-navy-700 mb-6">
+          <p className="text-xl text-blue-700 mb-6">
             At Kredz, we help individuals and businesses achieve their financial
             goals with expert loan consulting, credit-building services, and
             valuable partnerships. Our mission is to empower you with the tools
             and knowledge needed to build a strong financial future.
           </p>
-          <p className="text-xl text-navy-700">
+          <p className="text-xl text-blue-700">
             We partner with RBI-registered Banks and NBFCs to provide the best
             loan options, while offering tailored credit improvement strategies
             to enhance your financial health.
@@ -78,12 +78,12 @@ const AboutUs = () => {
               key={index}
               className="bg-white rounded-lg shadow-lg p-6 flex items-start"
             >
-              <service.icon className="w-12 h-12 text-orange-500 mr-4 flex-shrink-0" />
+              <service.icon className="w-12 h-12 text-blue-600 mr-4 flex-shrink-0" />
               <div>
-                <h3 className="text-xl font-semibold text-navy-900 mb-2">
+                <h3 className="text-xl font-semibold text-blue-900 mb-2">
                   {service.title}
                 </h3>
-                <p className="text-navy-700">{service.description}</p>
+                <p className="text-blue-700">{service.description}</p>
               </div>
             </div>
           ))}
@@ -93,18 +93,18 @@ const AboutUs = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="bg-navy-600 text-white rounded-lg shadow-xl p-8 text-center"
+          className="bg-blue-700 text-white rounded-lg shadow-xl p-8 text-center"
         >
-          <h2 className="text-3xl font-semibold mb-4 text-blue-900">
+          <h2 className="text-3xl font-semibold mb-4 text-white">
             Our Commitment
           </h2>
-          <p className="text-xl mb-6 text-blue-950">
+          <p className="text-xl mb-6 text-blue-100">
             At Kredz, we offer transparent, reliable, and customer-focused
             solutions to help you succeed. Our dedicated team is committed to
             providing you with the best financial guidance and support.
           </p>
           <Button
-            className="bg-orange-600 hover:bg-orange-700 text-white text-base md:text-lg px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto"
             onClick={() => router.push("/services")}
           >
             Learn More About Our Services
@@ -118,15 +118,15 @@ const AboutUs = () => {
           transition={{ duration: 0.5, delay: 0.8 }}
           className="text-center mt-16"
         >
-          <h2 className="text-3xl font-semibold text-navy-900 mb-6">
+          <h2 className="text-3xl font-semibold text-blue-900 mb-6">
             Ready to Start Your Journey?
           </h2>
-          <p className="text-xl text-navy-700 mb-8">
+          <p className="text-xl text-blue-700 mb-8">
             Contact us today to get started on your path toward better credit
             and exciting financial opportunities!
           </p>
           <Button
-            className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
             onClick={() => router.push("/contact")}
           >
             Contact Us

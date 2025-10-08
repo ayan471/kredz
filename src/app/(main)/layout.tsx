@@ -1,7 +1,8 @@
 import Header from "@/components/custom/Header/Header";
-import Footer from "@/components/custom/Footer/Footer";
+
 import ClientLayout from "@/components/ClientLayout";
 import PaymentStatusListener from "../../components/payment-status-listener";
+import { Footer } from "@/components/custom/HomePage/footer";
 
 export default function MainLayout({
   children,

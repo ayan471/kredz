@@ -1,9 +1,14 @@
 import DecorativeBackground from "@/components/counter/AnimatedBackground";
 import AnimatedCounterSection from "@/components/counter/AnimatedCounterSection";
+import { CTABanner } from "@/components/custom/HomePage/cta-banner";
+import { FAQ } from "@/components/custom/HomePage/faq";
+import { Features } from "@/components/custom/HomePage/features";
+import { RatesSection } from "@/components/custom/HomePage/rates-section";
+import { Testimonials } from "@/components/custom/HomePage/testimonials";
 import { Hero } from "@/components/custom/MainLoginSignupSection/MainLoginSignupSection";
 
 import OurServices from "@/components/custom/OurServices";
-import Testimonials from "@/components/custom/Testimonials";
+
 import WhyChooseKredz from "@/components/custom/WhyChooseKredz";
 import { currentUser } from "@clerk/nextjs/server";
 
@@ -14,12 +19,17 @@ export default async function Home() {
   return (
     <main>
       <Hero />
-      <OurServices />
-      <WhyChooseKredz />
+      {/* <OurServices /> */}
+      <Features />
+      <RatesSection />
+      {/* <WhyChooseKredz /> */}
 
-      <AnimatedCounterSection />
+      {/* <AnimatedCounterSection /> */}
 
+      {/* <Testimonials /> */}
       <Testimonials />
+      <FAQ />
+      <CTABanner />
     </main>
   );
 }
