@@ -123,15 +123,15 @@ const TermsAndConditions = () => {
           </p>
           <ul className="list-none mt-2">
             <li className="flex items-center mb-2">
-              <Phone className="mr-2 text-orange-500" size={18} />
+              <Phone className="mr-2 text-blue-500" size={18} />
               <span>+91 8240561547</span>
             </li>
             <li className="flex items-center mb-2">
-              <Mail className="mr-2 text-orange-500" size={18} />
+              <Mail className="mr-2 text-blue-500" size={18} />
               <span>support@kredz.com</span>
             </li>
             <li className="flex items-center">
-              <MapPin className="mr-2 text-orange-500" size={18} />
+              <MapPin className="mr-2 text-blue-500" size={18} />
               <span>
                 No 656A, ElcotSez, Zsurvey, Behind Accenture Company, Old
                 Mahablipuram Road, RajivGandhi Salai Sholinganallur - 600119
@@ -149,13 +149,13 @@ const TermsAndConditions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-orange-100 to-blue-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-extrabold text-blue-900 text-center mb-8"
+          className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-900 text-center mb-8"
         >
           Terms and Conditions
         </motion.h1>
@@ -175,15 +175,15 @@ const TermsAndConditions = () => {
               <div key={index} className="mb-4">
                 <button
                   onClick={() => toggleSection(index)}
-                  className="w-full text-left flex justify-between items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200"
+                  className="w-full text-left flex justify-between items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
                 >
                   <span className="text-blue-900 font-medium">
                     {section.title}
                   </span>
                   {expandedSection === index ? (
-                    <ChevronUp className="w-5 h-5 text-orange-500" />
+                    <ChevronUp className="w-5 h-5 text-blue-500" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-orange-500" />
+                    <ChevronDown className="w-5 h-5 text-blue-500" />
                   )}
                 </button>
                 <AnimatePresence>
@@ -194,7 +194,7 @@ const TermsAndConditions = () => {
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="p-4 bg-orange-50 rounded-b-lg">
+                      <div className="p-4 bg-blue-50 rounded-b-lg">
                         {typeof section.content === "string" ? (
                           <p className="text-blue-700">{section.content}</p>
                         ) : (

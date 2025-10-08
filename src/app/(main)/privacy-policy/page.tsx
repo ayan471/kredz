@@ -33,7 +33,7 @@ const PrivacyPolicy = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-orange-50 via-orange-100 to-blue-100 min-h-screen">
+    <div className="bg-gradient-to-br from-blue-50 to-white min-h-screen">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -45,7 +45,7 @@ const PrivacyPolicy = () => {
             initial={{ y: -20 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-5xl md:text-6xl font-bold text-blue-900 mb-4"
+            className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-900 mb-4"
           >
             Privacy Policy
           </motion.h1>
@@ -53,9 +53,9 @@ const PrivacyPolicy = () => {
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-block bg-white rounded-full p-4 shadow-lg"
+            className="inline-block bg-gradient-to-br from-blue-500 to-blue-700 rounded-full p-4 shadow-lg"
           >
-            <Shield className="w-16 h-16 text-orange-500" />
+            <Shield className="w-16 h-16 text-white" />
           </motion.div>
         </header>
 
@@ -82,15 +82,15 @@ const PrivacyPolicy = () => {
                 <li key={section.id}>
                   <button
                     onClick={() => toggleSection(section.id)}
-                    className="w-full text-left flex justify-between items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200"
+                    className="w-full text-left flex justify-between items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
                   >
                     <span className="text-blue-900 font-medium">
                       {section.title}
                     </span>
                     {expandedSection === section.id ? (
-                      <ChevronUp className="w-5 h-5 text-orange-500" />
+                      <ChevronUp className="w-5 h-5 text-blue-500" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-orange-500" />
+                      <ChevronDown className="w-5 h-5 text-blue-500" />
                     )}
                   </button>
                   <AnimatePresence>
@@ -102,7 +102,7 @@ const PrivacyPolicy = () => {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <div className="p-4 bg-orange-50 rounded-b-lg">
+                        <div className="p-4 bg-blue-50 rounded-b-lg">
                           {renderSectionContent(section.id)}
                         </div>
                       </motion.div>
@@ -120,7 +120,7 @@ const PrivacyPolicy = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="text-center text-blue-700"
         >
-          <p>&copy; 2024 Kredz. All rights reserved.</p>
+          <p>&copy; 2025 Kredz. All rights reserved.</p>
         </motion.footer>
       </motion.div>
     </div>
@@ -333,21 +333,21 @@ const renderSectionContent = (id: string) => {
           </p>
           <ul className="space-y-2 text-blue-700">
             <li className="flex items-center">
-              <Mail className="w-5 h-5 mr-2 text-orange-500" />
+              <Mail className="w-5 h-5 mr-2 text-blue-500" />
               Email: support@kredz.com
             </li>
             <li className="flex items-center">
-              <Phone className="w-5 h-5 mr-2 text-orange-500" />
+              <Phone className="w-5 h-5 mr-2 text-blue-500" />
               Phone: +91 8240561547
             </li>
             <li className="flex items-center">
-              <MapPin className="w-5 h-5 mr-2 text-orange-500" />
+              <MapPin className="w-5 h-5 mr-2 text-blue-500" />
               No 656A, ElcotSez, Zsurvey, Behind Accenture Company, Old
               Mahablipuram Road, RajivGandhi Salai Sholinganallur - 600119
               TamilNadu, India
             </li>
             <li className="flex items-center">
-              <Globe className="w-5 h-5 mr-2 text-orange-500" />
+              <Globe className="w-5 h-5 mr-2 text-blue-500" />
               Website: www.kredz.com
             </li>
           </ul>
