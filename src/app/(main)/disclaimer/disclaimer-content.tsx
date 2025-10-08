@@ -60,14 +60,14 @@ export default function DisclaimerContent() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <div className="container mx-auto px-4 py-16 bg-gradient-to-br from-orange-50 to-blue-50">
+    <div className="container mx-auto px-4 py-16 bg-gradient-to-br from-blue-50 to-white">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="text-center mb-16"
       >
-        <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-blue-900 mb-4">
+        <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-900 mb-4">
           Website Disclaimer
         </h1>
         <p className="text-xl text-blue-700 max-w-3xl mx-auto">
@@ -86,7 +86,7 @@ export default function DisclaimerContent() {
           <motion.div
             key={section.title}
             className={`bg-white rounded-xl shadow-lg p-6 transition-all duration-300 ease-in-out transform hover:scale-105 ${
-              hoveredIndex === index ? "ring-2 ring-orange-400" : ""
+              hoveredIndex === index ? "ring-2 ring-blue-400" : ""
             }`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -95,7 +95,7 @@ export default function DisclaimerContent() {
             onMouseLeave={() => setHoveredIndex(null)}
           >
             <div className="flex items-center mb-4">
-              <div className="bg-gradient-to-br from-orange-500 to-blue-600 p-3 rounded-full mr-4">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-3 rounded-full mr-4">
                 <section.icon className="w-6 h-6 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-blue-900">
