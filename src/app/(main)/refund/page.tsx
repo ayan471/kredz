@@ -117,15 +117,15 @@ const RefundCancellationPolicy = () => {
           </p>
           <ul className="list-none">
             <li className="flex items-center mb-2">
-              <Mail className="mr-2 text-orange-500" size={18} />
+              <Mail className="mr-2 text-primary" size={18} />
               <span>Email: support@kredz.com</span>
             </li>
             <li className="flex items-center mb-2">
-              <Phone className="mr-2 text-orange-500" size={18} />
+              <Phone className="mr-2 text-primary" size={18} />
               <span>Phone: +91 8240561547</span>
             </li>
             <li className="flex items-center">
-              <MapPin className="mr-2 text-orange-500" size={18} />
+              <MapPin className="mr-2 text-primary" size={18} />
               <span>
                 No 656A, ElcotSez, Zsurvey, Behind Accenture Company, Old
                 Mahablipuram Road, RajivGandhi Salai Sholinganallur - 600119
@@ -143,13 +143,13 @@ const RefundCancellationPolicy = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-orange-100 to-blue-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-extrabold text-blue-900 text-center mb-8"
+          className="text-4xl font-extrabold  text-center mb-8 text-blue-600"
         >
           Refund and Cancellation Policy
         </motion.h1>
@@ -157,10 +157,10 @@ const RefundCancellationPolicy = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white shadow-xl rounded-lg overflow-hidden"
+          className="bg-card shadow-xl rounded-lg overflow-hidden"
         >
           <div className="p-6">
-            <p className="text-blue-700 mb-6">
+            <p className="text-muted-foreground mb-6">
               At Kredz, we strive to provide excellent services to help improve
               your credit score and financial health. To ensure transparency and
               fairness, we have outlined our Refund and Cancellation Policy
@@ -170,15 +170,15 @@ const RefundCancellationPolicy = () => {
               <div key={index} className="mb-4">
                 <button
                   onClick={() => toggleSection(index)}
-                  className="w-full text-left flex justify-between items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200"
+                  className="w-full text-left flex justify-between items-center p-4 bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors duration-200"
                 >
                   <span className="text-blue-900 font-medium">
                     {section.title}
                   </span>
                   {expandedSection === index ? (
-                    <ChevronUp className="w-5 h-5 text-orange-500" />
+                    <ChevronUp className="w-5 h-5 text-primary" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-orange-500" />
+                    <ChevronDown className="w-5 h-5 text-primary" />
                   )}
                 </button>
                 <AnimatePresence>
@@ -189,7 +189,7 @@ const RefundCancellationPolicy = () => {
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="p-4 bg-orange-50 rounded-b-lg text-blue-700">
+                      <div className="p-4 bg-primary/5 rounded-b-lg text-muted-foreground">
                         {section.content}
                       </div>
                     </motion.div>
