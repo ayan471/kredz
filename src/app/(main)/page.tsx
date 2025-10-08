@@ -1,6 +1,7 @@
 import DecorativeBackground from "@/components/counter/AnimatedBackground";
 import AnimatedCounterSection from "@/components/counter/AnimatedCounterSection";
-import MainLoginSignupSection from "@/components/custom/MainLoginSignupSection/MainLoginSignupSection";
+import { Hero } from "@/components/custom/MainLoginSignupSection/MainLoginSignupSection";
+
 import OurServices from "@/components/custom/OurServices";
 import Testimonials from "@/components/custom/Testimonials";
 import WhyChooseKredz from "@/components/custom/WhyChooseKredz";
@@ -12,7 +13,7 @@ export default async function Home() {
   const isLoggedIn = !!user;
   return (
     <main>
-      <MainLoginSignupSection isLoggedIn={isLoggedIn} />
+      <Hero />
       <OurServices />
       <WhyChooseKredz />
 
