@@ -48,7 +48,7 @@ const Header = async () => {
                 <UserButton />
               </div>
             ) : (
-              <Button asChild className="text-xl">
+              <Button asChild className="text-xl bg-blue-600 hover:bg-blue-800">
                 <Link href="/sign-in" className="my-auto">
                   Account
                 </Link>

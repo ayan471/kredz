@@ -110,7 +110,7 @@ export function Footer() {
             <div>
               <div className="font-medium text-slate-900">Contact</div>
               <ul className="mt-3 space-y-2">
-                <li>
+                {/* <li>
                   <a
                     href="tel:+917724034238"
                     className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600"
@@ -129,7 +129,7 @@ export function Footer() {
                     <Phone className="h-4 w-4" />
                     +91 81209 50068
                   </a>
-                </li>
+                </li> */}
                 <li>
                   <a
                     href="https://wa.me/918068213011"

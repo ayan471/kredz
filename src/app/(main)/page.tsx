@@ -28,7 +28,7 @@ export default async function Home() {
 
       {/* <Testimonials /> */}
       <Testimonials />
-      <FAQ />
+      {/* <FAQ /> */}
       <CTABanner />
     </main>
   );
