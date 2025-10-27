@@ -76,7 +76,7 @@ export function Hero() {
                 href="/credit-builder-plan"
                 className="text-lg px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 transition-all duration-300 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 inline-flex items-center"
               >
-                Learn more
+                Credit Builder Plan
               </a>
             </div>
 
