@@ -66,14 +66,14 @@ export function Hero() {
 
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start mb-8">
               <a
-                href="/services"
+                href="/consultancy-application"
                 className="text-lg px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 rounded-full shadow-lg hover:shadow-xl text-white transform hover:scale-105 inline-flex items-center"
               >
-                Get your loan
+                Apply Now
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
               </a>
               <a
-                href="/about"
+                href="/credit-builder-plan"
                 className="text-lg px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 transition-all duration-300 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 inline-flex items-center"
               >
                 Learn more
