@@ -14,7 +14,7 @@ export function Features() {
       title: "Home improvement",
       description:
         "Upgrade your space with predictable payments and flexible terms.",
-      benefits: ["Fund in 24–48h", "$1k–$50k"],
+      benefits: ["Fund in 24–48h", "₹1k–₹50k"],
     },
     {
       icon: Briefcase,
