@@ -41,7 +41,7 @@ const planOptions: PlanOption[] = [
     services: [
       "Improve & Boost Your Credit score",
       "Monitor & Maintain Good Credit Health",
-      "Indetify & Remove Errors From Your Credit Report(2 disputed accounts)",
+      "Indentify & Remove Errors From Your Credit Report(2 disputed accounts)",
     ],
   },
   {
@@ -55,7 +55,7 @@ const planOptions: PlanOption[] = [
     services: [
       "Improve & Boost Your Credit score",
       "Monitor & Maintain Good Credit Health",
-      "Indetify & Remove Errors From Your Credit Report(7 disputed accounts)",
+      "Indentify & Remove Errors From Your Credit Report(7 disputed accounts)",
     ],
   },
   {
@@ -70,7 +70,7 @@ const planOptions: PlanOption[] = [
     services: [
       "Improve & Boost Your Credit score",
       "Monitor & Maintain Good Credit Health",
-      "Indetify & Remove Errors From Your Credit Report(unlimited)",
+      "Indentify & Remove Errors From Your Credit Report(unlimited)",
       "Assured Small Value Credit Builder Loan (Only selected Customers)*(t&C)",
     ],
   },
@@ -85,7 +85,7 @@ const planOptions: PlanOption[] = [
     services: [
       "Improve & Boost Your Credit score",
       "Monitor & Maintain Good Credit Health",
-      "Indetify & Remove Errors From Your Credit Report(unlimited)",
+      "Indentify & Remove Errors From Your Credit Report(unlimited)",
       "Assured Small Value Credit Builder Loan (Only selected Customers)*(t&C)",
     ],
   },
@@ -100,7 +100,7 @@ const planOptions: PlanOption[] = [
     services: [
       "Improve & Boost Your Credit score",
       "Monitor & Maintain Good Credit Health",
-      "Indetify & Remove Errors From Your Credit Report(unlimited)",
+      "Indentify & Remove Errors From Your Credit Report(unlimited)",
       "Assured Credit Builder Loan(Only selected Customers)*(t&C)",
     ],
   },
@@ -115,7 +115,7 @@ const planOptions: PlanOption[] = [
     services: [
       "Improve & Boost Your Credit score",
       "Monitor & Maintain Good Credit Health",
-      "Indetify & Remove Errors From Your Credit Report(unlimited)",
+      "Indentify & Remove Errors From Your Credit Report(unlimited)",
       "Assured Credit Builder Loan*(t&C)",
     ],
   },
@@ -131,7 +131,7 @@ const planOptions: PlanOption[] = [
     services: [
       "Improve & Boost Your Credit score",
       "Monitor & Maintain Good Credit Health",
-      "Indetify & Remove Errors From Your Credit Report(unlimited)",
+      "Indentify & Remove Errors From Your Credit Report(unlimited)",
       "Assured Credit Builder Loan*(t&C)",
     ],
   },
@@ -147,7 +147,7 @@ const planOptions: PlanOption[] = [
     services: [
       "Improve & Boost Your Credit score",
       "Monitor & Maintain Good Credit Health",
-      "Indetify & Remove Errors From Your Credit Report(unlimited)",
+      "Indentify & Remove Errors From Your Credit Report(unlimited)",
       "Assured High Value Credit Builder Loan*(t&C)",
     ],
   },
@@ -163,7 +163,7 @@ const planOptions: PlanOption[] = [
     services: [
       "Improve & Boost Your Credit score",
       "Monitor & Maintain Good Credit Health",
-      "Indetify & Remove Errors From Your Credit Report(unlimited)",
+      "Indentify & Remove Errors From Your Credit Report(unlimited)",
       "Assured Highest Value Credit Builder Loan*(t&C)",
     ],
   },
