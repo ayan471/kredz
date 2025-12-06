@@ -117,19 +117,19 @@ export function Footer() {
                     aria-label="Call +91 77240 34238"
                   >
                     <Phone className="h-4 w-4" />
-                    +91 77240 34238
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="tel:+918120950068"
-                    className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600"
-                    aria-label="Call +91 81209 50068"
-                  >
-                    <Phone className="h-4 w-4" />
-                    +91 81209 50068
+                    +91 89100 68311
                   </a>
                 </li> */}
+                <li>
+                  <a
+                    href="tel:+918910068311"
+                    className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600"
+                    aria-label="Call +91 89100 68311"
+                  >
+                    <Phone className="h-4 w-4" />
+                    +91 89100 68311
+                  </a>
+                </li>
                 <li>
                   <a
                     href="https://wa.me/918068213011"

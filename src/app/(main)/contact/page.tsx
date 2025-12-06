@@ -32,15 +32,15 @@ const ContactPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-16">
         {/* Quick Contact Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
-          {/* <Card className="bg-white border-blue-100 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-white border-blue-100 shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <PhoneIcon className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="font-semibold text-gray-900 mb-1">Call Us</h3>
-              <p className="text-sm text-gray-600">+91 77240 34238</p>
+              <p className="text-sm text-gray-600">+91 89100 68311</p>
             </CardContent>
-          </Card> */}
+          </Card>
 
           <Card className="bg-white border-blue-100 shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6 text-center">
@@ -125,14 +125,14 @@ const ContactPage = () => {
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
-                    {/* <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <PhoneIcon className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
                       <p className="font-medium text-gray-900 text-sm">Phone</p>
-                      <p className="text-sm text-gray-600">+91 77240 34238</p>
-                      <p className="text-sm text-gray-600">+91 81209 50068</p>
-                    </div> */}
+
+                      <p className="text-sm text-gray-600">+91 89100 68311</p>
+                    </div>
                   </div>
 
                   <div className="flex items-start gap-3">
