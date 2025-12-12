@@ -1188,14 +1188,23 @@ const CreditBuilderLoanForm: React.FC = () => {
                 <Label htmlFor="mobileNumber">
                   Mobile Number <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="mobileNumber"
-                  type="number"
-                  className="appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-moz-appearance:textfield]"
-                  {...register("mobileNumber", {
-                    required: "Mobile number is required",
-                  })}
-                />
+
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                    +91
+                  </span>
+
+                  <Input
+                    id="mobileNumber"
+                    type="number"
+                    // Added pl-10 to the start of your existing classes
+                    className="pl-10 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-moz-appearance:textfield]"
+                    {...register("mobileNumber", {
+                      required: "Mobile number is required",
+                    })}
+                  />
+                </div>
+
                 {errors.mobileNumber && (
                   <p className="text-sm text-red-500 mt-1">
                     {errors.mobileNumber.message}

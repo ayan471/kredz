@@ -433,13 +433,21 @@ const MembershipCard: React.FC<{
                 </div>
                 <div className="grid w-full items-center gap-3">
                   <Label htmlFor="phoneNo">Phone No</Label>
-                  <Input
-                    type="tel"
-                    id="phoneNo"
-                    {...membershipForm.register("phoneNo", {
-                      required: "Phone number is required",
-                    })}
-                  />
+
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                      +91
+                    </span>
+
+                    <Input
+                      type="tel"
+                      id="phoneNo"
+                      className="pl-10"
+                      {...membershipForm.register("phoneNo", {
+                        required: "Phone number is required",
+                      })}
+                    />
+                  </div>
                 </div>
                 <div className="grid w-full items-center gap-3">
                   <Label htmlFor="emailID">Email ID</Label>

@@ -325,13 +325,25 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="phoneNo">Phone Number</Label>
-            <Input
-              type="tel"
-              id="phoneNo"
-              {...register("phoneNo", {
-                required: "Phone number is required",
-              })}
-            />
+
+            {/* 1. Add a relative wrapper div */}
+            <div className="relative">
+              {/* 2. Add the prefix text absolutely positioned to the left */}
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                +91
+              </span>
+
+              <Input
+                type="tel"
+                id="phoneNo"
+                // 3. Add padding-left (pl-10) so the user's typing doesn't overlap the +91
+                className="pl-10"
+                {...register("phoneNo", {
+                  required: "Phone number is required",
+                })}
+              />
+            </div>
+
             {errors.phoneNo && (
               <p className="text-sm text-red-500">{errors.phoneNo.message}</p>
             )}
