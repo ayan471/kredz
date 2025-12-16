@@ -485,19 +485,18 @@ const MembershipCard: React.FC<{
                 />
               </CardContent>
             </Card>
-
-            <div className="flex gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 bg-transparent"
+                className="w-full md:flex-1 bg-transparent"
               >
                 Back to Application
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-4 text-lg font-semibold"
+                className="w-full md:flex-1 bg-orange-500 hover:bg-orange-600 text-white py-4 text-lg font-semibold"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Processing..." : "Proceed to Payment"}
