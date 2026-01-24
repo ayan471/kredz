@@ -7,22 +7,22 @@ import ServiceCard from "./ServiceCard";
 import ContactSection from "./ContactSection";
 
 const services = [
-  {
-    title: "Loan Consulting",
-    description:
-      "Our Loan Consulting service offers expert advice and assistance to help you secure the best loan options suited to your financial needs. Whether it's a personal loan, home loan, or business loan, we guide you through the entire loan process.",
-    icon: "💼",
-    color: "from-blue-700 to-blue-900",
-    link: "/consultancy-application",
-    features: [
-      "Expert Loan Advice: Personalized recommendations on loan types, lenders, and terms.",
-      "Loan Pre-Approval Guidance: Assistance in the pre-approval process to improve your chances of getting the best loan offers.",
-      "Negotiation Support: We help negotiate the best interest rates, repayment terms, and other loan conditions.",
-      "End-to-End Support: From loan application to disbursement, we provide expert support at each step.",
-    ],
-    buttonText: "Apply Now",
-    buttonLink: "/consultancy-application",
-  },
+  // {
+  //   title: "Loan Consulting",
+  //   description:
+  //     "Our Loan Consulting service offers expert advice and assistance to help you secure the best loan options suited to your financial needs. Whether it's a personal loan, home loan, or business loan, we guide you through the entire loan process.",
+  //   icon: "💼",
+  //   color: "from-blue-700 to-blue-900",
+  //   link: "/consultancy-application",
+  //   features: [
+  //     "Expert Loan Advice: Personalized recommendations on loan types, lenders, and terms.",
+  //     "Loan Pre-Approval Guidance: Assistance in the pre-approval process to improve your chances of getting the best loan offers.",
+  //     "Negotiation Support: We help negotiate the best interest rates, repayment terms, and other loan conditions.",
+  //     "End-to-End Support: From loan application to disbursement, we provide expert support at each step.",
+  //   ],
+  //   buttonText: "Apply Now",
+  //   buttonLink: "/consultancy-application",
+  // },
   {
     title: "Loan Membership Cards",
     description:
