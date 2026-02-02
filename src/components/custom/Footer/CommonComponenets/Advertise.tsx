@@ -27,11 +27,11 @@ const Advertise = () => {
 
         <li className="flex flex-row gap-2 justify-start align-middle ">
           <Link
-            href="https://wa.me/918068213011"
+            href="https://wa.me/918062527746"
             className=" flex flex-row gap-2 justify-start align-middle"
           >
             <WhatsappIcon className="h-4 w-4 mt-1" />
-            +91 8068213011
+            +91 8062527746
           </Link>
         </li>
 

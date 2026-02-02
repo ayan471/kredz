@@ -132,14 +132,14 @@ export function Footer() {
                 </li>
                 <li>
                   <a
-                    href="https://wa.me/918068213011"
+                    href="https://wa.me/918062527746"
                     className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600"
-                    aria-label="WhatsApp +91 8068213011"
+                    aria-label="WhatsApp +91 8062527746"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <MessageCircle className="h-4 w-4" />
-                    +91 8068213011
+                    +91 8062527746
                   </a>
                 </li>
                 <li>

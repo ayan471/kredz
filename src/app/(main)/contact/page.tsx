@@ -58,7 +58,7 @@ const ContactPage = () => {
                 <MessageSquare className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="font-semibold text-gray-900 mb-1">WhatsApp</h3>
-              <p className="text-sm text-gray-600">+91 8068213011</p>
+              <p className="text-sm text-gray-600">+918062527746</p>
             </CardContent>
           </Card>
 
@@ -144,10 +144,10 @@ const ContactPage = () => {
                         WhatsApp
                       </p>
                       <Link
-                        href="https://wa.me/918068213011"
+                        href="https://wa.me/918062527746"
                         className="text-sm text-blue-600 hover:text-blue-700"
                       >
-                        +91 8068213011
+                        +918062527746
                       </Link>
                     </div>
                   </div>

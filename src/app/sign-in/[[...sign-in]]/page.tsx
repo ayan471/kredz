@@ -172,10 +172,10 @@ export default function SignInPage() {
             transition={{ delay: 0.9 }}
             className="flex items-center gap-4 text-sm text-blue-200/70 pt-8 border-t border-white/10"
           >
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-400" />
               <span>RBI Registered NBFC</span>
-            </div>
+            </div> */}
             <div className="h-4 w-px bg-white/20" />
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-blue-300" />
