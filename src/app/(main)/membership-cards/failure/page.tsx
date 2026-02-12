@@ -58,15 +58,15 @@ export default function MembershipFailure() {
             )}
           </CardContent>
           <CardFooter className="flex justify-center gap-4">
-            <Link href="/membership">
+            <Link href="/membership-cards">
               <Button
                 variant="outline"
-                className="border-gray-500 text-white hover:bg-gray-700"
+                className="border-gray-500 text-black hover:bg-gray-700"
               >
                 Try Again
               </Button>
             </Link>
-            <Link href="/support">
+            <Link href="/contact">
               <Button className="bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 hover:from-orange-600 hover:via-pink-600 hover:to-purple-700">
                 Contact Support
               </Button>
