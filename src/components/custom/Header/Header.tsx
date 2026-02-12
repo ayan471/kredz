@@ -2,19 +2,9 @@ import React from "react";
 import Image from "next/image";
 import MainNavigation from "./mainNavigation";
 import Link from "next/link";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import HamburgerIcon from "./hamburger.webp";
-
 import { Button } from "@/components/ui/button";
-import MobileNavigation from "./MobileNavigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import MobileSheet from "./MobileSheet";
+import { currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 
 const Header = async () => {
@@ -36,11 +26,9 @@ const Header = async () => {
             className="max-w-[160px]"
           />
         </Link>
-
         <div className="hidden xl:flex">
           <MainNavigation />
         </div>
-
         <div className="flex flex-row gap-8 xl:min-w-[200px] justify-end">
           <div className="flex gap-4 flex-row align-middle justify-center">
             {isLoggedIn ? (
@@ -55,35 +43,7 @@ const Header = async () => {
               </Button>
             )}
           </div>
-
-          <div className="flex xl:hidden flex-col align-middle justify-center">
-            <Sheet>
-              <SheetTrigger>
-                <Image
-                  src={HamburgerIcon}
-                  width="40"
-                  height="40"
-                  alt="Hamburger Menu Icon"
-                />
-              </SheetTrigger>
-              <SheetContent className="overflow-y-scroll">
-                <SheetHeader className="mb-8">
-                  <SheetTitle className="text-left mt-4">Kredz</SheetTitle>
-                  <SheetDescription className="text-left mb-8">
-                    At Kredz, we combine expert loan consulting, innovative
-                    credit-building services, and strategic partnerships to help
-                    you achieve your financial goals. We partner with
-                    RBI-registered Banks and NBFCs to offer the best loan
-                    options and tailored credit improvement strategies.
-                  </SheetDescription>
-                </SheetHeader>
-
-                <div className="mb-4"></div>
-
-                <MobileNavigation isLoggedIn={isLoggedIn} />
-              </SheetContent>
-            </Sheet>
-          </div>
+          <MobileSheet isLoggedIn={isLoggedIn} />
         </div>
       </div>
     </div>

@@ -9,9 +9,13 @@ import Link from "next/link";
 
 interface MobileNavigationProps {
   isLoggedIn: boolean;
+  onNavigate?: () => void; // Add this prop
 }
 
-const MobileNavigation: React.FC<MobileNavigationProps> = ({ isLoggedIn }) => {
+const MobileNavigation: React.FC<MobileNavigationProps> = ({
+  isLoggedIn,
+  onNavigate,
+}) => {
   const getServiceLink = (path: string) => {
     return isLoggedIn ? path : "/sign-in";
   };
@@ -21,40 +25,51 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isLoggedIn }) => {
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="item-1">
           <p className="flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180">
-            <Link href="/">Home</Link>
+            <Link href="/" onClick={onNavigate}>
+              Home
+            </Link>
           </p>
         </AccordionItem>
-
         {isLoggedIn && (
           <AccordionItem value="item-dashboard">
             <p className="flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180">
-              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/dashboard" onClick={onNavigate}>
+                Dashboard
+              </Link>
             </p>
           </AccordionItem>
         )}
-
         <AccordionItem value="item-2">
           <p className="flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180">
-            <Link href="/about-us">About</Link>
+            <Link href="/about-us" onClick={onNavigate}>
+              About
+            </Link>
           </p>
         </AccordionItem>
-        <AccordionItem value="item-2">
+        <AccordionItem value="item-3">
           <p className="flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180">
-            <Link href="/services">Services</Link>
+            <Link href="/services" onClick={onNavigate}>
+              Services
+            </Link>
           </p>
         </AccordionItem>
-
         {/* <AccordionItem value="item-3">
           <AccordionTrigger>Services</AccordionTrigger>
           <AccordionContent>
             <ul className="text-md flex flex-col gap-4 text-slate-800 font-semibold">
               <li>
-                <Link href={getServiceLink("/consultancy-application")}>
+                <Link 
+                  href={getServiceLink("/consultancy-application")}
+                  onClick={onNavigate}
+                >
                   Personal Consultancy
                 </Link>
               </li>
               <li>
-                <Link href={getServiceLink("/credit-builder")}>
+                <Link 
+                  href={getServiceLink("/credit-builder")}
+                  onClick={onNavigate}
+                >
                   Credit Builder Plans
                 </Link>
               </li>
@@ -67,10 +82,11 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isLoggedIn }) => {
             </ul>
           </AccordionContent>
         </AccordionItem> */}
-
         <AccordionItem value="item-4">
           <p className="flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180">
-            <Link href="/contact">Contact</Link>
+            <Link href="/contact" onClick={onNavigate}>
+              Contact
+            </Link>
           </p>
         </AccordionItem>
       </Accordion>
