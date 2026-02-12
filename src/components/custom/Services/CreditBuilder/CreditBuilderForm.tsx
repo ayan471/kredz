@@ -93,7 +93,7 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
     if (user) {
       setValue(
         "fullName",
-        `${user.firstName || ""} ${user.lastName || ""}`.trim()
+        `${user.firstName || ""} ${user.lastName || ""}`.trim(),
       );
 
       // If user has a phone number in their profile
@@ -184,7 +184,7 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
 
       if (!subscriptionResult.success) {
         throw new Error(
-          subscriptionResult.error || "Failed to submit subscription"
+          subscriptionResult.error || "Failed to submit subscription",
         );
       }
 
@@ -253,7 +253,7 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
       const orderId =
         `CB-${user.id.substring(0, 8)}-${timestamp}-${randomStr1}-${randomStr2}-${randomStr3}`.slice(
           0,
-          38
+          38,
         );
       console.log("Generated unique transaction ID:", orderId);
 
@@ -325,25 +325,39 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
 
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="phoneNo">Phone Number</Label>
-
-            {/* 1. Add a relative wrapper div */}
             <div className="relative">
-              {/* 2. Add the prefix text absolutely positioned to the left */}
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
                 +91
               </span>
-
               <Input
-                type="tel"
+                type="text"
+                inputMode="numeric"
                 id="phoneNo"
-                // 3. Add padding-left (pl-10) so the user's typing doesn't overlap the +91
                 className="pl-10"
                 {...register("phoneNo", {
                   required: "Phone number is required",
+                  minLength: {
+                    value: 10,
+                    message: "Phone number must be exactly 10 digits",
+                  },
+                  maxLength: {
+                    value: 10,
+                    message: "Phone number must be exactly 10 digits",
+                  },
+                  pattern: {
+                    value: /^[0-9]{10}$/,
+                    message: "Please enter a valid 10-digit number",
+                  },
                 })}
+                onChange={(e) => {
+                  const cleaned = e.target.value
+                    .replace(/\D/g, "")
+                    .slice(0, 10);
+                  e.target.value = cleaned;
+                  setValue("phoneNo", cleaned, { shouldValidate: true });
+                }}
               />
             </div>
-
             {errors.phoneNo && (
               <p className="text-sm text-red-500">{errors.phoneNo.message}</p>
             )}

@@ -133,7 +133,7 @@ const sanitizeFormData = (data: Partial<FormData>) => {
     sanitizedData.aadharNumber === sanitizedData.loanAmountRequired
   ) {
     console.log(
-      "Sanitizing: Detected aadharNumber matches loanAmountRequired, clearing aadharNumber"
+      "Sanitizing: Detected aadharNumber matches loanAmountRequired, clearing aadharNumber",
     );
     sanitizedData.aadharNumber = "";
   }
@@ -168,7 +168,7 @@ const setFormSubmittedStatus = (applicationId: string, userId: string) => {
   } catch (error) {
     console.error(
       "Error saving form submission status to localStorage:",
-      error
+      error,
     );
   }
 };
@@ -188,7 +188,7 @@ const getFormSubmittedStatus = (userId?: string) => {
   } catch (error) {
     console.error(
       "Error retrieving form submission status from localStorage:",
-      error
+      error,
     );
     return { submitted: false, applicationId: "" };
   }
@@ -203,7 +203,7 @@ const clearFormSubmittedStatus = (userId?: string) => {
   } catch (error) {
     console.error(
       "Error clearing form submission status from localStorage:",
-      error
+      error,
     );
   }
 };
@@ -383,7 +383,7 @@ const CreditBuilderLoanForm: React.FC = () => {
               fetchedData.loanAmountRequired !== ""
             ) {
               console.log(
-                "Detected aadharNumber field contains loan amount, clearing it"
+                "Detected aadharNumber field contains loan amount, clearing it",
               );
               setValue("aadharNumber", "");
             }
@@ -411,7 +411,7 @@ const CreditBuilderLoanForm: React.FC = () => {
     // If user exists and the application status is "Eligible", make sure we clear prior submission status
     if (user?.id && existingApplication?.status === "Eligible") {
       console.log(
-        "User is eligible for a new loan - clearing previous submission data"
+        "User is eligible for a new loan - clearing previous submission data",
       );
 
       // Clear form submitted status
@@ -480,7 +480,7 @@ const CreditBuilderLoanForm: React.FC = () => {
           ) {
             formData.append(
               key,
-              Number.parseFloat(value.toString()).toString()
+              Number.parseFloat(value.toString()).toString(),
             );
           } else if (["hasSalarySlip", "hasIncomeTaxReturn"].includes(key)) {
             formData.append(key, value ? "true" : "false");
@@ -507,11 +507,11 @@ const CreditBuilderLoanForm: React.FC = () => {
         // Add this logging to verify the data being passed
         console.log(
           "Checking eligibility with application ID:",
-          result.data.id
+          result.data.id,
         );
         console.log(
           "Monthly income for eligibility calculation:",
-          data.monthlyIncome
+          data.monthlyIncome,
         );
 
         toast({
@@ -524,12 +524,12 @@ const CreditBuilderLoanForm: React.FC = () => {
           if (user?.phoneNumbers && user.phoneNumbers[0]) {
             await sendWhatsAppNotification(
               user.phoneNumbers[0].phoneNumber,
-              data.fullName
+              data.fullName,
             );
             console.log("WhatsApp notification sent successfully");
           } else {
             console.warn(
-              "User phone number not available for WhatsApp notification"
+              "User phone number not available for WhatsApp notification",
             );
           }
         } catch (error) {
@@ -552,7 +552,7 @@ const CreditBuilderLoanForm: React.FC = () => {
           }).toString();
 
           router.push(
-            `/credit-builder-loan/loan-eligibility-result?${queryParams}`
+            `/credit-builder-loan/loan-eligibility-result?${queryParams}`,
           );
 
           // Set form submitted status
@@ -569,7 +569,7 @@ const CreditBuilderLoanForm: React.FC = () => {
           }).toString();
 
           router.push(
-            `/credit-builder-loan/loan-eligibility-result?${queryParams}`
+            `/credit-builder-loan/loan-eligibility-result?${queryParams}`,
           );
         }
 
@@ -812,7 +812,7 @@ const CreditBuilderLoanForm: React.FC = () => {
       try {
         sessionStorage.setItem(
           "creditBuilderLoanFormData",
-          JSON.stringify(sanitizedValues)
+          JSON.stringify(sanitizedValues),
         );
       } catch (error) {
         console.error("Error saving form data to sessionStorage:", error);
@@ -863,7 +863,7 @@ const CreditBuilderLoanForm: React.FC = () => {
     try {
       sessionStorage.setItem(
         "creditBuilderLoanFormData",
-        JSON.stringify(sanitizedValues)
+        JSON.stringify(sanitizedValues),
       );
     } catch (error) {
       console.error("Error saving form data to sessionStorage:", error);
@@ -949,7 +949,7 @@ const CreditBuilderLoanForm: React.FC = () => {
         } catch (error) {
           console.error(
             "Error fetching application data for redirection:",
-            error
+            error,
           );
           // Fallback to basic redirection if fetching fails
           const redirectUrl = `/credit-builder-loan/loan-eligibility-result?applicationId=${applicationId}&preventRedirect=true&status=In Progress`;
@@ -1023,7 +1023,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                 <p className="font-medium">
                   ₹
                   {Number(
-                    existingApplication.amtRequired || 0
+                    existingApplication.amtRequired || 0,
                   ).toLocaleString()}
                 </p>
               </div>
@@ -1106,13 +1106,13 @@ const CreditBuilderLoanForm: React.FC = () => {
                         // Clear bank details submission status if applicationId exists
                         if (existingApplication.id) {
                           localStorage.removeItem(
-                            `bankDetailsSubmitted_${user.id}_${existingApplication.id}`
+                            `bankDetailsSubmitted_${user.id}_${existingApplication.id}`,
                           );
                           localStorage.removeItem(
-                            `bankDetailsSubmissionTime_${user.id}_${existingApplication.id}`
+                            `bankDetailsSubmissionTime_${user.id}_${existingApplication.id}`,
                           );
                           localStorage.removeItem(
-                            `processed_${existingApplication.id}`
+                            `processed_${existingApplication.id}`,
                           );
                         }
                       }
@@ -1196,12 +1196,34 @@ const CreditBuilderLoanForm: React.FC = () => {
 
                   <Input
                     id="mobileNumber"
-                    type="number"
-                    // Added pl-10 to the start of your existing classes
-                    className="pl-10 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-moz-appearance:textfield]"
+                    type="text"
+                    inputMode="numeric"
+                    className="pl-10"
                     {...register("mobileNumber", {
                       required: "Mobile number is required",
+                      minLength: {
+                        value: 10,
+                        message: "Mobile number must be exactly 10 digits",
+                      },
+                      maxLength: {
+                        value: 10,
+                        message: "Mobile number must be exactly 10 digits",
+                      },
+                      pattern: {
+                        value: /^[0-9]{10}$/,
+                        message: "Please enter a valid 10-digit mobile number",
+                      },
                     })}
+                    onChange={(e) => {
+                      // This ensures users can ONLY type numbers and limits input to 10 characters
+                      const cleanedValue = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 10);
+                      e.target.value = cleanedValue;
+                      setValue("mobileNumber", cleanedValue, {
+                        shouldValidate: true,
+                      });
+                    }}
                   />
                 </div>
 
@@ -1403,7 +1425,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                       const loanAmount = getValues("loanAmountRequired");
                       if (value === loanAmount && loanAmount !== "") {
                         console.log(
-                          "Detected aadharNumber input matches loan amount, clearing"
+                          "Detected aadharNumber input matches loan amount, clearing",
                         );
                         e.target.value = "";
                         setValue("aadharNumber", "");
@@ -1418,7 +1440,7 @@ const CreditBuilderLoanForm: React.FC = () => {
                     const loanAmount = getValues("loanAmountRequired");
                     if (value === loanAmount && loanAmount !== "") {
                       console.log(
-                        "Focus: Detected aadharNumber contains loan amount, clearing"
+                        "Focus: Detected aadharNumber contains loan amount, clearing",
                       );
                       e.target.value = "";
                       setValue("aadharNumber", "");

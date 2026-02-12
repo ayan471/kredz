@@ -161,7 +161,7 @@ const clearFormDataFromLocalStorage = () => {
 // File size validation function (1MB = 1024 * 1024 bytes)
 const validateFileSize = (
   files: FileList | null,
-  maxSizeInMB = 1
+  maxSizeInMB = 1,
 ): string | true => {
   if (!files || files.length === 0) return true;
 
@@ -231,7 +231,7 @@ const MembershipCard: React.FC<{
     const fetchMembershipPlan = async () => {
       if (applicationData.monIncome) {
         const plan = await determineMembershipPlan(
-          Number(applicationData.monIncome)
+          Number(applicationData.monIncome),
         );
         setMembershipPlan(plan);
         membershipForm.setValue("membershipPlan", plan);
@@ -289,7 +289,7 @@ const MembershipCard: React.FC<{
       // Proceed directly to payment without updating application data
       const paymentResult = await initiateSabpaisaPayment({
         amount: Number.parseFloat(
-          calculateAmounts(planDetails.discountedPrice).totalAmount
+          calculateAmounts(planDetails.discountedPrice).totalAmount,
         ),
         orderId: `${applicationData.id}-${Date.now()}`, // Generate unique order ID
         customerName: data.fullName,
@@ -579,14 +579,37 @@ const Step1Personal: React.FC<StepProps> = ({
       <Label htmlFor="phoneNo" className="text-base font-semibold">
         Phone Number
       </Label>
-      <Input
-        id="phoneNo"
-        type="tel"
-        {...register("phoneNo", {
-          required: "Phone number is required",
-        })}
-        className="w-full p-3"
-      />
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+          +91
+        </span>
+        <Input
+          id="phoneNo"
+          type="text"
+          inputMode="numeric"
+          className="w-full p-3 pl-10" // Added padding for the +91
+          {...register("phoneNo", {
+            required: "Phone number is required",
+            minLength: {
+              value: 10,
+              message: "Phone number must be exactly 10 digits",
+            },
+            maxLength: {
+              value: 10,
+              message: "Phone number must be exactly 10 digits",
+            },
+            pattern: {
+              value: /^[0-9]{10}$/,
+              message: "Please enter a valid 10-digit phone number",
+            },
+          })}
+          onChange={(e) => {
+            const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
+            e.target.value = cleaned;
+            setValue("phoneNo", cleaned, { shouldValidate: true });
+          }}
+        />
+      </div>
       {errors.phoneNo && (
         <p className="text-red-500 text-sm">{errors.phoneNo.message}</p>
       )}
@@ -667,7 +690,7 @@ const Step2EmploymentIncome: React.FC<StepProps> = ({
                     <SelectItem key={type} value={type}>
                       {type}
                     </SelectItem>
-                  )
+                  ),
                 )}
               </SelectContent>
             </Select>
@@ -1266,7 +1289,7 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
       if (result.hasExistingApplication) {
         setHasExistingLoan(true);
         setPanVerificationError(
-          "A loan application already exists with this PAN card number. You cannot apply for another loan until your current application is completed or rejected."
+          "A loan application already exists with this PAN card number. You cannot apply for another loan until your current application is completed or rejected.",
         );
         return false;
       }
@@ -1392,7 +1415,7 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
             if (dataToSave[key as keyof FormValues] instanceof FileList) {
               delete dataToSave[key as keyof FormValues];
             }
-          }
+          },
         );
         saveFormDataToLocalStorage(dataToSave);
       }
@@ -1536,7 +1559,7 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
         const result = await saveRejectedApplication(formData);
         if (!result.success) {
           throw new Error(
-            result.error || "Failed to save rejected application"
+            result.error || "Failed to save rejected application",
           );
         }
       } catch (error) {
