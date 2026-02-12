@@ -3,11 +3,8 @@ import { columns } from "./columns";
 import { DownloadCSV } from "./download-csv";
 import { DataTable } from "../data-table";
 import { DateRangeSelector } from "./DateRangeSelector";
-
 const prisma = new PrismaClient();
-
 export const dynamic = "force-dynamic";
-
 async function getCreditBuilderLoanApplications(dateRange?: {
   from: string;
   to: string;
@@ -20,13 +17,13 @@ async function getCreditBuilderLoanApplications(dateRange?: {
         },
       }
     : {};
-
   const applications = await prisma.creditBuilderLoanApplication.findMany({
     where,
     select: {
       id: true,
       userId: true,
       fullName: true,
+      email: true, // Added email field
       mobileNumber: true,
       loanAmountRequired: true,
       eligibleAmount: true,
@@ -42,10 +39,8 @@ async function getCreditBuilderLoanApplications(dateRange?: {
       createdAt: "desc",
     },
   });
-
   return applications;
 }
-
 export default async function AdminCreditBuilderLoansPage({
   searchParams,
 }: {
@@ -54,9 +49,7 @@ export default async function AdminCreditBuilderLoansPage({
   const dateRange = searchParams.dateRange
     ? JSON.parse(searchParams.dateRange as string)
     : undefined;
-
   const loanApplications = await getCreditBuilderLoanApplications(dateRange);
-
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">

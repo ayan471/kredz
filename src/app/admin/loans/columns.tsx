@@ -36,6 +36,7 @@ export type LoanApplication = {
   id: string;
   userId: string;
   fullName: string;
+  email: string; // Email address field
   phoneNo: string;
   amtRequired: string;
   approvedAmount: number | null;
@@ -59,6 +60,24 @@ export const columns: ColumnDef<LoanApplication>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
+    },
+  },
+  {
+    accessorKey: "email",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Email Address
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const email = row.getValue("email") as string;
+      return <div className="lowercase">{email}</div>;
     },
   },
   {
@@ -169,7 +188,7 @@ export const columns: ColumnDef<LoanApplication>[] = [
           const newStatus = !isActive;
           const result = await toggleMembershipStatus(
             row.original.id,
-            newStatus
+            newStatus,
           );
 
           if (result.success) {

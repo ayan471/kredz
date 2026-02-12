@@ -36,6 +36,7 @@ export type CreditBuilderLoanApplication = {
   id: string;
   userId: string;
   fullName: string;
+  email: string; // Email address field
   mobileNumber: string;
   loanAmountRequired: number;
   eligibleAmount: number | null;
@@ -62,6 +63,24 @@ export const columns: ColumnDef<CreditBuilderLoanApplication>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
+    },
+  },
+  {
+    accessorKey: "email",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Email Address
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const email = row.getValue("email") as string;
+      return <div className="lowercase">{email}</div>;
     },
   },
   {

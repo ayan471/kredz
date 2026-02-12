@@ -1,17 +1,13 @@
 "use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { CreditBuilderLoanApplication } from "./columns";
-
 interface DownloadCSVProps {
   data: CreditBuilderLoanApplication[];
 }
-
 export function DownloadCSV({ data }: DownloadCSVProps) {
   const [isLoading, setIsLoading] = useState(false);
-
   const handleDownload = async () => {
     setIsLoading(true);
     try {
@@ -19,6 +15,7 @@ export function DownloadCSV({ data }: DownloadCSVProps) {
         "ID",
         "User ID",
         "Full Name",
+        "Email Address",
         "Mobile Number",
         "Loan Amount Required",
         "Eligible Amount",
@@ -27,11 +24,11 @@ export function DownloadCSV({ data }: DownloadCSVProps) {
         "Updated At",
         "EMI Tenure",
       ];
-
       const csvRows = data.map((application) => [
         application.id,
         application.userId,
         application.fullName,
+        application.email,
         application.mobileNumber,
         application.loanAmountRequired,
         application.eligibleAmount || "",
@@ -40,12 +37,10 @@ export function DownloadCSV({ data }: DownloadCSVProps) {
         new Date(application.updatedAt).toISOString(),
         application.emiTenure || "",
       ]);
-
       const csvContent = [
         headers.join(","),
         ...csvRows.map((row) => row.join(",")),
       ].join("\n");
-
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const link = document.createElement("a");
       if (link.download !== undefined) {
@@ -63,7 +58,6 @@ export function DownloadCSV({ data }: DownloadCSVProps) {
       setIsLoading(false);
     }
   };
-
   return (
     <Button
       onClick={handleDownload}
