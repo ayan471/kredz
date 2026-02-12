@@ -124,7 +124,9 @@ export function Hero() {
               <div className="h-4 w-px bg-slate-200" />
               <div className="text-sm text-slate-700">
                 Max loan
-                <span className="font-semibold text-slate-900"> ₹50,000</span>
+                <span className="font-semibold text-slate-900">
+                  upto ₹5,00,000
+                </span>
               </div>
             </div>
           </motion.div>
