@@ -203,7 +203,6 @@ const CreditBuilderPlans: React.FC = () => {
         description: "Please sign in to continue with your selected plan.",
         variant: "destructive",
       });
-      // Redirect to sign in page or show sign in modal
       return;
     }
 
@@ -218,13 +217,9 @@ const CreditBuilderPlans: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Store the selected plan in localStorage or session storage
-      // so we can access it on the form page
       localStorage.setItem("selectedCreditBuilderPlan", data.plan);
-
-      // Redirect to the form page with the selected plan
       router.push(
-        `/credit-builder-plan/form?plan=${encodeURIComponent(data.plan)}`
+        `/credit-builder-plan/form?plan=${encodeURIComponent(data.plan)}`,
       );
     } catch (error) {
       console.error("Error processing plan selection:", error);
@@ -268,28 +263,22 @@ const CreditBuilderPlans: React.FC = () => {
                   {plan.duration} {plan.duration === 1 ? "MONTH" : "MONTHS"}
                   {plan.type ? ` (${plan.type})` : ""}
                 </h3>
+
+                {/* CONSOLIDATED TOTAL PRICE DISPLAY */}
                 <div className="flex flex-col items-baseline mb-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-extrabold text-white">
-                      ₹{plan.price}
+                    <span className="text-4xl font-extrabold text-white">
+                      ₹{plan.totalPrice}
                     </span>
-                    <span className="text-sm text-white opacity-80">PRICE</span>
+                    <span className="text-sm text-white opacity-80 font-medium">
+                      TOTAL
+                    </span>
                   </div>
-                  <div className="flex flex-col items-start">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm text-white">₹{plan.gst}</span>
-                      <span className="text-xs text-white opacity-80">GST</span>
-                    </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-lg font-semibold text-white">
-                        ₹{plan.totalPrice}
-                      </span>
-                      <span className="text-xs text-white opacity-80">
-                        PRICE+GST
-                      </span>
-                    </div>
-                  </div>
+                  <p className="text-xs text-white/70 italic">
+                    (Inclusive of GST)
+                  </p>
                 </div>
+
                 <div className="space-y-2 mb-6">
                   <h4 className="text-white text-sm font-semibold mb-1">
                     SERVICES
