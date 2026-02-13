@@ -270,13 +270,13 @@ const CreditBuilderPlans: React.FC = () => {
                     <span className="text-4xl font-extrabold text-white">
                       ₹{plan.totalPrice}
                     </span>
-                    <span className="text-sm text-white opacity-80 font-medium">
+                    {/* <span className="text-sm text-white opacity-80 font-medium">
                       TOTAL
-                    </span>
+                    </span> */}
                   </div>
-                  <p className="text-xs text-white/70 italic">
+                  {/* <p className="text-xs text-white/70 italic">
                     (Inclusive of GST)
-                  </p>
+                  </p> */}
                 </div>
 
                 <div className="space-y-2 mb-6">
