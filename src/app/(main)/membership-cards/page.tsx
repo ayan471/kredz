@@ -157,18 +157,18 @@ const MembershipCardsPage: React.FC = () => {
     setIsLoading(true);
     try {
       const selectedPlanOption = planOptions.find(
-        (option) => option.value === data.plan
+        (option) => option.value === data.plan,
       );
       if (!selectedPlanOption) {
         throw new Error("Invalid plan selected");
       }
 
       const { totalAmount } = calculateTotalAmount(
-        selectedPlanOption.discountedPrice
+        selectedPlanOption.discountedPrice,
       );
       const orderId = `MC-${user?.id}-${Date.now().toString().slice(-8)}`.slice(
         0,
-        38
+        38,
       );
 
       const response = await fetch("/api/initiate-sabpaisa-payment", {
@@ -182,7 +182,8 @@ const MembershipCardsPage: React.FC = () => {
           customerName: userDetails.fullName,
           customerPhone: userDetails.phoneNumber,
           customerEmail: userDetails.email,
-          planDetails: `${selectedPlanOption.label} Plan - ₹${selectedPlanOption.discountedPrice.toFixed(2)}`,
+          // Updated to show Total Amount in the Gateway details
+          planDetails: `${selectedPlanOption.label} Plan - ₹${totalAmount}`,
         }),
       });
 
@@ -225,7 +226,6 @@ const MembershipCardsPage: React.FC = () => {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 relative overflow-hidden">
-        {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200/30 rounded-full blur-3xl" />
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl" />
@@ -261,7 +261,6 @@ const MembershipCardsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 relative overflow-hidden">
-      {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl" />
@@ -279,7 +278,6 @@ const MembershipCardsPage: React.FC = () => {
             className="flex flex-col gap-12"
             onSubmit={handleSubmit(onSubmit)}
           >
-            {/* Header Section */}
             <div className="text-center">
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -314,7 +312,6 @@ const MembershipCardsPage: React.FC = () => {
               </motion.p>
             </div>
 
-            {/* Plan Cards */}
             <RadioGroup
               value={selectedPlan}
               onValueChange={(value) => setValue("plan", value)}
@@ -322,8 +319,8 @@ const MembershipCardsPage: React.FC = () => {
             >
               <AnimatePresence>
                 {planOptions.map((plan, index) => {
-                  const { gstAmount, totalAmount } = calculateTotalAmount(
-                    plan.discountedPrice
+                  const { totalAmount } = calculateTotalAmount(
+                    plan.discountedPrice,
                   );
                   const isSelected = selectedPlan === plan.value;
 
@@ -344,13 +341,11 @@ const MembershipCardsPage: React.FC = () => {
                         }`}
                         onClick={() => setValue("plan", plan.value)}
                       >
-                        {/* Card gradient header */}
                         <div
                           className={`h-2 bg-gradient-to-r ${plan.gradient}`}
                         />
 
                         <CardContent className="p-6 bg-white">
-                          {/* Badge */}
                           {plan.badge && (
                             <div className="absolute top-4 right-4">
                               <span
@@ -361,7 +356,6 @@ const MembershipCardsPage: React.FC = () => {
                             </div>
                           )}
 
-                          {/* Icon and Label */}
                           <div className="flex items-center gap-3 mb-4">
                             <div className={`p-3 rounded-xl ${plan.iconBg}`}>
                               {plan.icon}
@@ -371,26 +365,21 @@ const MembershipCardsPage: React.FC = () => {
                             </h3>
                           </div>
 
-                          {/* Pricing */}
+                          {/* UPDATED PRICING SECTION */}
                           <div className="mb-6">
                             <div className="flex items-baseline gap-2">
                               <span className="text-4xl font-bold text-blue-900">
-                                ₹{plan.discountedPrice}
+                                ₹{totalAmount}
                               </span>
                               <span className="text-lg text-blue-400 line-through">
                                 ₹{plan.realPrice}
                               </span>
                             </div>
-                            <div className="mt-2 text-sm text-blue-600/70">
-                              <span>+ ₹{gstAmount} GST</span>
-                              <span className="mx-2">•</span>
-                              <span className="font-semibold text-blue-700">
-                                Total: ₹{totalAmount}
-                              </span>
-                            </div>
+                            {/* <div className="mt-1 text-xs text-blue-600/70 font-medium italic">
+                              (Inclusive of GST)
+                            </div> */}
                           </div>
 
-                          {/* Features */}
                           <div className="space-y-3 mb-6">
                             {plan.features.map((feature, idx) => (
                               <div
@@ -405,7 +394,6 @@ const MembershipCardsPage: React.FC = () => {
                             ))}
                           </div>
 
-                          {/* Select Button */}
                           <RadioGroupItem
                             value={plan.value}
                             id={plan.value}
@@ -437,7 +425,6 @@ const MembershipCardsPage: React.FC = () => {
               </AnimatePresence>
             </RadioGroup>
 
-            {/* Submit Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -464,7 +451,6 @@ const MembershipCardsPage: React.FC = () => {
               </Button>
             </motion.div>
 
-            {/* Trust indicators */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -488,7 +474,6 @@ const MembershipCardsPage: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Sabpaisa Payment Gateway Modal */}
       {showPaymentModal && paymentDetails && (
         <SabpaisaPaymentGateway
           clientCode={paymentDetails.clientCode}
