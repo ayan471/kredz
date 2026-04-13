@@ -64,7 +64,7 @@ export function Hero() {
               offer in minutes without impacting your credit score.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start mb-8">
+            {/* <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start mb-8">
               <a
                 href="/credit-builder-loan"
                 className="text-lg px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 rounded-full shadow-lg hover:shadow-xl text-white transform hover:scale-105 inline-flex items-center"
@@ -78,7 +78,7 @@ export function Hero() {
               >
                 Credit Builder Plan
               </a>
-            </div>
+            </div> */}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
               {[
