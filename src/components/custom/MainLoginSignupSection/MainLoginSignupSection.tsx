@@ -61,7 +61,7 @@ export function Hero() {
             </h1>
             <p className="text-lg text-gray-600 mb-8">
               Borrow with confidence at competitive fixed rates. Check your
-              offer in minutes without impacting your credit score.
+              offer in minute's without impacting your credit score.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start mb-8">
