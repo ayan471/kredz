@@ -38,7 +38,7 @@ const ContactPage = () => {
                 <PhoneIcon className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="font-semibold text-gray-900 mb-1">Call Us</h3>
-              <p className="text-sm text-gray-600">+91 89100 68311</p>
+              <p className="text-sm text-gray-600">+91 8509012435</p>
             </CardContent>
           </Card>
 
@@ -58,7 +58,7 @@ const ContactPage = () => {
                 <MessageSquare className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="font-semibold text-gray-900 mb-1">WhatsApp</h3>
-              <p className="text-sm text-gray-600">+918062527746</p>
+              <p className="text-sm text-gray-600">+916382925843</p>
             </CardContent>
           </Card>
 
@@ -131,7 +131,7 @@ const ContactPage = () => {
                     <div>
                       <p className="font-medium text-gray-900 text-sm">Phone</p>
 
-                      <p className="text-sm text-gray-600">+91 89100 68311</p>
+                      <p className="text-sm text-gray-600">+91 8509012435</p>
                     </div>
                   </div>
 
@@ -144,10 +144,10 @@ const ContactPage = () => {
                         WhatsApp
                       </p>
                       <Link
-                        href="https://wa.me/918062527746"
+                        href="https://wa.me/916382925843"
                         className="text-sm text-blue-600 hover:text-blue-700"
                       >
-                        +918062527746
+                        +916382925843
                       </Link>
                     </div>
                   </div>

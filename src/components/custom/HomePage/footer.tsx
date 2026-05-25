@@ -122,24 +122,24 @@ export function Footer() {
                 </li> */}
                 <li>
                   <a
-                    href="tel:+918910068311"
+                    href="tel:+918509012435"
                     className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600"
-                    aria-label="Call +91 89100 68311"
+                    aria-label="Call +91 8509012435"
                   >
                     <Phone className="h-4 w-4" />
-                    +91 89100 68311
+                    +91 8509012435
                   </a>
                 </li>
                 <li>
                   <a
-                    href="https://wa.me/918062527746"
+                    href="https://wa.me/916382925843"
                     className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600"
-                    aria-label="WhatsApp +91 8062527746"
+                    aria-label="WhatsApp +91 6382925843"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <MessageCircle className="h-4 w-4" />
-                    +91 8062527746
+                    +91 6382925843
                   </a>
                 </li>
                 <li>
