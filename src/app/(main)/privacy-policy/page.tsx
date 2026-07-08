@@ -342,9 +342,8 @@ const renderSectionContent = (id: string) => {
             </li>
             <li className="flex items-center">
               <MapPin className="w-5 h-5 mr-2 text-blue-500" />
-              No 656A, ElcotSez, Zsurvey, Behind Accenture Company, Old
-              Mahablipuram Road, RajivGandhi Salai Sholinganallur - 600119
-              TamilNadu, India
+              Batanagar, Maheshtala South 24 Parganas - 700140, West Bengal,
+              India
             </li>
             <li className="flex items-center">
               <Globe className="w-5 h-5 mr-2 text-blue-500" />

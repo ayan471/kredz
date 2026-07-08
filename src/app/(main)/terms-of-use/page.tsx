@@ -133,9 +133,8 @@ const TermsAndConditions = () => {
             <li className="flex items-center">
               <MapPin className="mr-2 text-blue-500" size={18} />
               <span>
-                No 656A, ElcotSez, Zsurvey, Behind Accenture Company, Old
-                Mahablipuram Road, RajivGandhi Salai Sholinganallur - 600119
-                TamilNadu, India
+                Batanagar, Maheshtala South 24 Parganas - 700140, West Bengal,
+                India
               </span>
             </li>
           </ul>
