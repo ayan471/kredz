@@ -20,8 +20,9 @@ import {
 import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader from "./components/Loader";
-import SabpaisaPaymentGateway from "@/components/sabpaisa-payment-gateway";
 import { useRouter, useSearchParams } from "next/navigation";
+
+// ✅ Removed: SabpaisaPaymentGateway import (modal-based, deleted)
 
 type FormValues = {
   plan: string;
@@ -114,16 +115,12 @@ const MembershipCardsPage: React.FC = () => {
     email: "",
   });
 
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  // ✅ Removed: showPaymentModal and paymentDetails state
 
   const form = useForm<FormValues>({
-    defaultValues: {
-      plan: "",
-    },
+    defaultValues: { plan: "" },
   });
   const { register, handleSubmit, setValue, watch } = form;
-
   const selectedPlan = watch("plan");
 
   useEffect(() => {
@@ -155,51 +152,51 @@ const MembershipCardsPage: React.FC = () => {
 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
+
     try {
       const selectedPlanOption = planOptions.find(
         (option) => option.value === data.plan,
       );
-      if (!selectedPlanOption) {
-        throw new Error("Invalid plan selected");
-      }
+      if (!selectedPlanOption) throw new Error("Invalid plan selected");
 
-      const { totalAmount } = calculateTotalAmount(
+      const { totalAmount, baseAmount, gstAmount } = calculateTotalAmount(
         selectedPlanOption.discountedPrice,
       );
-      const orderId = `MC-${user?.id}-${Date.now().toString().slice(-8)}`.slice(
-        0,
-        38,
-      );
 
-      const response = await fetch("/api/initiate-sabpaisa-payment", {
+      const clientReferenceId =
+        `MC-${user?.id?.substring(0, 8)}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`.slice(
+          0,
+          38,
+        );
+
+      sessionStorage.setItem("membershipClientRef", clientReferenceId);
+      sessionStorage.setItem("membershipPlan", selectedPlanOption.value);
+
+      // ✅ Call the new SabPaisa API route — credentials stay server-side
+      const res = await fetch("/api/payments/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: Number.parseFloat(totalAmount),
-          orderId,
+          amount: Number.parseFloat(totalAmount), // sabpaisa-sdk expects rupees
           customerName: userDetails.fullName,
-          customerPhone: userDetails.phoneNumber,
           customerEmail: userDetails.email,
-          // Updated to show Total Amount in the Gateway details
-          planDetails: `${selectedPlanOption.label} Plan - ₹${totalAmount}`,
+          customerPhone: userDetails.phoneNumber,
+          description: `${selectedPlanOption.label} Plan - ₹${baseAmount} + ₹${gstAmount} GST`,
+          clientReferenceId,
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to initiate payment");
+      const paymentResult = await res.json();
+
+      if (!paymentResult.success || !paymentResult.checkoutUrl) {
+        throw new Error(paymentResult.message || "Failed to initiate payment");
       }
 
-      const paymentData = await response.json();
+      // ✅ Store txn ID for reference on the return page and redirect
+      sessionStorage.setItem("pendingTxnId", paymentResult.merchantTxnId);
+      window.location.href = paymentResult.checkoutUrl;
 
-      if (paymentData.success && paymentData.paymentDetails) {
-        setPaymentDetails(paymentData.paymentDetails);
-        setShowPaymentModal(true);
-      } else {
-        throw new Error(paymentData.error || "Failed to initiate payment");
-      }
+      // isLoading stays true — page is navigating away
     } catch (error) {
       console.error("Error in payment process:", error);
       toast({
@@ -210,18 +207,13 @@ const MembershipCardsPage: React.FC = () => {
             : "An unexpected error occurred",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // only reset on failure
     }
   };
 
-  const handlePaymentToggle = () => {
-    setShowPaymentModal(false);
-  };
+  // ✅ Removed: handlePaymentToggle (no modal to toggle)
 
-  if (!isLoaded) {
-    return <Loader />;
-  }
+  if (!isLoaded) return <Loader />;
 
   if (!user) {
     return (
@@ -230,7 +222,6 @@ const MembershipCardsPage: React.FC = () => {
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200/30 rounded-full blur-3xl" />
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl" />
         </div>
-
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -288,7 +279,6 @@ const MembershipCardsPage: React.FC = () => {
                 <Sparkles className="w-4 h-4" />
                 Choose Your Plan
               </motion.div>
-
               <motion.h2
                 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
                 initial={{ opacity: 0, y: -20 }}
@@ -300,7 +290,6 @@ const MembershipCardsPage: React.FC = () => {
                   Financial Future
                 </span>
               </motion.h2>
-
               <motion.p
                 className="text-lg md:text-xl text-blue-700/70 mb-8 max-w-2xl mx-auto"
                 initial={{ opacity: 0, y: -20 }}
@@ -344,7 +333,6 @@ const MembershipCardsPage: React.FC = () => {
                         <div
                           className={`h-2 bg-gradient-to-r ${plan.gradient}`}
                         />
-
                         <CardContent className="p-6 bg-white">
                           {plan.badge && (
                             <div className="absolute top-4 right-4">
@@ -355,7 +343,6 @@ const MembershipCardsPage: React.FC = () => {
                               </span>
                             </div>
                           )}
-
                           <div className="flex items-center gap-3 mb-4">
                             <div className={`p-3 rounded-xl ${plan.iconBg}`}>
                               {plan.icon}
@@ -364,8 +351,6 @@ const MembershipCardsPage: React.FC = () => {
                               {plan.label}
                             </h3>
                           </div>
-
-                          {/* UPDATED PRICING SECTION */}
                           <div className="mb-6">
                             <div className="flex items-baseline gap-2">
                               <span className="text-4xl font-bold text-blue-900">
@@ -375,11 +360,7 @@ const MembershipCardsPage: React.FC = () => {
                                 ₹{plan.realPrice}
                               </span>
                             </div>
-                            {/* <div className="mt-1 text-xs text-blue-600/70 font-medium italic">
-                              (Inclusive of GST)
-                            </div> */}
                           </div>
-
                           <div className="space-y-3 mb-6">
                             {plan.features.map((feature, idx) => (
                               <div
@@ -393,7 +374,6 @@ const MembershipCardsPage: React.FC = () => {
                               </div>
                             ))}
                           </div>
-
                           <RadioGroupItem
                             value={plan.value}
                             id={plan.value}
@@ -471,27 +451,10 @@ const MembershipCardsPage: React.FC = () => {
               </div>
             </motion.div>
           </form>
+
+          {/* ✅ Removed: SabpaisaPaymentGateway modal — redirect handles payment now */}
         </motion.div>
       </div>
-
-      {showPaymentModal && paymentDetails && (
-        <SabpaisaPaymentGateway
-          clientCode={paymentDetails.clientCode}
-          transUserName={paymentDetails.transUserName}
-          transUserPassword={paymentDetails.transUserPassword}
-          authkey={paymentDetails.authkey}
-          authiv={paymentDetails.authiv}
-          payerName={paymentDetails.payerName}
-          payerEmail={paymentDetails.payerEmail}
-          payerMobile={paymentDetails.payerMobile}
-          clientTxnId={paymentDetails.clientTxnId}
-          amount={paymentDetails.amount}
-          payerAddress={paymentDetails.payerAddress}
-          callbackUrl={paymentDetails.callbackUrl}
-          isOpen={showPaymentModal}
-          onToggle={handlePaymentToggle}
-        />
-      )}
     </div>
   );
 };

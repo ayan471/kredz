@@ -32,8 +32,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { RejectionMessage } from "./rejection-message";
 import { getEligibleLoanAmount } from "@/components/lib/loanCalculations";
-import SabpaisaPaymentGateway from "@/components/sabpaisa-payment-gateway";
-import { initiateSabpaisaPayment } from "@/components/lib/sabPaisa";
+
+// ✅ Removed: SabpaisaPaymentGateway import (modal-based, deleted)
+// ✅ Removed: initiateSabpaisaPayment import (old helper, deleted)
 
 const totalActiveLoansRanges = [
   { label: "0-3", value: "0-3" },
@@ -90,7 +91,6 @@ type FormValues = {
   age: number;
 };
 
-// Membership form values
 type MembershipFormValues = {
   fullName: string;
   phoneNo: string;
@@ -123,17 +123,14 @@ const calculateAge = (birthDate: string): number => {
   return age;
 };
 
-// Utility functions for form data persistence
 const saveFormDataToLocalStorage = (data: Partial<FormValues>) => {
   try {
-    // Filter out file inputs before saving
     const dataToSave = { ...data };
     Object.keys(dataToSave).forEach((key) => {
       if (dataToSave[key as keyof FormValues] instanceof FileList) {
         delete dataToSave[key as keyof FormValues];
       }
     });
-
     sessionStorage.setItem("loanApplicationData", JSON.stringify(dataToSave));
   } catch (error) {
     console.error("Error saving form data to sessionStorage:", error);
@@ -158,20 +155,16 @@ const clearFormDataFromLocalStorage = () => {
   }
 };
 
-// File size validation function (1MB = 1024 * 1024 bytes)
 const validateFileSize = (
   files: FileList | null,
   maxSizeInMB = 1,
 ): string | true => {
   if (!files || files.length === 0) return true;
-
   const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
   const file = files[0];
-
   if (file.size > maxSizeInBytes) {
     return `File size must be less than ${maxSizeInMB}MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`;
   }
-
   return true;
 };
 
@@ -197,12 +190,12 @@ interface StepProps {
   watch: any;
 }
 
-// Membership Card Component
+// ─── MembershipCard ───────────────────────────────────────────────────────────
+
 const MembershipCard: React.FC<{
   applicationData: LoanApplication;
   onClose: () => void;
 }> = ({ applicationData, onClose }) => {
-  const [membershipPlan, setMembershipPlan] = useState<string>("");
   const [planDetails, setPlanDetails] = useState<{
     name: string;
     discountedPrice: number;
@@ -210,8 +203,8 @@ const MembershipCard: React.FC<{
     features: string[];
   }>({ name: "", discountedPrice: 0, realPrice: 0, features: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+
+  // ✅ Removed: showPaymentModal and paymentDetails state
 
   const { toast } = useToast();
   const { user } = useUser();
@@ -233,10 +226,8 @@ const MembershipCard: React.FC<{
         const plan = await determineMembershipPlan(
           Number(applicationData.monIncome),
         );
-        setMembershipPlan(plan);
         membershipForm.setValue("membershipPlan", plan);
 
-        // Set plan details
         setPlanDetails({
           name: plan,
           discountedPrice:
@@ -276,41 +267,47 @@ const MembershipCard: React.FC<{
     setIsSubmitting(true);
 
     try {
-      console.log("Submitting membership data:", {
-        applicationId: applicationData.id,
-        membershipData: data,
-      });
-
       toast({
-        title: "Membership Submitted!",
+        title: "Membership submitted",
         description: "Initiating payment...",
       });
 
-      // Proceed directly to payment without updating application data
-      const paymentResult = await initiateSabpaisaPayment({
-        amount: Number.parseFloat(
-          calculateAmounts(planDetails.discountedPrice).totalAmount,
-        ),
-        orderId: `${applicationData.id}-${Date.now()}`, // Generate unique order ID
-        customerName: data.fullName,
-        customerPhone: data.phoneNo,
-        customerEmail: data.emailID,
-        customerAddress: "Not Provided",
+      const totalAmount = Number.parseFloat(
+        calculateAmounts(planDetails.discountedPrice).totalAmount,
+      );
+
+      // Generate a unique order ID — application ID + timestamp
+      const clientReferenceId = `${applicationData.id}-${Date.now()}`.slice(
+        0,
+        38,
+      );
+
+      // ✅ Call the new SabPaisa API route — credentials stay server-side
+      const res = await fetch("/api/payments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: totalAmount, // sabpaisa-sdk expects rupees
+          customerName: data.fullName,
+          customerEmail: data.emailID,
+          customerPhone: data.phoneNo,
+          description: `${planDetails.name} Membership Plan - Loan Application ${applicationData.id}`,
+          clientReferenceId,
+        }),
       });
 
-      if (paymentResult.success && paymentResult.paymentDetails) {
-        setPaymentDetails(paymentResult.paymentDetails);
-        setShowPaymentModal(true);
-      } else {
-        console.error("Payment initiation failed:", paymentResult.error);
-        toast({
-          title: "Payment Error",
-          description:
-            paymentResult.error ||
-            "Failed to initiate payment. Please try again.",
-          variant: "destructive",
-        });
+      const paymentResult = await res.json();
+
+      if (!paymentResult.success || !paymentResult.checkoutUrl) {
+        throw new Error(paymentResult.message || "Failed to initiate payment");
       }
+
+      // ✅ Store txn ID for reference on the return page and redirect
+      sessionStorage.setItem("pendingTxnId", paymentResult.merchantTxnId);
+      sessionStorage.setItem("loanApplicationId", applicationData.id);
+      window.location.href = paymentResult.checkoutUrl;
+
+      // isSubmitting stays true — page is navigating away
     } catch (error) {
       console.error("Error in membership submission:", error);
       toast({
@@ -321,14 +318,11 @@ const MembershipCard: React.FC<{
             : "An unexpected error occurred",
         variant: "destructive",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handlePaymentToggle = () => {
-    setShowPaymentModal(false);
-  };
+  // ✅ Removed: handlePaymentToggle (no modal to toggle)
 
   return (
     <div className="mx-auto w-full max-w-4xl p-6 space-y-8">
@@ -433,12 +427,10 @@ const MembershipCard: React.FC<{
                 </div>
                 <div className="grid w-full items-center gap-3">
                   <Label htmlFor="phoneNo">Phone No</Label>
-
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
                       +91
                     </span>
-
                     <Input
                       type="tel"
                       id="phoneNo"
@@ -485,6 +477,7 @@ const MembershipCard: React.FC<{
                 />
               </CardContent>
             </Card>
+
             <div className="flex flex-col md:flex-row gap-4">
               <Button
                 type="button"
@@ -504,31 +497,15 @@ const MembershipCard: React.FC<{
               </Button>
             </div>
           </form>
+
+          {/* ✅ Removed: SabpaisaPaymentGateway modal — redirect handles payment now */}
         </CardContent>
       </Card>
-
-      {/* Sabpaisa Payment Gateway Modal */}
-      {showPaymentModal && paymentDetails && (
-        <SabpaisaPaymentGateway
-          clientCode={paymentDetails.clientCode}
-          transUserName={paymentDetails.transUserName}
-          transUserPassword={paymentDetails.transUserPassword}
-          authkey={paymentDetails.authkey}
-          authiv={paymentDetails.authiv}
-          payerName={paymentDetails.payerName}
-          payerEmail={paymentDetails.payerEmail}
-          payerMobile={paymentDetails.payerMobile}
-          clientTxnId={paymentDetails.clientTxnId}
-          amount={paymentDetails.amount}
-          payerAddress={paymentDetails.payerAddress}
-          callbackUrl={paymentDetails.callbackUrl}
-          isOpen={showPaymentModal}
-          onToggle={handlePaymentToggle}
-        />
-      )}
     </div>
   );
 };
+
+// ─── Step components (unchanged) ─────────────────────────────────────────────
 
 const Step1Personal: React.FC<StepProps> = ({
   control,
@@ -587,7 +564,7 @@ const Step1Personal: React.FC<StepProps> = ({
           id="phoneNo"
           type="text"
           inputMode="numeric"
-          className="w-full p-3 pl-10" // Added padding for the +91
+          className="w-full p-3 pl-10"
           {...register("phoneNo", {
             required: "Phone number is required",
             minLength: {
@@ -621,9 +598,7 @@ const Step1Personal: React.FC<StepProps> = ({
       <Input
         id="dateOfBirth"
         type="date"
-        {...register("dateOfBirth", {
-          required: "Date of Birth is required",
-        })}
+        {...register("dateOfBirth", { required: "Date of Birth is required" })}
         className={`w-full p-3 ${isAgeInvalid ? "border-red-500" : ""}`}
       />
       {errors.dateOfBirth && (
@@ -700,7 +675,6 @@ const Step2EmploymentIncome: React.FC<StepProps> = ({
           <p className="text-red-500 text-sm">{errors.empType.message}</p>
         )}
       </div>
-
       <div className="grid w-full items-center gap-3">
         <Label htmlFor="monIncomeRange" className="text-base font-semibold">
           Monthly Income Range
@@ -789,7 +763,6 @@ const Step3LoanDetails: React.FC<StepProps> = ({
   watch,
 }) => {
   const eligibleLoanAmount = watch("eligibleLoanAmount");
-
   return (
     <div className="space-y-6">
       {eligibleLoanAmount > 0 && (
@@ -809,10 +782,7 @@ const Step3LoanDetails: React.FC<StepProps> = ({
           type="number"
           {...register("amtRequired", {
             required: "Amount is required",
-            min: {
-              value: 1000,
-              message: "Amount must be at least 1000",
-            },
+            min: { value: 1000, message: "Amount must be at least 1000" },
             max: {
               value: eligibleLoanAmount,
               message: `Amount cannot exceed ₹${eligibleLoanAmount.toLocaleString()}`,
@@ -831,15 +801,12 @@ const Step3LoanDetails: React.FC<StepProps> = ({
         <Controller
           name="prpseOfLoan"
           control={control}
-          rules={{
-            required: "Purpose of loan is required",
-          }}
+          rules={{ required: "Purpose of loan is required" }}
           render={({ field }) => (
             <>
               <Select
                 onValueChange={(value) => {
                   field.onChange(value);
-                  console.log("Purpose changed to:", value);
                 }}
                 value={field.value}
               >
@@ -886,193 +853,164 @@ const Step4Documents: React.FC<StepProps> = ({
   isAgeInvalid,
   setValue,
   watch,
-}) => {
-  return (
-    <div className="space-y-6">
-      <div className="grid w-full items-center gap-3">
-        <Label htmlFor="aadharNo" className="text-base font-semibold">
-          Aadhar Number
-        </Label>
-        <Input
-          id="aadharNo"
-          type="number"
-          {...register("aadharNo", {
-            required: "Aadhar number is required",
-            pattern: {
-              value: /^\d{12}$/,
-              message: "Aadhar number must be exactly 12 digits",
-            },
-            validate: (value: string) => {
-              // Remove any spaces or special characters
-              const cleanValue = value.replace(/\D/g, "");
-              if (cleanValue.length !== 12) {
-                return "Aadhar number must be exactly 12 digits";
-              }
-              // Basic checksum validation could be added here if needed
-              return true;
-            },
-          })}
-          className="w-full p-3"
-          placeholder="Enter 12-digit Aadhar number"
-          maxLength={12}
-        />
-        {errors.aadharNo && (
-          <p className="text-red-500 text-sm">{errors.aadharNo.message}</p>
-        )}
-      </div>
-      <div className="grid w-full items-center gap-3">
-        <Label htmlFor="aadharImgFront" className="text-base font-semibold">
-          Upload Aadhar Card (Front)
-        </Label>
-        <Input
-          id="aadharImgFront"
-          type="file"
-          {...register("aadharImgFront", {
-            required: "Aadhar card front image is required",
-            validate: {
-              fileSize: (files: FileList) => validateFileSize(files, 1),
-              fileType: (files: FileList) => {
-                if (!files || files.length === 0) return true;
-                const file = files[0];
-                const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-                if (!allowedTypes.includes(file.type)) {
-                  return "Only JPG, JPEG, and PNG files are allowed";
-                }
-                return true;
-              },
-            },
-          })}
-          className="w-full p-3"
-          accept=".jpg,.jpeg,.png"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
-        </p>
-        {errors.aadharImgFront && (
-          <p className="text-red-500 text-sm">
-            {errors.aadharImgFront.message}
-          </p>
-        )}
-      </div>
-      <div className="grid w-full items-center gap-3">
-        <Label htmlFor="aadharImgBack" className="text-base font-semibold">
-          Upload Aadhar Card (Back)
-        </Label>
-        <Input
-          id="aadharImgBack"
-          type="file"
-          {...register("aadharImgBack", {
-            required: "Aadhar card back image is required",
-            validate: {
-              fileSize: (files: FileList) => validateFileSize(files, 1),
-              fileType: (files: FileList) => {
-                if (!files || files.length === 0) return true;
-                const file = files[0];
-                const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-                if (!allowedTypes.includes(file.type)) {
-                  return "Only JPG, JPEG, and PNG files are allowed";
-                }
-                return true;
-              },
-            },
-          })}
-          className="w-full p-3"
-          accept=".jpg,.jpeg,.png"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
-        </p>
-        {errors.aadharImgBack && (
-          <p className="text-red-500 text-sm">{errors.aadharImgBack.message}</p>
-        )}
-      </div>
-      <div className="grid w-full items-center gap-3">
-        <Label htmlFor="panNo" className="text-base font-semibold">
-          PAN Number
-        </Label>
-        <Input
-          id="panNo"
-          {...register("panNo", {
-            required: "PAN number is required",
-            pattern: {
-              value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-              message: "Please enter a valid PAN number (e.g., ABCDE1234F)",
-            },
-          })}
-          maxLength={10}
-        />
-        {errors.panNo && (
-          <p className="text-sm text-red-500 mt-1">{errors.panNo.message}</p>
-        )}
-      </div>
-      <div className="grid w-full items-center gap-3">
-        <Label htmlFor="panImgFront" className="text-base font-semibold">
-          Upload PAN Card (Front)
-        </Label>
-        <Input
-          id="panImgFront"
-          type="file"
-          {...register("panImgFront", {
-            required: "PAN card image is required",
-            validate: {
-              fileSize: (files: FileList) => validateFileSize(files, 1),
-              fileType: (files: FileList) => {
-                if (!files || files.length === 0) return true;
-                const file = files[0];
-                const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-                if (!allowedTypes.includes(file.type)) {
-                  return "Only JPG, JPEG, and PNG files are allowed";
-                }
-                return true;
-              },
-            },
-          })}
-          className="w-full p-3"
-          accept=".jpg,.jpeg,.png"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
-        </p>
-        {errors.panImgFront && (
-          <p className="text-red-500 text-sm">{errors.panImgFront.message}</p>
-        )}
-      </div>
-
-      <div className="grid w-full items-center gap-3">
-        <Label htmlFor="selfieImg" className="text-base font-semibold">
-          Upload your selfie
-        </Label>
-        <Input
-          id="selfieImg"
-          type="file"
-          {...register("selfieImg", {
-            required: "Selfie image is required",
-            validate: {
-              fileSize: (files: FileList) => validateFileSize(files, 1),
-              fileType: (files: FileList) => {
-                if (!files || files.length === 0) return true;
-                const file = files[0];
-                const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-                if (!allowedTypes.includes(file.type)) {
-                  return "Only JPG, JPEG, and PNG files are allowed";
-                }
-                return true;
-              },
-            },
-          })}
-          className="w-full p-3"
-          accept=".jpg,.jpeg,.png"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
-        </p>
-        {errors.selfieImg && (
-          <p className="text-red-500 text-sm">{errors.selfieImg.message}</p>
-        )}
-      </div>
+}) => (
+  <div className="space-y-6">
+    <div className="grid w-full items-center gap-3">
+      <Label htmlFor="aadharNo" className="text-base font-semibold">
+        Aadhar Number
+      </Label>
+      <Input
+        id="aadharNo"
+        type="number"
+        {...register("aadharNo", {
+          required: "Aadhar number is required",
+          pattern: {
+            value: /^\d{12}$/,
+            message: "Aadhar number must be exactly 12 digits",
+          },
+          validate: (value: string) => {
+            const cleanValue = value.replace(/\D/g, "");
+            if (cleanValue.length !== 12) {
+              return "Aadhar number must be exactly 12 digits";
+            }
+            return true;
+          },
+        })}
+        className="w-full p-3"
+        placeholder="Enter 12-digit Aadhar number"
+        maxLength={12}
+      />
+      {errors.aadharNo && (
+        <p className="text-red-500 text-sm">{errors.aadharNo.message}</p>
+      )}
     </div>
-  );
-};
+    {[
+      {
+        id: "aadharImgFront",
+        label: "Upload Aadhar Card (Front)",
+        field: "aadharImgFront" as const,
+      },
+      {
+        id: "aadharImgBack",
+        label: "Upload Aadhar Card (Back)",
+        field: "aadharImgBack" as const,
+      },
+    ].map(({ id, label, field }) => (
+      <div key={id} className="grid w-full items-center gap-3">
+        <Label htmlFor={id} className="text-base font-semibold">
+          {label}
+        </Label>
+        <Input
+          id={id}
+          type="file"
+          {...register(field, {
+            required: `${label} is required`,
+            validate: {
+              fileSize: (files: FileList) => validateFileSize(files, 1),
+              fileType: (files: FileList) => {
+                if (!files || files.length === 0) return true;
+                return (
+                  ["image/jpeg", "image/jpg", "image/png"].includes(
+                    files[0].type,
+                  ) || "Only JPG, JPEG, and PNG files are allowed"
+                );
+              },
+            },
+          })}
+          className="w-full p-3"
+          accept=".jpg,.jpeg,.png"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
+        </p>
+        {errors[field] && (
+          <p className="text-red-500 text-sm">{errors[field]?.message}</p>
+        )}
+      </div>
+    ))}
+    <div className="grid w-full items-center gap-3">
+      <Label htmlFor="panNo" className="text-base font-semibold">
+        PAN Number
+      </Label>
+      <Input
+        id="panNo"
+        {...register("panNo", {
+          required: "PAN number is required",
+          pattern: {
+            value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+            message: "Please enter a valid PAN number (e.g., ABCDE1234F)",
+          },
+        })}
+        maxLength={10}
+      />
+      {errors.panNo && (
+        <p className="text-sm text-red-500 mt-1">{errors.panNo.message}</p>
+      )}
+    </div>
+    <div className="grid w-full items-center gap-3">
+      <Label htmlFor="panImgFront" className="text-base font-semibold">
+        Upload PAN Card (Front)
+      </Label>
+      <Input
+        id="panImgFront"
+        type="file"
+        {...register("panImgFront", {
+          required: "PAN card image is required",
+          validate: {
+            fileSize: (files: FileList) => validateFileSize(files, 1),
+            fileType: (files: FileList) => {
+              if (!files || files.length === 0) return true;
+              return (
+                ["image/jpeg", "image/jpg", "image/png"].includes(
+                  files[0].type,
+                ) || "Only JPG, JPEG, and PNG files are allowed"
+              );
+            },
+          },
+        })}
+        className="w-full p-3"
+        accept=".jpg,.jpeg,.png"
+      />
+      <p className="text-xs text-gray-500 mt-1">
+        Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
+      </p>
+      {errors.panImgFront && (
+        <p className="text-red-500 text-sm">{errors.panImgFront.message}</p>
+      )}
+    </div>
+    <div className="grid w-full items-center gap-3">
+      <Label htmlFor="selfieImg" className="text-base font-semibold">
+        Upload your selfie
+      </Label>
+      <Input
+        id="selfieImg"
+        type="file"
+        {...register("selfieImg", {
+          required: "Selfie image is required",
+          validate: {
+            fileSize: (files: FileList) => validateFileSize(files, 1),
+            fileType: (files: FileList) => {
+              if (!files || files.length === 0) return true;
+              return (
+                ["image/jpeg", "image/jpg", "image/png"].includes(
+                  files[0].type,
+                ) || "Only JPG, JPEG, and PNG files are allowed"
+              );
+            },
+          },
+        })}
+        className="w-full p-3"
+        accept=".jpg,.jpeg,.png"
+      />
+      <p className="text-xs text-gray-500 mt-1">
+        Maximum file size: 1MB. Supported formats: JPG, JPEG, PNG
+      </p>
+      {errors.selfieImg && (
+        <p className="text-red-500 text-sm">{errors.selfieImg.message}</p>
+      )}
+    </div>
+  </div>
+);
 
 const Step5Financial: React.FC<StepProps> = ({
   control,
@@ -1172,12 +1110,8 @@ const Step6Review: React.FC<StepProps> = ({
   errors,
   watch,
 }) => {
-  // Make sure we always call watch even if we don't use it
   const watchedValues = watch ? watch() : {};
-
-  // Safely get values
   const formValues: FormValues = getValues ? getValues() : ({} as FormValues);
-
   return (
     <div className="space-y-6">
       <div className="bg-orange-50 p-4 sm:p-6 rounded-lg shadow-inner">
@@ -1185,51 +1119,29 @@ const Step6Review: React.FC<StepProps> = ({
           Review Your Information
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-2 bg-white bg-opacity-50 rounded">
-            <p className="break-words">
-              <span className="font-semibold text-blue-950 block sm:inline">
-                Full Name:
-              </span>{" "}
-              <span className="text-blue-800">{formValues.fullName}</span>
-            </p>
-          </div>
-          <div className="p-2 bg-white bg-opacity-50 rounded">
-            <p className="break-words">
-              <span className="font-semibold text-blue-950 block sm:inline">
-                Email:
-              </span>{" "}
-              <span className="text-blue-800">{formValues.email}</span>
-            </p>
-          </div>
-          <div className="p-2 bg-white bg-opacity-50 rounded">
-            <p className="break-words">
-              <span className="font-semibold text-blue-950 block sm:inline">
-                Phone Number:
-              </span>{" "}
-              <span className="text-blue-800">{formValues.phoneNo}</span>
-            </p>
-          </div>
-          <div className="p-2 bg-white bg-opacity-50 rounded">
-            <p className="break-words">
-              <span className="font-semibold text-blue-950 block sm:inline">
-                Amount Required:
-              </span>{" "}
-              <span className="text-blue-800">₹{formValues.amtRequired}</span>
-            </p>
-          </div>
-          <div className="p-2 bg-white bg-opacity-50 rounded">
-            <p className="break-words">
-              <span className="font-semibold text-blue-950 block sm:inline">
-                Purpose of Loan:
-              </span>{" "}
-              <span className="text-blue-800">{formValues.prpseOfLoan}</span>
-            </p>
-          </div>
+          {[
+            { label: "Full Name", value: formValues.fullName },
+            { label: "Email", value: formValues.email },
+            { label: "Phone Number", value: formValues.phoneNo },
+            { label: "Amount Required", value: `₹${formValues.amtRequired}` },
+            { label: "Purpose of Loan", value: formValues.prpseOfLoan },
+          ].map(({ label, value }) => (
+            <div key={label} className="p-2 bg-white bg-opacity-50 rounded">
+              <p className="break-words">
+                <span className="font-semibold text-blue-950 block sm:inline">
+                  {label}:
+                </span>{" "}
+                <span className="text-blue-800">{value}</span>
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 };
+
+// ─── LaStepOne (unchanged) ────────────────────────────────────────────────────
 
 interface LaStepOneProps {
   user?: any;
@@ -1266,9 +1178,7 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
     getValues,
     formState: { errors },
   } = useForm<FormValues>({
-    defaultValues: {
-      prpseOfLoan: "Personal Use", // Add this default value
-    },
+    defaultValues: { prpseOfLoan: "Personal Use" },
   });
 
   const { dateOfBirth, creditScore, currEmis, totalActiveLoans, monIncome } =
@@ -1278,14 +1188,10 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
     try {
       const response = await fetch("/api/check-existing-loan", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ panNo }),
       });
-
       const result = await response.json();
-
       if (result.hasExistingApplication) {
         setHasExistingLoan(true);
         setPanVerificationError(
@@ -1293,7 +1199,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
         );
         return false;
       }
-
       setHasExistingLoan(false);
       setPanVerificationError("");
       return true;
@@ -1310,11 +1215,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
       if (result.success) {
         setHasExistingApplication(result.hasExistingApplication);
         setExistingApplicationData(result.applicationData);
-
-        console.log("Application status:", result.applicationData?.status);
-
-        // Show membership card only for "In Progress" applications
-        // "Eligible" users should see the normal form to continue their application
         if (
           result.hasExistingApplication &&
           result.applicationData &&
@@ -1327,11 +1227,9 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
           result.applicationData &&
           result.applicationData.status === "Approved"
         ) {
-          // For approved applications, redirect to dashboard or show appropriate message
           setShowExistingApplicationUI(true);
           setShowMembershipCard(false);
         } else {
-          // For "Eligible" status or no existing application, show the normal form
           setShowMembershipCard(false);
           setShowExistingApplicationUI(false);
         }
@@ -1344,9 +1242,7 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
         });
       }
     };
-
     checkExistingApplication();
-
     if (user) {
       setValue("email", user.emailAddresses[0]?.emailAddress || "");
       setValue("phoneNo", user.phoneNumbers[0]?.phoneNumber || "");
@@ -1358,10 +1254,7 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
       const calculatedAge = calculateAge(dateOfBirth);
       setAge(calculatedAge);
       setValue("age", calculatedAge);
-
-      // Set age invalid flag instead of rejecting the entire form
       setIsAgeInvalid(calculatedAge < 18);
-
       if (calculatedAge < 18) {
         setRejectionReason("Applicant must be at least 18 years old");
       } else {
@@ -1378,25 +1271,20 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
     }
   }, [age, monIncome, setValue]);
 
-  // Load saved form data when component mounts
   useEffect(() => {
     const savedData = getFormDataFromLocalStorage();
     if (savedData) {
-      // Populate form with saved data
       Object.entries(savedData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           setValue(key as any, value);
         }
       });
-
-      // If date of birth was saved, recalculate age
       if (savedData.dateOfBirth) {
         const calculatedAge = calculateAge(savedData.dateOfBirth);
         setAge(calculatedAge);
         setValue("age", calculatedAge);
         setIsAgeInvalid(calculatedAge < 18);
       }
-
       toast({
         title: "Form Data Restored",
         description: "Your previously entered information has been restored.",
@@ -1404,11 +1292,9 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
     }
   }, [setValue, toast]);
 
-  // Save form data whenever it changes
   useEffect(() => {
     const subscription = watch((formData) => {
       if (formData && Object.keys(formData).length > 0) {
-        // Don't save file inputs to localStorage
         const dataToSave = { ...formData };
         ["aadharImgFront", "aadharImgBack", "panImgFront", "selfieImg"].forEach(
           (key) => {
@@ -1420,7 +1306,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
         saveFormDataToLocalStorage(dataToSave);
       }
     });
-
     return () => subscription.unsubscribe();
   }, [watch]);
 
@@ -1429,7 +1314,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
     const activeEmis =
       data.currEmis === "More than 4" ? 5 : Number.parseInt(data.currEmis);
     const activeLoans = Number.parseInt(data.totalActiveLoans.split("-")[0]);
-
     if (creditScoreValue < 600) {
       setRejectionReason("Low credit score");
       return false;
@@ -1442,7 +1326,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
       setRejectionReason("Too many active EMIs");
       return false;
     }
-
     return true;
   };
 
@@ -1461,11 +1344,8 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
       ],
       5: ["currEmis", "totalActiveLoans", "termsConfirmation"],
     }[currentStep];
-
     const isValid = await trigger(fields as any);
-
     if (isValid) {
-      // Check if age is invalid and prevent moving to next step
       if (currentStep === 1 && isAgeInvalid) {
         toast({
           title: "Age Requirement Not Met",
@@ -1475,26 +1355,20 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
         });
         return;
       }
-
       if (currentStep === 4) {
         const panNo = watch("panNo");
         if (panNo) {
           const isPanValid = await verifyPanCard(panNo);
-          if (!isPanValid) {
-            return; // Don't proceed if PAN verification fails
-          }
+          if (!isPanValid) return;
         }
       }
       setCurrentStep((prev) => prev + 1);
     }
   };
 
-  const handlePrev = () => {
-    setCurrentStep((prev) => prev - 1);
-  };
+  const handlePrev = () => setCurrentStep((prev) => prev - 1);
 
   const onSubmit = async (data: FormValues) => {
-    // Check if age is invalid before submitting
     if (isAgeInvalid) {
       toast({
         title: "Age Requirement Not Met",
@@ -1503,7 +1377,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
       });
       return;
     }
-
     if (
       hasExistingApplication &&
       existingApplicationData?.status !== "Eligible"
@@ -1516,22 +1389,14 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
       });
       return;
     }
-
     const isPanValid = await verifyPanCard(data.panNo);
-    if (!isPanValid) {
-      return;
-    }
-
-    // Show confirmation dialog
+    if (!isPanValid) return;
     if (
       !window.confirm("Are you sure you want to submit your loan application?")
-    ) {
+    )
       return;
-    }
-
     setIsSubmitting(true);
     const formData = new FormData();
-
     Object.entries(data).forEach(([key, value]) => {
       if (value instanceof FileList && value.length > 0) {
         formData.append(key, value[0]);
@@ -1545,23 +1410,20 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
         formData.append(key, value.toString());
       }
     });
-
     formData.set("panNo", data.panNo.toUpperCase());
     formData.append("monIncome", data.monIncome);
     formData.append("age", age !== null ? age.toString() : "");
     formData.append("totalActiveLoans", data.totalActiveLoans);
-
     if (!checkEligibility(data)) {
       setIsRejectedForCreditScore(true);
       setShowRejectionUI(true);
       formData.append("rejectionReason", rejectionReason || "");
       try {
         const result = await saveRejectedApplication(formData);
-        if (!result.success) {
+        if (!result.success)
           throw new Error(
             result.error || "Failed to save rejected application",
           );
-        }
       } catch (error) {
         console.error("Error saving rejected application:", error);
         toast({
@@ -1573,14 +1435,10 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
       setIsSubmitting(false);
       return;
     }
-
     try {
       const result = await submitLoanApplicationStep1(formData);
-
       if (result.success) {
-        // Clear saved form data after successful submission
         clearFormDataFromLocalStorage();
-
         toast({
           title: "Application Submitted!",
           description: "Your loan application has been received.",
@@ -1613,18 +1471,16 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
         const stepWidth = activeStep.offsetWidth;
         const scrollLeft =
           activeStep.offsetLeft - containerWidth / 2 + stepWidth / 2;
-
-        container.scrollTo({
-          left: scrollLeft,
-          behavior: "smooth",
-        });
+        container.scrollTo({ left: scrollLeft, behavior: "smooth" });
       }
     }
   }, [currentStep]);
 
-  // Render different UIs based on flags instead of early returns
+  useEffect(() => {
+    setValue("prpseOfLoan", "Personal Use");
+  }, [setValue]);
+
   const renderContent = () => {
-    // Show membership card for "In Progress" applications
     if (showMembershipCard && existingApplicationData) {
       return (
         <MembershipCard
@@ -1633,8 +1489,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
         />
       );
     }
-
-    // Show existing application details for "Approved" applications
     if (showExistingApplicationUI && existingApplicationData) {
       return (
         <div className="mx-auto w-full max-w-[520px]">
@@ -1658,10 +1512,8 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
         </div>
       );
     }
-
-    if (showRejectionUI) {
+    if (showRejectionUI)
       return <RejectionMessage reason={rejectionReason || ""} />;
-    }
 
     return (
       <div className="mx-auto w-full max-w-4xl p-6 space-y-8">
@@ -1672,7 +1524,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            {/* Progress indicator */}
             <div className="mb-8">
               <Progress
                 value={(currentStep / steps.length) * 100}
@@ -1688,9 +1539,7 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
                     className="flex flex-col items-center flex-shrink-0 px-2 min-w-[80px] mt-2"
                   >
                     <div
-                      className={`w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium mb-1
-                  ${currentStep > index + 1 ? "bg-orange-500 text-white" : "bg-orange-100 text-blue-950"}
-                  ${currentStep === index + 1 ? "ring-2 sm:ring-4 ring-orange-500 ring-offset-2" : ""}`}
+                      className={`w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium mb-1 ${currentStep > index + 1 ? "bg-orange-500 text-white" : "bg-orange-100 text-blue-950"} ${currentStep === index + 1 ? "ring-2 sm:ring-4 ring-orange-500 ring-offset-2" : ""}`}
                     >
                       {currentStep > index + 1 ? (
                         <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6" />
@@ -1699,8 +1548,7 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
                       )}
                     </div>
                     <span
-                      className={`text-[10px] sm:text-xs mt-1 sm:mt-2 text-center whitespace-nowrap
-                  ${currentStep === index + 1 ? "font-semibold text-blue-950" : "text-gray-500"}`}
+                      className={`text-[10px] sm:text-xs mt-1 sm:mt-2 text-center whitespace-nowrap ${currentStep === index + 1 ? "font-semibold text-blue-950" : "text-gray-500"}`}
                     >
                       {step}
                     </span>
@@ -1722,7 +1570,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
                   watch={watch}
                 />
               )}
-
               {currentStep === 2 && (
                 <Step2EmploymentIncome
                   control={control}
@@ -1733,7 +1580,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
                   watch={watch}
                 />
               )}
-
               {currentStep === 3 && (
                 <Step3LoanDetails
                   control={control}
@@ -1744,7 +1590,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
                   watch={watch}
                 />
               )}
-
               {currentStep === 4 && (
                 <Step4Documents
                   control={control}
@@ -1755,7 +1600,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
                   watch={watch}
                 />
               )}
-
               {currentStep === 5 && (
                 <Step5Financial
                   control={control}
@@ -1766,7 +1610,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
                   watch={watch}
                 />
               )}
-
               {currentStep === 6 && (
                 <Step6Review
                   getValues={getValues}
@@ -1779,7 +1622,7 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
                 />
               )}
 
-              <div className="flex justify-between mt-8  sm:flex-row sm:gap-4">
+              <div className="flex justify-between mt-8 sm:flex-row sm:gap-4">
                 {currentStep > 1 && (
                   <Button
                     type="button"
@@ -1822,12 +1665,6 @@ const LaStepOne: React.FC<LaStepOneProps> = ({ user }) => {
       </div>
     );
   };
-
-  // Set default purpose value when component mounts
-  useEffect(() => {
-    setValue("prpseOfLoan", "Personal Use");
-    console.log("Setting default purpose to Personal Use");
-  }, [setValue]);
 
   return renderContent();
 };

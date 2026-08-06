@@ -16,7 +16,7 @@ const Footer = () => {
           <div className="flex flex-col sm:flex-row justify-between mb-12">
             <div className="mt-2 flex mb-4 sm:mb-0 justify-center sm:justify-start">
               <div>
-                <p className="text-md mt-2 text-slate-600">© Kredz 2024</p>
+                <p className="text-md mt-2 text-slate-600">© Kredz 2026</p>
               </div>
             </div>
 

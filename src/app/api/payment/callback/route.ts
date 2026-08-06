@@ -1,302 +1,263 @@
+import { decryptSabpaisaResponse } from "@/components/lib/sabpaisa-decrypt";
 import { type NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
-  try {
-    const data = await request.json();
+// ─── types ────────────────────────────────────────────────────────────────────
 
-    // Log the payment callback data with a clear identifier
-    console.log("PAYMENT CALLBACK (POST): Received data:", data);
+type TxnStatus = "SUCCESS" | "FAILED" | "ABORTED" | "PENDING" | "UNKNOWN";
 
-    // Extract the clean ID without any additional parameters
-    let id = data.clientTxnId || "";
-    if (id.includes("?")) {
-      id = id.split("?")[0];
-    }
+type CallbackParams = {
+  statusCode: string;
+  clientTxnId: string;
+  payerEmail: string;
+  payerName: string;
+  amount: string;
+  planDetails: string;
+  requestUrl: string;
+};
 
-    // Check if this is a membership payment (starts with MC-) or credit builder payment (starts with CB-)
-    const isMembershipPayment = id.startsWith("MC-");
-    const isCreditBuilderPayment = id.startsWith("CB-");
+// ─── service registry ─────────────────────────────────────────────────────────
 
-    // Determine redirect URL based on payment status and payment type
-    const status = data.status || "FAILED";
-    let redirectUrl;
+type ServiceConfig = {
+  productName: string;
+  successPath: (id: string) => string;
+  failurePath: (id: string) => string;
+  pendingPath: (id: string) => string;
+};
 
-    // If payment is successful, send success notification email
-    if (status === "SUCCESS") {
-      // Extract user email from the payment data
-      const userEmail = data.payerEmail || "";
-      const userName = data.payerName || "Customer";
-      const amount = data.amount || "0";
-      const planDetails = data.udf12 || "Standard Plan";
+const SERVICE_REGISTRY: Record<string, ServiceConfig> = {
+  "CB-": {
+    productName: "Credit Builder Subscription",
+    successPath: (id) => `/credit-builder-plan/payment-success?id=${id}`,
+    failurePath: (id) => `/credit-builder-plan/payment-failure?id=${id}`,
+    pendingPath: (id) => `/credit-builder-plan/payment-pending?id=${id}`,
+  },
+  "MC-": {
+    productName: "Membership",
+    successPath: (id) => `/membership-cards/success?id=${id}`,
+    failurePath: (id) => `/membership-cards/failure?id=${id}`,
+    pendingPath: (id) => `/membership-cards/payment-pending?id=${id}`,
+  },
+};
 
-      if (userEmail) {
-        try {
-          console.log(
-            "PAYMENT CALLBACK (POST): Payment successful, sending email to:",
-            userEmail
-          );
+const DEFAULT_SERVICE: ServiceConfig = {
+  productName: "Payment",
+  successPath: (id) => `/payment-success?id=${id}`,
+  failurePath: (id) => `/payment-failure?id=${id}`,
+  pendingPath: (id) => `/payment-pending?id=${id}`,
+};
 
-          // Use our dedicated payment success notification endpoint with absolute URL
-          const notificationUrl = new URL(
-            "/api/success-notification",
-            request.url
-          ).toString();
-          console.log(
-            "PAYMENT CALLBACK (POST): Calling notification endpoint:",
-            notificationUrl
-          );
+function getServiceConfig(clientTxnId: string): ServiceConfig {
+  for (const [prefix, config] of Object.entries(SERVICE_REGISTRY)) {
+    if (clientTxnId.startsWith(prefix)) return config;
+  }
+  return DEFAULT_SERVICE;
+}
 
-          const emailResponse = await fetch(notificationUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: userEmail,
-              name: userName,
-              amount: amount,
-              transactionId: id,
-              productName: isCreditBuilderPayment
-                ? "Credit Builder Subscription"
-                : isMembershipPayment
-                  ? "Membership"
-                  : "Payment",
-              planDetails: planDetails,
-            }),
-          });
+// ─── status resolver ──────────────────────────────────────────────────────────
 
-          const emailResult = await emailResponse.json();
-          console.log(
-            "PAYMENT CALLBACK (POST): Email sending result:",
-            emailResult
-          );
-        } catch (emailError) {
-          console.error(
-            "PAYMENT CALLBACK (POST): Error sending success email:",
-            emailError
-          );
-          // Continue with the payment process even if email fails
-        }
-      } else {
-        console.warn(
-          "PAYMENT CALLBACK (POST): No email address found in payment data, skipping success email"
-        );
-      }
-    }
-
-    if (isCreditBuilderPayment) {
-      // Check if the URL should use credit-builder-plan instead of credit-builder
-      const basePath = "/credit-builder-plan";
-      redirectUrl =
-        status === "SUCCESS"
-          ? `${basePath}/payment-success?id=${id}`
-          : `${basePath}/payment-failure?id=${id}`;
-    } else if (isMembershipPayment) {
-      redirectUrl =
-        status === "SUCCESS"
-          ? `/membership-cards/success?id=${id}`
-          : `/membership-cards/failure?id=${id}`;
-    } else {
-      redirectUrl =
-        status === "SUCCESS"
-          ? `/payment-success?id=${id}`
-          : `/payment-failure?id=${id}`;
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Payment callback processed",
-      redirectUrl,
-    });
-  } catch (error) {
-    console.error(
-      "PAYMENT CALLBACK (POST): Error processing payment callback:",
-      error
-    );
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Error processing payment callback",
-        redirectUrl: "/payment-failure",
-      },
-      { status: 500 }
-    );
+function resolveStatus(statusCode: string): {
+  txnStatus: TxnStatus;
+  isSuccess: boolean;
+} {
+  switch (statusCode) {
+    case "0000":
+      return { txnStatus: "SUCCESS", isSuccess: true };
+    case "0300":
+      return { txnStatus: "FAILED", isSuccess: false };
+    case "0100":
+      return { txnStatus: "PENDING", isSuccess: false };
+    case "0200":
+      return { txnStatus: "ABORTED", isSuccess: false };
+    case "0999":
+      return { txnStatus: "UNKNOWN", isSuccess: false };
+    case "0400":
+      return { txnStatus: "PENDING", isSuccess: false };
+    case "404":
+      return { txnStatus: "FAILED", isSuccess: false };
+    default:
+      console.warn("Unrecognised SabPaisa statusCode:", statusCode);
+      return { txnStatus: "UNKNOWN", isSuccess: false };
   }
 }
 
+// ─── redirect helper ──────────────────────────────────────────────────────────
+
+function getRedirectPath(txnStatus: TxnStatus, clientTxnId: string): string {
+  const id = encodeURIComponent(clientTxnId);
+  const service = getServiceConfig(clientTxnId);
+
+  switch (txnStatus) {
+    case "SUCCESS":
+      return service.successPath(id);
+    case "PENDING":
+    case "UNKNOWN":
+      return service.pendingPath(id);
+    default:
+      return service.failurePath(id); // FAILED, ABORTED
+  }
+}
+
+// ─── email helper ─────────────────────────────────────────────────────────────
+
+async function sendSuccessEmail(params: {
+  email: string;
+  name: string;
+  amount: string;
+  txnId: string;
+  planDetails: string;
+  requestUrl: string;
+}) {
+  if (!params.email) return;
+  const service = getServiceConfig(params.txnId);
+
+  try {
+    const notificationUrl = new URL(
+      "/api/success-notification",
+      params.requestUrl,
+    ).toString();
+
+    const res = await fetch(notificationUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: params.email,
+        name: params.name,
+        amount: params.amount,
+        transactionId: params.txnId,
+        productName: service.productName,
+        planDetails: params.planDetails || "Standard Plan",
+      }),
+    });
+
+    console.log("Success email result:", await res.json());
+  } catch (err) {
+    console.error("Success email error:", err);
+  }
+}
+
+// ─── shared core ──────────────────────────────────────────────────────────────
+
+async function handleCallback(params: CallbackParams): Promise<NextResponse> {
+  const cleanId = params.clientTxnId.split("?")[0] || `FALLBACK-${Date.now()}`;
+
+  console.log("Payment callback:", {
+    statusCode: params.statusCode,
+    cleanId,
+  });
+
+  const { txnStatus, isSuccess } = resolveStatus(params.statusCode);
+
+  // TODO: update your DB here
+  // await db.transaction.upsert({ where: { clientTxnId: cleanId }, ... })
+
+  if (isSuccess && params.payerEmail) {
+    await sendSuccessEmail({
+      email: params.payerEmail,
+      name: params.payerName,
+      amount: params.amount,
+      txnId: cleanId,
+      planDetails: params.planDetails,
+      requestUrl: params.requestUrl,
+    });
+  }
+
+  const redirectPath = getRedirectPath(txnStatus, cleanId);
+  return NextResponse.redirect(new URL(redirectPath, params.requestUrl));
+}
+
+// ─── POST handler ─────────────────────────────────────────────────────────────
+
+export async function POST(request: NextRequest) {
+  try {
+    const form = await request.formData();
+
+    return await handleCallback({
+      statusCode: form.get("statusCode")?.toString() ?? "",
+      clientTxnId: form.get("clientTxnId")?.toString() ?? "",
+      payerEmail:
+        form.get("payerEmail")?.toString() ??
+        (form.get("udf12")?.toString()?.includes("@")
+          ? form.get("udf12")!.toString()
+          : ""),
+      payerName: form.get("payerName")?.toString() ?? "Customer",
+      amount: form.get("amount")?.toString() ?? "0",
+      planDetails: form.get("udf12")?.toString() ?? "",
+      requestUrl: request.url,
+    });
+  } catch (error) {
+    console.error("CALLBACK POST error:", error);
+    return NextResponse.redirect(new URL("/payment-failure", request.url));
+  }
+}
+
+// ─── GET handler ──────────────────────────────────────────────────────────────
+
 export async function GET(request: NextRequest) {
   try {
-    // Get URL parameters
-    const searchParams = request.nextUrl.searchParams;
-    const status = searchParams.get("status");
-    let clientTxnId =
-      searchParams.get("clientTxnId") ||
-      searchParams.get("sabpaisaTxnId") ||
-      "";
-    const encResponse = searchParams.get("encResponse");
+    const p = request.nextUrl.searchParams;
+    const encResponse = p.get("encResponse") ?? "";
 
-    // Try to get email from multiple possible sources
-    let payerEmail = searchParams.get("payerEmail") || "";
-    const udf12 = searchParams.get("udf12") || "";
+    console.log("CALLBACK GET raw params:", Object.fromEntries(p.entries()));
 
-    // If udf12 contains an email (we stored it there as backup), use it
-    if (!payerEmail && udf12 && udf12.includes("@")) {
-      payerEmail = udf12;
-      console.log(
-        "PAYMENT CALLBACK (GET): Using email from udf12:",
-        payerEmail
-      );
-    }
+    let statusCode = "";
+    let clientTxnId = "";
+    let payerEmail = "";
+    let payerName = "Customer";
+    let amount = "0";
+    let planDetails = "";
 
-    const payerName = searchParams.get("payerName") || "";
-    const amount = searchParams.get("amount") || "";
-    const planDetails = searchParams.get("udf12") || "";
+    if (encResponse) {
+      const authkey = process.env.SABPAISA_AUTH_KEY ?? "";
+      const authiv = process.env.SABPAISA_AUTH_IV ?? "";
 
-    // Log all parameters for debugging
-    console.log(
-      "PAYMENT CALLBACK (GET): All parameters:",
-      Object.fromEntries(searchParams.entries())
-    );
+      const decrypted = decryptSabpaisaResponse(encResponse, authkey, authiv);
 
-    // If clientTxnId is empty, try to extract it from other parameters
-    if (!clientTxnId || clientTxnId === "") {
-      // Check if it's in the plan parameter (malformed URL case)
-      const planParam = searchParams.get("plan");
-      if (planParam && planParam.includes("clientTxnId=")) {
-        const match = planParam.match(/clientTxnId=([^&]+)/);
-        if (match && match[1]) {
-          clientTxnId = match[1];
-          console.log(
-            "PAYMENT CALLBACK (GET): Extracted clientTxnId from plan parameter:",
-            clientTxnId
-          );
-        }
+      if (!decrypted) {
+        console.error("CALLBACK GET: decryption failed");
+        return NextResponse.redirect(new URL("/payment-failure", request.url));
       }
+
+      statusCode = decrypted.statusCode ?? decrypted.transactionStatus ?? "";
+      clientTxnId = decrypted.clientTxnId ?? decrypted.sabpaisaTxnId ?? "";
+      payerEmail = decrypted.payerEmail ?? decrypted.udf12 ?? "";
+      payerName = decrypted.payerName ?? "Customer";
+      amount = decrypted.amount ?? "0";
+      planDetails = decrypted.udf12 ?? "";
+
+      console.log("CALLBACK GET decrypted:", {
+        statusCode,
+        clientTxnId,
+        payerEmail,
+        amount,
+      });
+    } else {
+      // Fallback for staging / plain-text responses
+      statusCode = p.get("statusCode") ?? "";
+      clientTxnId = p.get("clientTxnId") ?? p.get("sabpaisaTxnId") ?? "";
+      payerEmail =
+        p.get("payerEmail") ??
+        (p.get("udf12")?.includes("@") ? p.get("udf12")! : "");
+      payerName = p.get("payerName") ?? "Customer";
+      amount = p.get("amount") ?? "0";
+      planDetails = p.get("udf12") ?? "";
     }
 
-    // If still no transaction ID, generate a fallback one for logging purposes
-    if (!clientTxnId || clientTxnId === "") {
-      clientTxnId = `FALLBACK-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
-      console.log(
-        "PAYMENT CALLBACK (GET): Generated fallback clientTxnId:",
-        clientTxnId
-      );
+    if (!clientTxnId) {
+      console.error("CALLBACK GET: no clientTxnId after decryption");
+      return NextResponse.redirect(new URL("/payment-failure", request.url));
     }
 
-    // Log the payment callback data with a clear identifier
-    console.log("PAYMENT CALLBACK (GET): Received data:", {
-      status,
+    return await handleCallback({
+      statusCode,
       clientTxnId,
-      encResponse,
       payerEmail,
       payerName,
       amount,
       planDetails,
-      allParams: Object.fromEntries(searchParams.entries()),
+      requestUrl: request.url,
     });
-
-    // Clean the ID - remove any additional query parameters
-    if (clientTxnId.includes("?")) {
-      clientTxnId = clientTxnId.split("?")[0];
-    }
-
-    // Check payment type based on the transaction ID prefix
-    const isMembershipPayment = clientTxnId.startsWith("MC-");
-    const isCreditBuilderPayment = clientTxnId.startsWith("CB-");
-
-    // Process the payment status
-    // Here you would update your database with the payment status
-
-    // If payment is successful, send success notification email
-    if ((status === "SUCCESS" || encResponse) && payerEmail) {
-      try {
-        console.log(
-          "PAYMENT CALLBACK (GET): Payment successful, sending email to:",
-          payerEmail
-        );
-
-        // Use our dedicated payment success notification endpoint with absolute URL
-        const notificationUrl = new URL(
-          "/api/success-notification",
-          request.url
-        ).toString();
-        console.log(
-          "PAYMENT CALLBACK (GET): Calling notification endpoint:",
-          notificationUrl
-        );
-
-        const emailResponse = await fetch(notificationUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: payerEmail,
-            name: payerName || "Customer",
-            amount: amount,
-            transactionId: clientTxnId,
-            productName: isCreditBuilderPayment
-              ? "Credit Builder Subscription"
-              : isMembershipPayment
-                ? "Membership"
-                : "Payment",
-            planDetails: planDetails || "Standard Plan",
-          }),
-        });
-
-        const emailResult = await emailResponse.json();
-        console.log(
-          "PAYMENT CALLBACK (GET): Email sending result:",
-          emailResult
-        );
-      } catch (emailError) {
-        console.error(
-          "PAYMENT CALLBACK (GET): Error sending success email:",
-          emailError
-        );
-        // Continue with the payment process even if email fails
-      }
-    } else {
-      console.warn(
-        "PAYMENT CALLBACK (GET): Email not sent: Either payment failed or email address missing",
-        {
-          status,
-          payerEmail,
-        }
-      );
-    }
-
-    // Redirect based on payment status and payment type
-    let redirectUrl;
-
-    // Check if we should use credit-builder-plan instead of credit-builder
-    const basePath = "/credit-builder-plan";
-
-    if (isCreditBuilderPayment) {
-      redirectUrl =
-        status === "SUCCESS" || encResponse
-          ? `${basePath}/payment-success?id=${clientTxnId}`
-          : `${basePath}/payment-failure?id=${clientTxnId}`;
-    } else if (isMembershipPayment) {
-      redirectUrl =
-        status === "SUCCESS" || encResponse
-          ? `/membership-cards/success?id=${clientTxnId}`
-          : `/membership-cards/failure?id=${clientTxnId}`;
-    } else {
-      redirectUrl =
-        status === "SUCCESS" || encResponse
-          ? `/payment-success?id=${clientTxnId}`
-          : `/payment-failure?id=${clientTxnId}`;
-    }
-
-    // Redirect the user to the appropriate page
-    return NextResponse.redirect(new URL(redirectUrl, request.url));
   } catch (error) {
-    console.error(
-      "PAYMENT CALLBACK (GET): Error processing payment callback:",
-      error
-    );
-    // Redirect to failure page in case of error
+    console.error("CALLBACK GET error:", error);
     return NextResponse.redirect(new URL("/payment-failure", request.url));
   }
 }

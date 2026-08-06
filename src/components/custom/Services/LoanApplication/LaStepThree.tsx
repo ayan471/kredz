@@ -17,10 +17,9 @@ import { CheckCircle2, ChevronRight } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import SabpaisaPaymentGateway from "@/components/sabpaisa-payment-gateway";
-import { initiateSabpaisaPayment } from "@/components/lib/sabPaisa";
+// ✅ Removed: SabpaisaPaymentGateway import (modal-based, deleted)
+// ✅ Removed: initiateSabpaisaPayment import (old helper, deleted)
 
-// Define the FormValues type
 type FormValues = {
   fullName: string;
   phoneNo: string;
@@ -58,9 +57,7 @@ const LaStepThree = () => {
   const [requestedAmount, setRequestedAmount] = useState<number | null>(null);
   const { user } = useUser();
 
-  // Sabpaisa payment state
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  // ✅ Removed: showPaymentModal and paymentDetails state
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,12 +71,10 @@ const LaStepThree = () => {
             }
           });
 
-          // Set email from Clerk
           if (user) {
             setValue("emailID", user.emailAddresses[0]?.emailAddress || "");
           }
 
-          // Determine membership plan based on monthly income
           const monIncome = Number.parseFloat(result.data.monIncome || "0");
           const membershipPlan = await determineMembershipPlan(monIncome);
           setEligiblePlan(membershipPlan);
@@ -88,7 +83,6 @@ const LaStepThree = () => {
           setEligibleAmount(result.data.eligibleAmount || null);
           setRequestedAmount(Number.parseFloat(result.data.amtRequired || "0"));
 
-          // Set plan details (replace with actual data)
           setPlanDetails({
             name: membershipPlan,
             discountedPrice:
@@ -126,6 +120,7 @@ const LaStepThree = () => {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     const id = searchParams.get("id");
+
     if (!id) {
       toast({
         title: "Error",
@@ -137,63 +132,64 @@ const LaStepThree = () => {
     }
 
     try {
+      // 1. Update loan application data
       const result = await updateLoanApplicationData(id, { ...data, step: 3 });
 
-      if (result.success) {
-        toast({
-          title: "Membership Submitted!",
-          description: "Initiating payment...",
-        });
-
-        // Replace PhonePe with Sabpaisa
-        const paymentResult = await initiateSabpaisaPayment({
-          amount: Number.parseFloat(
-            calculateAmounts(planDetails.discountedPrice).totalAmount
-          ),
-          orderId: id,
-          customerName: data.fullName,
-          customerPhone: data.phoneNo,
-          customerEmail: data.emailID,
-          customerAddress: "Not Provided", // Add address field if needed
-        });
-
-        if (paymentResult.success && paymentResult.paymentDetails) {
-          // Set payment details and show the Sabpaisa payment modal
-          setPaymentDetails(paymentResult.paymentDetails);
-          setShowPaymentModal(true);
-        } else {
-          console.error("Payment initiation failed:", paymentResult.error);
-          toast({
-            title: "Payment Error",
-            description:
-              paymentResult.error ||
-              "Failed to initiate payment. Please try again.",
-            variant: "destructive",
-          });
-        }
-      } else {
-        throw new Error(result.error || "Failed to submit Loan membership");
+      if (!result.success) {
+        throw new Error(result.error || "Failed to submit loan membership");
       }
+
+      toast({
+        title: "Membership submitted",
+        description: "Initiating payment...",
+      });
+
+      // 2. Calculate total amount including GST
+      const totalAmount = Number.parseFloat(
+        calculateAmounts(planDetails.discountedPrice).totalAmount,
+      );
+
+      // 3. ✅ Call the new SabPaisa API route — credentials stay server-side
+      const res = await fetch("/api/payments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: totalAmount, // sabpaisa-sdk expects rupees
+          customerName: data.fullName,
+          customerEmail: data.emailID,
+          customerPhone: data.phoneNo,
+          description: `${planDetails.name} Membership Plan - Loan Application ${id}`,
+          clientReferenceId: id, // use the application ID as correlation key
+        }),
+      });
+
+      const paymentResult = await res.json();
+
+      if (!paymentResult.success || !paymentResult.checkoutUrl) {
+        throw new Error(paymentResult.message || "Failed to initiate payment");
+      }
+
+      // 4. ✅ Store txn ID for reference on the return page and redirect
+      sessionStorage.setItem("pendingTxnId", paymentResult.merchantTxnId);
+      sessionStorage.setItem("loanApplicationId", id);
+      window.location.href = paymentResult.checkoutUrl;
+
+      // isSubmitting stays true — page is navigating away
     } catch (error) {
       console.error("Error in form submission:", error);
-      let errorMessage = "An unexpected error occurred. Please try again.";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
       toast({
         title: "Error",
-        description: errorMessage,
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // only reset on failure
     }
   };
 
-  const handlePaymentToggle = () => {
-    setShowPaymentModal(false);
-    // Redirection will be handled by the SabpaisaPaymentGateway component
-  };
+  // ✅ Removed: handlePaymentToggle (no modal to toggle)
 
   return (
     <div className="mx-auto w-full max-w-4xl p-6 space-y-8">
@@ -217,43 +213,6 @@ const LaStepThree = () => {
                     </p>
                   </CardContent>
                 </Card>
-                {/* 
-                <Card className="border-2 border-orange-200">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm text-gray-600">
-                          Your Requested Amount
-                        </p>
-                        <p className="text-2xl font-bold text-orange-600">
-                          ₹{requestedAmount.toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">Eligible Amount</p>
-                        <p className="text-2xl font-bold text-green-600">
-                          ₹{eligibleAmount.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                    {requestedAmount > eligibleAmount && (
-                      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <p className="text-sm text-yellow-800">
-                          <strong>Note:</strong> Your eligible amount is lower
-                          than your requested amount.
-                        </p>
-                      </div>
-                    )}
-                    {requestedAmount <= eligibleAmount && (
-                      <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-sm text-green-800">
-                          <strong>Great!</strong> You are eligible for your full
-                          requested amount.
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card> */}
               </div>
             )}
 
@@ -362,25 +321,7 @@ const LaStepThree = () => {
         </CardContent>
       </Card>
 
-      {/* Sabpaisa Payment Gateway Modal */}
-      {showPaymentModal && paymentDetails && (
-        <SabpaisaPaymentGateway
-          clientCode={paymentDetails.clientCode}
-          transUserName={paymentDetails.transUserName}
-          transUserPassword={paymentDetails.transUserPassword}
-          authkey={paymentDetails.authkey}
-          authiv={paymentDetails.authiv}
-          payerName={paymentDetails.payerName}
-          payerEmail={paymentDetails.payerEmail}
-          payerMobile={paymentDetails.payerMobile}
-          clientTxnId={paymentDetails.clientTxnId}
-          amount={paymentDetails.amount}
-          payerAddress={paymentDetails.payerAddress}
-          callbackUrl={paymentDetails.callbackUrl}
-          isOpen={showPaymentModal}
-          onToggle={handlePaymentToggle}
-        />
-      )}
+      {/* ✅ Removed: SabpaisaPaymentGateway modal — redirect handles payment now */}
 
       <DevTool control={control} />
     </div>

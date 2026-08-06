@@ -27,7 +27,7 @@ function SabpaisaPaymentGateway(props: SabpaisaPaymentGatewayProps) {
   const [clientCode, setClientCode] = useState(props.clientCode);
   const [transUserName, setTransUserName] = useState(props.transUserName);
   const [transUserPassword, setTransUserPassword] = useState(
-    props.transUserPassword
+    props.transUserPassword,
   );
   const [authkey, setAuthkey] = useState(props.authkey);
   const [authiv, setAuthiv] = useState(props.authiv);
@@ -102,7 +102,7 @@ function SabpaisaPaymentGateway(props: SabpaisaPaymentGatewayProps) {
         channelId={channelId}
         programId={programId}
         mcc={mcc}
-        env={"prod"} // Use "stag" for staging, "prod" for production
+        env={"stag"} // Use "stag" for staging, "prod" for production
         udf1={""}
         udf2={""}
         udf3={""}

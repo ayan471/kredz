@@ -21,16 +21,44 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function getUserLoans(userId: string) {
-  return await prisma.creditBuilderLoanApplication.findMany({
-    where: {
+  // ✅ Raw command bypasses Prisma's strict Int deserialization on old docs
+  // that have currentActiveOverdues stored as string "0"
+  const result = (await prisma.$runCommandRaw({
+    find: "CreditBuilderLoanApplication",
+    filter: {
       userId,
-      status: {
-        not: "Incomplete",
-      },
+      status: { $ne: "Incomplete" },
     },
+    sort: { createdAt: -1 },
+  })) as { cursor: { firstBatch: any[] } };
 
-    orderBy: { createdAt: "desc" },
-  });
+  const docs = result?.cursor?.firstBatch ?? [];
+
+  return docs.map((raw: any) => ({
+    ...raw,
+    id: raw._id?.$oid ?? raw._id,
+    // Coerce int/float fields that old docs stored as strings
+    currentActiveOverdues:
+      parseInt(String(raw.currentActiveOverdues ?? 0), 10) || 0,
+    currentActiveEmis: parseInt(String(raw.currentActiveEmis ?? 0), 10) || 0,
+    creditScore: parseInt(String(raw.creditScore ?? 0), 10) || 0,
+    age: parseInt(String(raw.age ?? 0), 10) || 0,
+    monthlyIncome: parseFloat(String(raw.monthlyIncome ?? 0)) || 0,
+    loanAmountRequired: parseFloat(String(raw.loanAmountRequired ?? 0)) || 0,
+    eligibleAmount:
+      raw.eligibleAmount != null
+        ? parseFloat(String(raw.eligibleAmount))
+        : null,
+    createdAt: raw.createdAt?.$date
+      ? new Date(raw.createdAt.$date)
+      : new Date(raw.createdAt),
+    updatedAt: raw.updatedAt?.$date
+      ? new Date(raw.updatedAt.$date)
+      : new Date(raw.updatedAt),
+    dateOfBirth: raw.dateOfBirth?.$date
+      ? new Date(raw.dateOfBirth.$date)
+      : new Date(raw.dateOfBirth),
+  }));
 }
 
 export default async function LoansPage() {
@@ -73,7 +101,7 @@ export default async function LoansPage() {
                         <span className="text-sm font-bold text-blue-900">
                           ₹
                           {Number.parseFloat(
-                            loan.loanAmountRequired?.toString() || "0"
+                            loan.loanAmountRequired?.toString() || "0",
                           ).toLocaleString("en-IN")}
                         </span>
                       </div>
@@ -96,7 +124,7 @@ export default async function LoansPage() {
                           </div>
                           <span className="text-sm font-medium text-blue-900">
                             {new Date(loan.dateOfBirth).toLocaleDateString(
-                              "en-IN"
+                              "en-IN",
                             )}
                           </span>
                         </div>

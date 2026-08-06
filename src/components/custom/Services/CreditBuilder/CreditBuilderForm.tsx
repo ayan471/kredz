@@ -9,13 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
 import {
   saveCreditBuilderData,
   submitCreditBuilderSubscription,
 } from "@/actions/formActions";
-import SabpaisaPaymentGateway from "@/components/sabpaisa-payment-gateway";
-import { initiateSabpaisaPayment } from "@/components/lib/sabPaisa";
 
 type FormValues = {
   fullName: string;
@@ -26,8 +23,7 @@ type FormValues = {
   plan: string;
 };
 
-// Utility functions for form data persistence
-const saveFormDataToLocalStorage = (data: Partial<FormValues>) => {
+const saveFormDataToSessionStorage = (data: Partial<FormValues>) => {
   try {
     sessionStorage.setItem("creditBuilderFormData", JSON.stringify(data));
   } catch (error) {
@@ -35,7 +31,7 @@ const saveFormDataToLocalStorage = (data: Partial<FormValues>) => {
   }
 };
 
-const getFormDataFromLocalStorage = (): Partial<FormValues> | null => {
+const getFormDataFromSessionStorage = (): Partial<FormValues> | null => {
   try {
     const savedData = sessionStorage.getItem("creditBuilderFormData");
     return savedData ? JSON.parse(savedData) : null;
@@ -45,7 +41,7 @@ const getFormDataFromLocalStorage = (): Partial<FormValues> | null => {
   }
 };
 
-const clearFormDataFromLocalStorage = () => {
+const clearFormDataFromSessionStorage = () => {
   try {
     sessionStorage.removeItem("creditBuilderFormData");
   } catch (error) {
@@ -61,13 +57,8 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
   selectedPlan,
 }) => {
   const { toast } = useToast();
-  const router = useRouter();
   const { user } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Sabpaisa payment state
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState<any>(null);
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -88,32 +79,28 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
     formState: { errors },
   } = form;
 
-  // Pre-fill user data if available
+  // Pre-fill from Clerk profile
   useEffect(() => {
     if (user) {
       setValue(
         "fullName",
         `${user.firstName || ""} ${user.lastName || ""}`.trim(),
       );
-
-      // If user has a phone number in their profile
       if (user.phoneNumbers && user.phoneNumbers.length > 0) {
         setValue("phoneNo", user.phoneNumbers[0].phoneNumber || "");
       }
     }
   }, [user, setValue]);
 
-  // Load saved form data when component mounts
+  // Restore saved form data on mount
   useEffect(() => {
-    const savedData = getFormDataFromLocalStorage();
+    const savedData = getFormDataFromSessionStorage();
     if (savedData) {
-      // Populate form with saved data
       Object.entries(savedData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           setValue(key as keyof FormValues, value);
         }
       });
-
       toast({
         title: "Form Data Restored",
         description: "Your previously entered information has been restored.",
@@ -121,18 +108,16 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
     }
   }, [setValue, toast]);
 
-  // Save form data whenever it changes
+  // Auto-save form data on change
   useEffect(() => {
     const subscription = form.watch((formData) => {
       if (formData && Object.keys(formData).length > 0) {
-        saveFormDataToLocalStorage(formData);
+        saveFormDataToSessionStorage(formData);
       }
     });
-
     return () => subscription.unsubscribe();
   }, [form]);
 
-  // Find the onSubmit function and update it to include plan details
   const onSubmit = async (data: FormValues) => {
     if (!user) {
       toast({
@@ -155,32 +140,25 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      // First save the credit builder form data
-      const formData = {
-        userId: user.id,
+      // 1. Save application data — action gets userId from currentUser() internally
+      const saveResult = await saveCreditBuilderData({
         fullName: data.fullName,
         phoneNo: data.phoneNo,
         aadharNo: data.aadharNo,
         panNo: data.panNo,
         creditScore: data.creditScore,
-      };
-
-      const saveResult = await saveCreditBuilderData(formData);
+      });
 
       if (!saveResult.success) {
         throw new Error(saveResult.error || "Failed to save application data");
       }
 
-      // Then submit the subscription
-      const subscriptionData = {
-        userId: user.id,
+      // 2. Create subscription — action gets userId from auth() internally
+      const subscriptionResult = await submitCreditBuilderSubscription({
         fullName: data.fullName,
         phoneNo: data.phoneNo,
         plan: selectedPlan,
-      };
-
-      const subscriptionResult =
-        await submitCreditBuilderSubscription(subscriptionData);
+      });
 
       if (!subscriptionResult.success) {
         throw new Error(
@@ -188,17 +166,15 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
         );
       }
 
-      // Calculate payment amount based on the selected plan
+      // 3. Calculate amount from selected plan
       let baseAmount = 0;
       let gstAmount = 0;
       let totalAmount = 0;
 
-      // Extract plan details - handle both formats (with and without type)
       const planParts = selectedPlan.split(" ");
       const planDuration = Number.parseInt(planParts[0]);
       const planType = planParts.length > 2 ? planParts[2] : null;
 
-      // Exact pricing from the PDF
       if (planDuration === 1) {
         baseAmount = 189;
         gstAmount = 34.02;
@@ -224,67 +200,60 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
         gstAmount = 273.6;
         totalAmount = 1793.6;
       } else if (planDuration === 24) {
-        if (planType === "BASIC" || !planType) {
-          baseAmount = 2025;
-          gstAmount = 364.5;
-          totalAmount = 2389.5;
-        } else if (planType === "PRIME") {
+        if (planType === "PRIME") {
           baseAmount = 3275;
           gstAmount = 589.5;
           totalAmount = 3864.5;
+        } else {
+          baseAmount = 2025;
+          gstAmount = 364.5;
+          totalAmount = 2389.5;
         }
       } else if (planDuration === 36) {
         baseAmount = 4545;
         gstAmount = 818.1;
         totalAmount = 5363.1;
       } else {
-        // Default fallback
         baseAmount = 189;
         gstAmount = 34.02;
         totalAmount = 223.02;
       }
 
-      // Generate a truly unique order ID with timestamp (including milliseconds) and multiple random strings
-      const timestamp = Date.now();
-      const randomStr1 = Math.random().toString(36).substring(2, 10);
-      const randomStr2 = Math.random().toString(36).substring(2, 6);
-      const randomStr3 = Math.random().toString(36).substring(2, 6);
-      // Create a unique ID that includes multiple random components and the full timestamp
-      const orderId =
-        `CB-${user.id.substring(0, 8)}-${timestamp}-${randomStr1}-${randomStr2}-${randomStr3}`.slice(
+      // 4. Build a client-side reference ID to correlate with the SabPaisa txn
+      const clientReferenceId =
+        `CB-${user.id.substring(0, 8)}-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`.slice(
           0,
           38,
         );
-      console.log("Generated unique transaction ID:", orderId);
 
-      // Clear any previously stored transaction IDs to avoid conflicts
-      localStorage.removeItem("creditBuilderTxnId");
-      localStorage.removeItem("lastSabpaisaTxnId");
-      // Store the new transaction ID in localStorage
-      localStorage.setItem("creditBuilderTxnId", orderId);
-      localStorage.setItem("lastSabpaisaTxnId", orderId);
+      sessionStorage.setItem("creditBuilderClientRef", clientReferenceId);
+      clearFormDataFromSessionStorage();
 
-      // Clear saved form data after successful payment initiation
-      clearFormDataFromLocalStorage();
-
-      // Initiate Sabpaisa payment
-      const paymentResult = await initiateSabpaisaPayment({
-        amount: totalAmount,
-        orderId,
-        customerName: data.fullName,
-        customerPhone: data.phoneNo,
-        customerEmail: user.primaryEmailAddress?.emailAddress || "",
-        planDetails: `${selectedPlan} Plan - ₹${baseAmount.toFixed(2)} + ₹${gstAmount.toFixed(2)} GST`,
-        callbackUrl: `${window.location.origin}/api/payment/callback`,
+      // 5. Create the SabPaisa payment session server-side
+      const res = await fetch("/api/payments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: totalAmount, // sabpaisa-sdk expects rupees
+          customerName: data.fullName,
+          customerEmail: user.primaryEmailAddress?.emailAddress || "",
+          customerPhone: data.phoneNo,
+          description: `${selectedPlan} Plan - ₹${baseAmount.toFixed(2)} + ₹${gstAmount.toFixed(2)} GST`,
+          clientReferenceId,
+        }),
       });
 
-      if (paymentResult.success && paymentResult.paymentDetails) {
-        // Set payment details and show the Sabpaisa payment modal
-        setPaymentDetails(paymentResult.paymentDetails);
-        setShowPaymentModal(true);
-      } else {
-        throw new Error(paymentResult.error || "Failed to initiate payment");
+      const paymentResult = await res.json();
+
+      if (!paymentResult.success || !paymentResult.checkoutUrl) {
+        throw new Error(paymentResult.message || "Failed to initiate payment");
       }
+
+      // 6. Store SabPaisa's txn ID and redirect to checkout
+      sessionStorage.setItem("pendingTxnId", paymentResult.merchantTxnId);
+      window.location.href = paymentResult.checkoutUrl;
+
+      // isSubmitting stays true — page is navigating away
     } catch (error) {
       console.error("Error submitting credit builder application:", error);
       toast({
@@ -295,14 +264,8 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
             : "There was an error processing your application. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handlePaymentToggle = () => {
-    setShowPaymentModal(false);
-    // Redirection will be handled by the PaymentStatusListener component
   };
 
   return (
@@ -402,28 +365,6 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
           </div>
         </div>
 
-        {/* <div className="flex flex-col gap-6 bg-orange-50 p-6 rounded-xl">
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="creditScore">Credit Score</Label>
-            <Input
-              type="text"
-              id="creditScore"
-              {...register("creditScore", {
-                required: "Credit score is required",
-                pattern: {
-                  value: /^[0-9]{3,4}$/,
-                  message: "Please enter a valid credit score (e.g., 750)",
-                },
-              })}
-            />
-            {errors.creditScore && (
-              <p className="text-sm text-red-500">
-                {errors.creditScore.message}
-              </p>
-            )}
-          </div>
-        </div> */}
-
         <Button
           type="submit"
           className="mt-8 bg-orange-500 hover:bg-orange-600 text-white py-3 text-lg font-semibold"
@@ -431,7 +372,7 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
         >
           {isSubmitting ? (
             <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3" />
               Processing...
             </>
           ) : (
@@ -439,26 +380,6 @@ const CreditBuilderForm: React.FC<CreditBuilderFormProps> = ({
           )}
         </Button>
       </form>
-
-      {/* Sabpaisa Payment Gateway Modal */}
-      {showPaymentModal && paymentDetails && (
-        <SabpaisaPaymentGateway
-          clientCode={paymentDetails.clientCode}
-          transUserName={paymentDetails.transUserName}
-          transUserPassword={paymentDetails.transUserPassword}
-          authkey={paymentDetails.authkey}
-          authiv={paymentDetails.authiv}
-          payerName={paymentDetails.payerName}
-          payerEmail={paymentDetails.payerEmail}
-          payerMobile={paymentDetails.payerMobile}
-          clientTxnId={paymentDetails.clientTxnId}
-          amount={paymentDetails.amount}
-          payerAddress={paymentDetails.payerAddress}
-          callbackUrl={paymentDetails.callbackUrl}
-          isOpen={showPaymentModal}
-          onToggle={handlePaymentToggle}
-        />
-      )}
 
       <DevTool control={control} />
     </div>

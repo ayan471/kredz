@@ -31,13 +31,13 @@ function formatCurrency(amount: number | string | null) {
   return `₹${numAmount.toLocaleString("en-IN")}`;
 }
 
+// src/app/dashboard/page.tsx  — only getUserData changes, everything else stays identical
+
 async function getUserData(userId: string) {
   const loanApplication = (await prisma.loanApplication.findFirst({
     where: {
       userId,
-      status: {
-        not: "Incomplete",
-      },
+      status: { not: "Incomplete" },
     },
     orderBy: { createdAt: "desc" },
   })) as {
@@ -54,23 +54,50 @@ async function getUserData(userId: string) {
     approvedAmount?: string;
   } | null;
 
-  // Fetch the latest credit builder loan application
-  const creditBuilderLoan = await prisma.creditBuilderLoanApplication.findFirst(
-    {
-      where: {
-        userId,
-      },
-      orderBy: { createdAt: "desc" },
-    }
-  );
+  // ✅ Use raw command to bypass Prisma's strict Int deserialization on
+  // existing docs that have currentActiveOverdues stored as a string "0"
+  const rawResult = (await prisma.$runCommandRaw({
+    find: "CreditBuilderLoanApplication",
+    filter: { userId },
+    sort: { createdAt: -1 },
+    limit: 1,
+  })) as { cursor: { firstBatch: any[] } };
 
-  // Only fetch active subscriptions (where isActive is true)
+  const batch = rawResult?.cursor?.firstBatch ?? [];
+  let creditBuilderLoan = null;
+
+  if (batch.length > 0) {
+    const raw = batch[0];
+    creditBuilderLoan = {
+      ...raw,
+      id: raw._id?.$oid ?? raw._id,
+      // Coerce int fields that old docs stored as strings
+      currentActiveOverdues:
+        parseInt(String(raw.currentActiveOverdues ?? 0), 10) || 0,
+      currentActiveEmis: parseInt(String(raw.currentActiveEmis ?? 0), 10) || 0,
+      creditScore: parseInt(String(raw.creditScore ?? 0), 10) || 0,
+      age: parseInt(String(raw.age ?? 0), 10) || 0,
+      monthlyIncome: parseFloat(String(raw.monthlyIncome ?? 0)) || 0,
+      loanAmountRequired: parseFloat(String(raw.loanAmountRequired ?? 0)) || 0,
+      eligibleAmount:
+        raw.eligibleAmount != null
+          ? parseFloat(String(raw.eligibleAmount))
+          : null,
+      createdAt: raw.createdAt?.$date
+        ? new Date(raw.createdAt.$date)
+        : new Date(raw.createdAt),
+      updatedAt: raw.updatedAt?.$date
+        ? new Date(raw.updatedAt.$date)
+        : new Date(raw.updatedAt),
+      dateOfBirth: raw.dateOfBirth?.$date
+        ? new Date(raw.dateOfBirth.$date)
+        : new Date(raw.dateOfBirth),
+    };
+  }
+
   const creditBuilderSubscription =
     await prisma.creditBuilderSubscription.findFirst({
-      where: {
-        userId,
-        isActive: true, // Only get active subscriptions
-      },
+      where: { userId, isActive: true },
       orderBy: { createdAt: "desc" },
     });
 
@@ -224,7 +251,7 @@ export default async function DashboardPage() {
                     </span>
                     <Badge
                       className={`text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full ${getStatusColor(
-                        creditBuilderLoan.status ?? ""
+                        creditBuilderLoan.status ?? "",
                       )}`}
                     >
                       {creditBuilderLoan.status}

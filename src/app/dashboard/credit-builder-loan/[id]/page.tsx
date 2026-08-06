@@ -31,19 +31,65 @@ import FasterProcessingButton from "../FasterProcessingButton";
 const prisma = new PrismaClient();
 
 async function getLoanDetails(id: string, userId: string) {
-  const loan = await prisma.creditBuilderLoanApplication.findFirst({
-    where: {
-      id,
-      userId,
-    },
-    include: { emiPayments: true },
+  // ✅ Raw command bypasses Prisma's strict Int deserialization on old docs
+  const result = (await prisma.$runCommandRaw({
+    find: "CreditBuilderLoanApplication",
+    filter: { _id: { $oid: id }, userId },
+    limit: 1,
+  })) as { cursor: { firstBatch: any[] } };
+
+  const batch = result?.cursor?.firstBatch ?? [];
+  if (batch.length === 0) return null;
+
+  const raw = batch[0];
+
+  // Fetch emiPayments separately since $runCommandRaw doesn't support relations
+  const emiPayments = await prisma.eMIPayment.findMany({
+    where: { loanId: id },
   });
 
-  if (!loan) {
-    return null;
-  }
-
-  return loan;
+  return {
+    ...raw,
+    id: raw._id?.$oid ?? raw._id,
+    // Coerce int/float fields that old docs stored as strings
+    currentActiveOverdues:
+      parseInt(String(raw.currentActiveOverdues ?? 0), 10) || 0,
+    currentActiveEmis: parseInt(String(raw.currentActiveEmis ?? 0), 10) || 0,
+    creditScore: parseInt(String(raw.creditScore ?? 0), 10) || 0,
+    age: parseInt(String(raw.age ?? 0), 10) || 0,
+    monthlyIncome: parseFloat(String(raw.monthlyIncome ?? 0)) || 0,
+    loanAmountRequired: parseFloat(String(raw.loanAmountRequired ?? 0)) || 0,
+    eligibleAmount:
+      raw.eligibleAmount != null
+        ? parseFloat(String(raw.eligibleAmount))
+        : null,
+    approvedAmount:
+      raw.approvedAmount != null
+        ? parseFloat(String(raw.approvedAmount))
+        : null,
+    emi: raw.emi != null ? parseFloat(String(raw.emi)) : null,
+    tenure: raw.tenure != null ? parseInt(String(raw.tenure), 10) : null,
+    rateOfInterest:
+      raw.rateOfInterest != null
+        ? parseFloat(String(raw.rateOfInterest))
+        : null,
+    fasterProcessingPaid: raw.fasterProcessingPaid ?? false,
+    createdAt: raw.createdAt?.$date
+      ? new Date(raw.createdAt.$date)
+      : new Date(raw.createdAt),
+    updatedAt: raw.updatedAt?.$date
+      ? new Date(raw.updatedAt.$date)
+      : new Date(raw.updatedAt),
+    dateOfBirth: raw.dateOfBirth?.$date
+      ? new Date(raw.dateOfBirth.$date)
+      : new Date(raw.dateOfBirth),
+    disbursementDate: raw.disbursementDate?.$date
+      ? new Date(raw.disbursementDate.$date)
+      : raw.disbursementDate
+        ? new Date(raw.disbursementDate)
+        : null,
+    emiPayments,
+  };
 }
 
 export default async function LoanDetailsPage({
@@ -174,7 +220,7 @@ export default async function LoanDetailsPage({
                   <span className="ml-auto font-semibold text-blue-900">
                     ₹
                     {Number.parseFloat(
-                      loan.loanAmountRequired.toString()
+                      loan.loanAmountRequired.toString(),
                     ).toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -191,7 +237,7 @@ export default async function LoanDetailsPage({
                   <span className="ml-auto font-semibold text-blue-900">
                     ₹
                     {Number.parseFloat(
-                      loan.monthlyIncome.toString()
+                      loan.monthlyIncome.toString(),
                     ).toLocaleString("en-IN")}
                   </span>
                 </div>

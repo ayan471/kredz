@@ -60,12 +60,12 @@ export async function initiateSabpaisaPayment({
     const uniqueClientTxnId =
       `${prefix}-${timestamp}-${randomStr1}-${randomStr2}-${randomStr3}`.slice(
         0,
-        38
+        38,
       );
 
     console.log(
       "Generated guaranteed unique transaction ID:",
-      uniqueClientTxnId
+      uniqueClientTxnId,
     );
 
     // Debug log

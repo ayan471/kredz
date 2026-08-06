@@ -66,7 +66,7 @@ cloudinary.config({
 
 export async function uploadToCloudinary(
   file: File,
-  folder: string
+  folder: string,
 ): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
@@ -138,7 +138,7 @@ export async function saveCreditBuilderData(data: {
 }
 
 export async function getCreditScoreData(
-  userId: string
+  userId: string,
 ): Promise<CreditScoreData | null> {
   try {
     const creditData = await prisma.creditBuilderApplicationData.findUnique({
@@ -178,7 +178,7 @@ export async function getCreditBuilderData(userId: string) {
 export async function updateCreditHealth(
   subscriptionId: string,
   creditFactors: CreditFactors,
-  month: string
+  month: string,
 ) {
   try {
     const subscription = await prisma.creditBuilderSubscription.findUnique({
@@ -251,7 +251,7 @@ export async function updateMonthlyCreditHealth(
   subscriptionId: string,
   month: number,
   year: number,
-  creditFactors: CreditFactors
+  creditFactors: CreditFactors,
 ) {
   try {
     const subscription = await prisma.creditBuilderSubscription.findUnique({
@@ -314,7 +314,7 @@ export async function getUserSubscription(userId: string) {
 
 export async function activateCreditBuilderSubscription(
   userId: string,
-  orderId: string
+  orderId: string,
 ) {
   try {
     const subscription = await prisma.creditBuilderSubscription.findFirst({
@@ -433,7 +433,7 @@ export async function getAdminDashboardData() {
 // Add this new server action to toggle subscription status
 export async function toggleSubscriptionStatus(
   subscriptionId: string,
-  isActive: boolean
+  isActive: boolean,
 ) {
   try {
     // Update the subscription status in the database
@@ -472,7 +472,7 @@ export async function initiateCashfreePayment(amount: number, orderId: string) {
     }
 
     console.log(
-      `Initiating Cashfree payment for user ${userId} and order ${orderId}`
+      `Initiating Cashfree payment for user ${userId} and order ${orderId}`,
     );
 
     // Fetch user data from Clerk
@@ -517,7 +517,7 @@ export async function initiateCashfreePayment(amount: number, orderId: string) {
 
     console.log(
       "Cashfree API request payload:",
-      JSON.stringify(payload, null, 2)
+      JSON.stringify(payload, null, 2),
     );
 
     const response = await fetch(`${process.env.CASHFREE_API_URL}/orders`, {
@@ -535,7 +535,7 @@ export async function initiateCashfreePayment(amount: number, orderId: string) {
       const errorData = await response.json();
       console.error(
         "Cashfree API error response:",
-        JSON.stringify(errorData, null, 2)
+        JSON.stringify(errorData, null, 2),
       );
       throw new Error(`Failed to initiate payment: ${response.statusText}`);
     }
@@ -543,7 +543,7 @@ export async function initiateCashfreePayment(amount: number, orderId: string) {
     const data = await response.json();
     console.log(
       "Cashfree API success response:",
-      JSON.stringify(data, null, 2)
+      JSON.stringify(data, null, 2),
     );
 
     // Create payment link using payment_session_id
@@ -569,7 +569,7 @@ export async function updateApplicationData(
     panNo?: string;
     creditScore?: number;
     step?: number;
-  }
+  },
 ) {
   try {
     await prisma.creditBuilderApplicationData.update({
