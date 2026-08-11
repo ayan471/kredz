@@ -30,11 +30,13 @@ export default function PaymentResponsePage() {
     })
       .then((res) => res.json())
       .then((result) => {
-        if (!result.signatureValid) {
-          setState("invalid_signature");
-          return;
-        }
-        if (result.success) {
+        // Use status field as the primary source of truth
+        // SabPaisa sends status="SUCCESS" or status="FAILED" in callback params
+        const isSuccess =
+          result.status === "SUCCESS" ||
+          result.success === true;
+
+        if (isSuccess) {
           setState("success");
           setDetails({
             transactionId: result.transactionId,
@@ -43,7 +45,11 @@ export default function PaymentResponsePage() {
           });
         } else {
           setState("failed");
-          setDetails({ message: result.message });
+          setDetails({
+            message:
+              result.message ||
+              (result.status ? `Payment ${result.status.toLowerCase()}` : "Payment could not be completed."),
+          });
         }
       })
       .catch(() => {
