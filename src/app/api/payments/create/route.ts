@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     // app/api/payments/create/route.ts
     const response = await sabpaisa.createPayment({
       orderId,
-      amount: Math.round(parseFloat(amount)), // ✅ just rupees — no * 100
+      amount: parseFloat(amount), // ✅ just rupees — no * 100, decimals supported
       customerName,
       customerEmail,
       customerPhone,
