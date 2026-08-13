@@ -49,7 +49,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       checkoutUrl: sabpaisa.getCheckoutUrl(response),
-      merchantTxnId: orderId,
+      merchantTxnId: response.merchantTxnId || orderId, // SDK's internal TXN ID (TXN{orderId}T{timestamp})
+      orderId,
     });
   } catch (error: any) {
     console.error("SabPaisa create payment error:", error);

@@ -1,61 +1,66 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-type State = "verifying" | "success" | "failed" | "invalid_signature";
+type State = "verifying" | "success" | "failed";
 
 interface PaymentDetails {
   transactionId?: string;
   orderId?: string;
   amount?: string;
+  paymentMode?: string;
   message?: string;
 }
 
 export default function PaymentResponsePage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [state, setState] = useState<State>("verifying");
   const [details, setDetails] = useState<PaymentDetails>({});
 
   useEffect(() => {
-    const params: Record<string, string> = {};
-    searchParams.forEach((v, k) => (params[k] = v));
+    // SabPaisa sends all payment data as plain query params in the redirect URL:
+    // status, transaction_id, merchant_txn_id, paid_amount, payment_mode, amount, signature
+    const status = searchParams.get("status") ?? "";
+    const transactionId = searchParams.get("transaction_id") ?? "";
+    const merchantTxnId = searchParams.get("merchant_txn_id") ?? "";
+    const paidAmount = searchParams.get("paid_amount") ?? searchParams.get("amount") ?? "";
+    const paymentMode = searchParams.get("payment_mode") ?? "";
 
-    fetch("/api/payments/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(params),
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        // Use status field as the primary source of truth
-        // SabPaisa sends status="SUCCESS" or status="FAILED" in callback params
-        const isSuccess =
-          result.status === "SUCCESS" ||
-          result.success === true;
+    console.log("Payment response URL params:", {
+      status, transactionId, merchantTxnId, paidAmount, paymentMode,
+    });
 
-        if (isSuccess) {
-          setState("success");
-          setDetails({
-            transactionId: result.transactionId,
-            orderId: result.orderId,
-            amount: result.amount,
-          });
-        } else {
-          setState("failed");
-          setDetails({
-            message:
-              result.message ||
-              (result.status ? `Payment ${result.status.toLowerCase()}` : "Payment could not be completed."),
-          });
-        }
-      })
-      .catch(() => {
-        setState("failed");
-        setDetails({ message: "Could not verify payment status." });
+    // Clean up sessionStorage
+    sessionStorage.removeItem("pendingTxnId");
+
+    if (!status) {
+      // No status in URL — something went wrong with the redirect
+      setState("failed");
+      setDetails({ message: "Payment response not received. Please contact support if you were charged." });
+      return;
+    }
+
+    if (status.toUpperCase() === "SUCCESS") {
+      setState("success");
+      setDetails({
+        transactionId,
+        orderId: merchantTxnId,
+        amount: paidAmount,
+        paymentMode,
       });
+    } else {
+      setState("failed");
+      setDetails({
+        message:
+          status.toUpperCase() === "EXPIRED"
+            ? "Payment session expired. No amount was charged."
+            : status.toUpperCase() === "TIMEOUT"
+              ? "Payment timed out. No amount was charged."
+              : "Payment could not be completed. No amount was charged.",
+      });
+    }
   }, [searchParams]);
 
   return (
@@ -295,69 +300,6 @@ export default function PaymentResponsePage() {
               className="block w-full py-3.5 border-2 border-[#1a3faa] text-[#1a3faa] rounded-full text-[15px] font-medium hover:bg-blue-50 transition-colors"
             >
               Back to home
-            </Link>
-          </>
-        )}
-
-        {/* Invalid signature */}
-        {state === "invalid_signature" && (
-          <>
-            <div className="w-20 h-20 rounded-full bg-[#FAEEDA] flex items-center justify-center mx-auto mb-5">
-              <svg
-                className="w-10 h-10 text-[#854F0B]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-            </div>
-            <span className="inline-flex items-center gap-1.5 bg-[#FAEEDA] text-[#854F0B] text-[13px] font-medium px-4 py-1 rounded-full mb-4">
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01"
-                />
-              </svg>
-              Verification failed
-            </span>
-            <h1 className="text-[22px] font-medium text-[#1a2e6e] mb-2">
-              Invalid payment signature
-            </h1>
-            <p className="text-[15px] text-gray-500 mb-6 leading-relaxed">
-              This payment response could not be verified. If you believe this
-              is an error, please contact our support team immediately.
-            </p>
-            <div className="bg-[#F7F9FE] rounded-xl p-5 mb-6 text-left">
-              <div className="flex justify-between items-center">
-                <span className="text-[13px] text-gray-500">
-                  Contact support
-                </span>
-                <a
-                  href="mailto:support@kredz.in"
-                  className="text-[13px] font-medium text-[#1a3faa]"
-                >
-                  support@kredz.in
-                </a>
-              </div>
-            </div>
-            <Link
-              href="/"
-              className="block w-full py-3.5 bg-[#1a3faa] text-white rounded-full text-[15px] font-medium hover:opacity-90 transition-opacity"
-            >
-              Go to home →
             </Link>
           </>
         )}
