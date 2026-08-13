@@ -171,13 +171,13 @@ const ContactPage = () => {
                         Address
                       </p>
                       <p className="text-sm text-gray-600">
-                        Batanagar, Maheshtala
+                        No 656A, ElcotSez, Zsurvey Behind Accenture Company
                       </p>
                       <p className="text-sm text-gray-600">
-                        South 24 Parganas - 700140
+                        Sholinganallur - 600119
                       </p>
                       <p className="text-sm text-gray-600">
-                        West Bengal, India
+                        Tamil Nadu, India
                       </p>
                     </div>
                   </div>
