@@ -1,6 +1,6 @@
 // app/api/webhooks/sabpaisa/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { setPaymentStatus, type PaymentStatus } from "@/lib/payment-store";
 
 /**
@@ -24,14 +24,16 @@ import { setPaymentStatus, type PaymentStatus } from "@/lib/payment-store";
 
 function verifySignature(rawBody: string, signature: string, secret: string): boolean {
   try {
-    const expected = crypto
-      .createHmac("sha256", secret)
+    const expected = createHmac("sha256", secret)
       .update(rawBody)
       .digest("hex");
+    const signatureHex = signature.replace(/^sha256=/, "");
+
     // Constant-time comparison to prevent timing attacks
-    return crypto.timingSafeEqual(
-      Buffer.from(expected, "hex"),
-      Buffer.from(signature.replace(/^sha256=/, ""), "hex"),
+    // Convert Buffers to Uint8Array to satisfy TypeScript types
+    return timingSafeEqual(
+      Uint8Array.from(Buffer.from(expected, "hex")),
+      Uint8Array.from(Buffer.from(signatureHex, "hex")),
     );
   } catch {
     return false;
