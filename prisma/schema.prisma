@@ -256,6 +256,10 @@ model CreditBuilderLoanApplication {
   creditScore           Int
   currentActiveEmis     Int
   currentActiveOverdues Int
+  // Raw range selections from the application form ("4+", "0-3", ...) which the
+  // Int columns above cannot represent.
+  currentActiveEmisRange     String?
+  currentActiveOverduesRange String?
   bankStatementUrl      String?
   status                String?      @default("In Progress")
   createdAt             DateTime     @default(now())

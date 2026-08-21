@@ -1900,7 +1900,7 @@ const CreditBuilderLoanForm: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="currentActiveEmis">
-                  Current EMIs <span className="text-red-500">*</span>
+                  Current Overdue Accounts <span className="text-red-500">*</span>
                 </Label>
                 <Controller
                   name="currentActiveEmis"

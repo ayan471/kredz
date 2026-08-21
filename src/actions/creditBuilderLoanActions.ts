@@ -131,6 +131,10 @@ export async function saveCreditBuilderLoanApplication(formData: FormData) {
       creditScore: safeInt(formData.get("creditScore")),
       currentActiveEmis: safeInt(formData.get("currentActiveEmis")),
       currentActiveOverdues: safeInt(formData.get("currentActiveOverdues")), // ✅ was crashing
+      currentActiveEmisRange:
+        (formData.get("currentActiveEmis") as string) || null,
+      currentActiveOverduesRange:
+        (formData.get("currentActiveOverdues") as string) || null,
       status: "In Progress",
       aadharFrontUrl: null,
       aadharBackUrl: null,
@@ -327,9 +331,11 @@ export async function updateCreditBuilderLoanApplication(
             break;
           case "currentActiveEmis":
             data.currentActiveEmis = safeInt(value);
+            data.currentActiveEmisRange = value || null;
             break;
           case "currentActiveOverdues":
             data.currentActiveOverdues = safeInt(value);
+            data.currentActiveOverduesRange = value || null;
             break; // ✅
           case "emiTenure":
             data.emiTenure = safeInt(value);

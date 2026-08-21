@@ -67,6 +67,13 @@ export default async function CreditBuilderLoanDetailPage({
     notFound();
   }
 
+  // Older records only have the numeric columns; newer ones keep the exact range
+  // the applicant selected ("4+", "0-3", ...).
+  const currentEmis =
+    application.currentActiveEmisRange ?? application.currentActiveEmis;
+  const totalActiveLoans =
+    application.currentActiveOverduesRange ?? application.currentActiveOverdues;
+
   const InfoItem = ({
     icon,
     label,
@@ -81,7 +88,13 @@ export default async function CreditBuilderLoanDetailPage({
       <div>
         <p className="text-sm text-gray-500">{label}</p>
         <p className="font-medium">
-          {value === true ? "Yes" : value === false ? "No" : value || "N/A"}
+          {value === true
+            ? "Yes"
+            : value === false
+              ? "No"
+              : value === null || value === undefined || value === ""
+                ? "N/A"
+                : value}
         </p>
       </div>
     </div>
@@ -168,6 +181,31 @@ export default async function CreditBuilderLoanDetailPage({
           <DownloadCSV data={[application]} />
         </div>
       </div>
+
+      <Card className="mb-6 border-orange-200 bg-orange-50/50">
+        <CardHeader>
+          <CardTitle className="text-xl">Obligations Summary</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-3">
+          <InfoItem
+            icon={<DollarSign className="h-5 w-5 text-gray-400" />}
+            label="Current Overdue Accounts"
+            value={currentEmis}
+          />
+          <InfoItem
+            icon={<CreditCard className="h-5 w-5 text-gray-400" />}
+            label="Total Active Loans"
+            value={totalActiveLoans}
+          />
+          <InfoItem
+            icon={<Calendar className="h-5 w-5 text-gray-400" />}
+            label="Approved Monthly EMI"
+            value={
+              application.emi ? `₹${application.emi.toLocaleString()}` : "N/A"
+            }
+          />
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -263,7 +301,7 @@ export default async function CreditBuilderLoanDetailPage({
             <InfoItem
               icon={<DollarSign className="h-5 w-5 text-gray-400" />}
               label="Current Active EMIs"
-              value={application.currentActiveEmis}
+              value={currentEmis}
             />
             <EditableInfoItem
               icon={<Bank className="h-5 w-5 text-gray-400" />}
@@ -373,12 +411,12 @@ export default async function CreditBuilderLoanDetailPage({
           <InfoItem
             icon={<DollarSign className="h-5 w-5 text-gray-400" />}
             label="Current Active EMIs"
-            value={application.currentActiveEmis}
+            value={currentEmis}
           />
           <InfoItem
             icon={<DollarSign className="h-5 w-5 text-gray-400" />}
             label="Total Active Loans"
-            value={application.currentActiveOverdues}
+            value={totalActiveLoans}
           />
           <InfoItem
             icon={<CheckCircle2 className="h-5 w-5 text-gray-400" />}
